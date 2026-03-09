@@ -4,33 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Zdravý Souboj: Lůca vs Kája</title>
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        body { margin: 0; padding: 0; background-color: #09091a; overflow-x: hidden; }
-        /* Oprava pro mobilní zobrazení */
-        input, button { font-family: inherit; }
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: #09091a; 
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // TADY ZAČÍNÁ TVŮJ KÓD OD CLAUDE (S DROBNÝMI ÚPRAVAMI PRO PROHLÍŽEČ)
         const { useState, useEffect, useRef } = React;
         const { motion, AnimatePresence, animate } = FramerMotion;
 
         const USERS = {
-          userA: { key: "userA", name: "Lůca",  emoji: "👱‍♀️", color: "#EC4899", grad: ["#5f1a3e 0%", "#2a0d24 100%"], glow: "#EC489988" },
-          userB: { key: "userB", name: "Kája",  emoji: "👩🏽",  color: "#F97316", grad: ["#5f2e1e 0%", "#401720 100%"], glow: "#F9731688" },
+          userA: { key: "userA", name: "Lůca",  emoji: "👱‍♀️", color: "#EC4899", grad: ["#5f1a3e", "#2a0d24"], glow: "#EC489988" },
+          userB: { key: "userB", name: "Kája",  emoji: "👩🏽",  color: "#F97316", grad: ["#5f2e1e", "#401720"], glow: "#F9731688" },
         };
 
         const HABITS = [
           { id: "water",   label: "2L vody",        points: 2, icon: "💧" },
           { id: "sleep",   label: "8h spánek",      points: 2, icon: "🌙" },
-          { id: "nosugar", label: "Bez cukru",       points: 3, icon: "🚫🍬" },
+          { id: "nosugar", label: "Bez cukru",       points: 3, icon: "🚫" },
           { id: "steps",   label: "10 000 kroků",   points: 3, icon: "👟" },
           { id: "veggies", label: "Zelenina",        points: 2, icon: "🥦" },
         ];
@@ -47,332 +60,172 @@
           { id: "nophone",    label: "1h bez telefonu",      icon: "📵" },
           { id: "reading",    label: "Přečíst 10 stránek",   icon: "📚" },
           { id: "walk5k",     label: "Procházka 5 km",       icon: "🚶" },
-          { id: "meditate",   label: "10 min meditace",      icon: "🧘" },
-          { id: "journal",    label: "Psát deník",            icon: "✍️" },
-          { id: "stretch",    label: "15 min protahování",   icon: "🤸" },
-          { id: "nosnack",    label: "Bez svačiny",           icon: "🥗" },
-          { id: "hydrate",    label: "3L vody",               icon: "💦" },
         ];
 
         const getTodayQuest = () => SIDE_QUESTS[new Date().getDay() % SIDE_QUESTS.length];
-
-        const initialUser = () => ({
-          points: 0, weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [], customActivities: [],
-        });
-
         const loadState = () => {
-          try { const r = localStorage.getItem("healthduel_v3"); if (r) return JSON.parse(r); } catch {}
-          return { userA: initialUser(), userB: initialUser() };
+          try { const r = localStorage.getItem("healthduel_v4"); if (r) return JSON.parse(r); } catch {}
+          return { userA: { points: 0, weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [], customActivities: [] }, 
+                   userB: { points: 0, weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [], customActivities: [] } };
         };
+        const saveState = (s) => localStorage.setItem("healthduel_v4", JSON.stringify(s));
 
-        const saveState = (s) => { try { localStorage.setItem("healthduel_v3", JSON.stringify(s)); } catch {} };
-        const clamp = (v, lo = 0, hi = 99999) => Math.max(lo, Math.min(hi, v));
-
-        function Avatar({ emoji, position, shaking, jumping, color }) {
-          const ref = useRef(null);
-          useEffect(() => {
-            if (!ref.current) return;
-            animate(ref.current, { left: `calc(${Math.max(2, Math.min(position, 91))}% - 20px)` },
-              { type: "spring", stiffness: 65, damping: 13 });
-          }, [position]);
-
-          return (
-            <motion.div ref={ref} style={{ position: "absolute", bottom: 2 }}
-              animate={
-                shaking ? { x: [-10, 10, -7, 7, -4, 4, 0], rotate: [0, -12, 12, -6, 6, 0] }
-                : jumping ? { y: [-22, 0], scale: [1.28, 1] }
-                : {}
-              }
-              transition={shaking ? { duration: 0.52 } : { duration: 0.35 }}>
-              <motion.div style={{ fontSize: 30, filter: `drop-shadow(0 3px 8px ${color})` }}
-                animate={{ y: [0, -4, 0] }}
-                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}>
-                {emoji}
-              </motion.div>
-            </motion.div>
-          );
-        }
-
-        function Track({ posA, posB, shakeA, shakeB, jumpA, jumpB }) {
-          return (
-            <div style={{ position: "relative", width: "100%", height: 102 }}>
-              <div style={{
-                position: "absolute", inset: 0, borderRadius: 22,
-                background: "linear-gradient(135deg,#0e0e1c,#14203c)",
-                border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden",
-              }}>
-                <div style={{ position:"absolute", left:8, top:10, color:"rgba(255,255,255,0.22)", fontSize:9, fontWeight:800, letterSpacing:1.2 }}>LŮCA</div>
-                <div style={{ position:"absolute", left:8, bottom:10, color:"rgba(255,255,255,0.22)", fontSize:9, fontWeight:800, letterSpacing:1.2 }}>KÁJA</div>
-                <div style={{ position:"absolute", top:"50%", left:52, right:18, height:1, borderTop:"1px dashed rgba(255,255,255,0.1)" }} />
-                <div style={{ position:"absolute", left:48, top:8, bottom:8, width:2, background:"rgba(255,255,255,0.2)", borderRadius:2 }} />
-                <div style={{ position:"absolute", right:14, top:8, bottom:8, width:3, borderRadius:2,
-                  background:"linear-gradient(180deg,#FFD700,#FF6B35)", boxShadow:"0 0 12px #FFD70099" }} />
-                <div style={{ position:"absolute", right:7, top:2, fontSize:17 }}>🏁</div>
-                <motion.div style={{ position:"absolute", left:52, top:19, height:5, borderRadius:3,
-                  background:"linear-gradient(90deg,#EC4899,#F472B6)", boxShadow:"0 0 10px #EC489977" }}
-                  animate={{ width: `calc(${posA}% - 68px)` }}
-                  transition={{ type:"spring", stiffness:55, damping:12 }} />
-                <motion.div style={{ position:"absolute", left:52, bottom:19, height:5, borderRadius:3,
-                  background:"linear-gradient(90deg,#F97316,#FB923C)", boxShadow:"0 0 10px #F9731677" }}
-                  animate={{ width: `calc(${posB}% - 68px)` }}
-                  transition={{ type:"spring", stiffness:55, damping:12 }} />
-                <div style={{ position:"absolute", top:0, left:52, right:0, height:"50%" }}>
-                  <Avatar emoji={USERS.userA.emoji} position={posA} shaking={shakeA} jumping={jumpA} color={USERS.userA.glow} />
-                </div>
-                <div style={{ position:"absolute", bottom:0, left:52, right:0, height:"50%" }}>
-                  <Avatar emoji={USERS.userB.emoji} position={posB} shaking={shakeB} jumping={jumpB} color={USERS.userB.glow} />
-                </div>
-              </div>
-            </div>
-          );
-        }
-
-        function ScoreCard({ userKey, points, weeklyPoints }) {
-          const u = USERS[userKey];
-          return (
-            <motion.div style={{
-              flex:1, borderRadius:20, padding:"14px 16px",
-              background:`linear-gradient(135deg,${u.grad[0]},${u.grad[1]})`,
-              border:`1px solid ${u.color}44`, boxShadow:`0 4px 24px ${u.color}20`,
-            }} whileTap={{ scale:0.97 }}>
-              <div style={{ color:"rgba(255,255,255,0.5)", fontSize:11, fontWeight:700, letterSpacing:0.8, textTransform:"uppercase" }}>
-                {u.emoji} {u.name}
-              </div>
-              <motion.div key={points} style={{ fontSize:40, fontWeight:900, color:"#fff", lineHeight:1.05 }}
-                animate={{ scale:[1.2, 1] }} transition={{ type:"spring", stiffness:220, damping:12 }}>
-                {points}
-              </motion.div>
-              <div style={{ color:"rgba(255,255,255,0.38)", fontSize:11 }}>Týden: {weeklyPoints} b.</div>
-            </motion.div>
-          );
-        }
-
-        function HabitRow({ habit, checked, onToggle }) {
-          return (
-            <motion.div layout onClick={() => onToggle(habit.id)} whileTap={{ scale:0.97 }}
-              style={{
-                display:"flex", alignItems:"center", gap:12,
-                padding:"13px 16px", borderRadius:14, cursor:"pointer", marginBottom:8,
-                background: checked ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.07)",
-                border: checked ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(255,255,255,0.1)",
-                opacity: checked ? 0.5 : 1, transition:"background 0.2s, opacity 0.3s",
-                userSelect:"none", minHeight:52,
-              }}>
-              <div style={{
-                width:24, height:24, borderRadius:8, flexShrink:0,
-                border: checked ? "none" : "2px solid rgba(255,255,255,0.22)",
-                background: checked ? "linear-gradient(135deg,#34D399,#10B981)" : "transparent",
-                display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s",
-              }}>
-                {checked && <span style={{ fontSize:13, color: "#fff" }}>✓</span>}
-              </div>
-              <span style={{ fontSize:18 }}>{habit.icon}</span>
-              <div style={{ flex:1, color:"#fff", fontSize:14, fontWeight:500,
-                textDecoration: checked ? "line-through" : "none", transition:"text-decoration 0.2s" }}>
-                {habit.label}
-              </div>
-              <div style={{ color:"#34D399", fontWeight:800, fontSize:13,
-                background:"rgba(52,211,153,0.12)", borderRadius:8, padding:"2px 8px" }}>
-                +{habit.points}
-              </div>
-            </motion.div>
-          );
-        }
-
-        function PenaltyBtn({ penalty, onPress }) {
-          return (
-            <motion.button onClick={() => onPress(penalty)} whileTap={{ scale:0.9 }}
-              style={{
-                flex:1, border:"1px solid rgba(239,68,68,0.28)",
-                background:"linear-gradient(135deg,rgba(239,68,68,0.11),rgba(185,28,28,0.07))",
-                borderRadius:16, padding:"13px 6px", cursor:"pointer",
-                display:"flex", flexDirection:"column", alignItems:"center", gap:5,
-              }}>
-              <span style={{ fontSize:26 }}>{penalty.icon}</span>
-              <span style={{ color:"rgba(255,255,255,0.75)", fontSize:11, fontWeight:600,
-                textAlign:"center", lineHeight:1.25 }}>{penalty.label}</span>
-              <span style={{ color:"#F87171", fontWeight:800, fontSize:13 }}>{penalty.points}</span>
-            </motion.button>
-          );
-        }
-
-        function LogItem({ entry, index }) {
-          const u = Object.values(USERS).find(u => u.name === entry.user);
-          return (
-            <motion.div initial={{ opacity:0, x:-14 }} animate={{ opacity:1, x:0 }}
-              transition={{ delay: index * 0.04 }}
-              style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 0",
-                borderBottom: index < 4 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-              <span style={{ fontSize:16 }}>{entry.icon}</span>
-              <div style={{ flex:1 }}>
-                <span style={{ color: u?.color || "#fff", fontWeight:800, fontSize:12 }}>{entry.user} </span>
-                <span style={{ color:"rgba(255,255,255,0.52)", fontSize:12 }}>{entry.action}</span>
-              </div>
-              <span style={{ fontWeight:800, fontSize:12, color: entry.delta > 0 ? "#34D399" : "#F87171" }}>
-                {entry.delta > 0 ? "+" : ""}{entry.delta}
-              </span>
-            </motion.div>
-          );
-        }
+        // --- KOMPONENTY ---
 
         function HealthDuel() {
-          const [state, setState]           = useState(() => loadState());
+          const [state, setState] = useState(loadState);
           const [activeUser, setActiveUser] = useState("userA");
-          const [shakeA, setShakeA]         = useState(false);
-          const [shakeB, setShakeB]         = useState(false);
-          const [jumpA, setJumpA]           = useState(false);
-          const [jumpB, setJumpB]           = useState(false);
-          const [resetConfirm, setResetConfirm] = useState(false);
-          const [customInput, setCustomInput]   = useState("");
-
+          const [customInput, setCustomInput] = useState("");
           const todayQuest = getTodayQuest();
 
           useEffect(() => { saveState(state); }, [state]);
 
-          const shakeUser = (u) => {
-            if (u === "userA") { setShakeA(true); setTimeout(() => setShakeA(false), 600); }
-            else               { setShakeB(true); setTimeout(() => setShakeB(false), 600); }
-          };
-          const jumpUser = (u) => {
-            if (u === "userA") { setJumpA(true); setTimeout(() => setJumpA(false), 450); }
-            else               { setJumpB(true); setTimeout(() => setJumpB(false), 450); }
-          };
-
-          const mkEntry = (uk, action, delta, icon) => ({
-            user: USERS[uk].name, action, delta, icon, ts: Date.now() + Math.random(),
-          });
-
-          const updateUser = (uk, fn) => setState(prev => ({ ...prev, [uk]: fn(prev[uk]) }));
-          const pushLog = (log, e) => [e, ...log].slice(0, 20);
-
-          const toggleHabit = (habitId) => {
-            const h = HABITS.find(h => h.id === habitId);
-            updateUser(activeUser, (u) => {
-              const was      = !!u.checkedHabits[habitId];
-              const delta    = was ? -h.points : h.points;
-              const newHab   = { ...u.checkedHabits, [habitId]: !was };
-              const wasAll   = HABITS.every(h => u.checkedHabits[h.id]);
-              const isAll    = HABITS.every(h => newHab[h.id]);
-              const bonus    = isAll && !wasAll ? 10 : wasAll && !isAll ? -10 : 0;
-              const total    = delta + bonus;
-              if (total < 0) shakeUser(activeUser); else jumpUser(activeUser);
-              let log = pushLog(u.log, mkEntry(activeUser, was ? `odškrtla ${h.label}` : `splnila ${h.label}`, delta, h.icon));
-              if (bonus > 0) log = pushLog(log, mkEntry(activeUser, "Perfektní den! 🎉", 10, "⭐"));
-              return { ...u, points: clamp(u.points + total), weeklyPoints: clamp(u.weeklyPoints + total), checkedHabits: newHab, log };
+          const updateUser = (uk, delta, action, icon, extra = {}) => {
+            setState(prev => {
+              const u = prev[uk];
+              const newWeekly = Math.max(0, u.weeklyPoints + delta);
+              const newEntry = { user: USERS[uk].name, action, delta, icon, ts: Date.now() };
+              return { ...prev, [uk]: { ...u, ...extra, 
+                points: Math.max(0, u.points + delta), 
+                weeklyPoints: newWeekly,
+                log: [newEntry, ...u.log].slice(0, 10)
+              }};
             });
           };
 
-          const applyPenalty = (p) => {
-            shakeUser(activeUser);
-            updateUser(activeUser, (u) => ({
-              ...u, points: clamp(u.points + p.points), weeklyPoints: clamp(u.weeklyPoints + p.points),
-              log: pushLog(u.log, mkEntry(activeUser, p.label, p.points, p.icon)),
-            }));
+          const handleHabit = (id) => {
+            const h = HABITS.find(x => x.id === id);
+            const isChecked = !!state[activeUser].checkedHabits[id];
+            const delta = isChecked ? -h.points : h.points;
+            const newChecked = { ...state[activeUser].checkedHabits, [id]: !isChecked };
+            updateUser(activeUser, delta, isChecked ? "zrušila úkol" : "splnila úkol", h.icon, { checkedHabits: newChecked });
           };
 
-          const completeQuest = () => {
-            if (state[activeUser].questDone) return;
-            jumpUser(activeUser);
-            updateUser(activeUser, (u) => ({
-              ...u, points: clamp(u.points + 15), weeklyPoints: clamp(u.weeklyPoints + 15),
-              questDone: true,
-              log: pushLog(u.log, mkEntry(activeUser, `Speciální úkol: ${todayQuest.label}`, 15, todayQuest.icon)),
-            }));
-          };
-
-          const addCustomActivity = () => {
-            const text = customInput.trim();
-            if (!text) return;
-            jumpUser(activeUser);
-            const entry    = mkEntry(activeUser, text, 10, "🏋️");
-            const activity = { name: text, user: USERS[activeUser].name, ts: entry.ts };
-            updateUser(activeUser, (u) => ({
-              ...u, points: clamp(u.points + 10), weeklyPoints: clamp(u.weeklyPoints + 10),
-              log: pushLog(u.log, entry),
-              customActivities: [activity, ...u.customActivities].slice(0, 20),
-            }));
+          const handleCustom = () => {
+            if (!customInput.trim()) return;
+            updateUser(activeUser, 10, customInput, "🏋️", { 
+                customActivities: [{name: customInput, ts: Date.now()}, ...state[activeUser].customActivities] 
+            });
             setCustomInput("");
           };
 
-          const weeklyReset = () => {
-            setState({ userA: initialUser(), userB: initialUser() });
-            setResetConfirm(false);
-          };
-
-          const cur      = state[activeUser];
-          const posA     = Math.min(100, Math.max(0, (state.userA.weeklyPoints / 200) * 100));
-          const posB     = Math.min(100, Math.max(0, (state.userB.weeklyPoints / 200) * 100));
-          const allDone  = HABITS.every(h => cur.checkedHabits[h.id]);
-          const activeU  = USERS[activeUser];
-          const combinedLog = [...state.userA.log, ...state.userB.log].sort((a, b) => b.ts - a.ts).slice(0, 5);
-          const allCustom = [...state.userA.customActivities, ...state.userB.customActivities].sort((a, b) => b.ts - a.ts).slice(0, 8);
+          const posA = (state.userA.weeklyPoints / 200) * 100;
+          const posB = (state.userB.weeklyPoints / 200) * 100;
 
           return (
-            <div style={{
-              minHeight: "100vh",
-              background: "linear-gradient(160deg,#09091a 0%,#0e1526 45%,#09091a 100%)",
-              fontFamily: "'SF Pro Text',-apple-system,BlinkMacSystemFont,sans-serif",
-              maxWidth: 430, margin: "0 auto", paddingBottom: 52, color: "#fff"
-            }}>
-              <div style={{ padding: "50px 20px 14px", position: "sticky", top: 0, zIndex: 20, background: "rgba(9,9,26,0.9)", backdropFilter: "blur(26px)" }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-                  <div>
-                    <div style={{ color:"rgba(255,255,255,0.32)", fontSize:10, letterSpacing:2.2, textTransform:"uppercase", fontWeight:700 }}>Health Duel ⚔️</div>
-                    <div style={{ color:"#fff", fontSize:20, fontWeight:900, letterSpacing:-0.5 }}>{USERS.userA.emoji} Lůca vs Kája {USERS.userB.emoji}</div>
-                  </div>
-                  <button onClick={() => setResetConfirm(true)} style={{ border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.42)", borderRadius:11, padding:"6px 12px", fontSize:11, cursor:"pointer" }}>🔄 Reset</button>
-                </div>
-                <div style={{ display:"flex", gap:8, background:"rgba(255,255,255,0.05)", borderRadius:14, padding:4 }}>
-                  {Object.values(USERS).map(u => (
-                    <button key={u.key} onClick={() => setActiveUser(u.key)} style={{ flex:1, borderRadius:10, padding:"10px 0", border:"none", cursor:"pointer", fontSize:13, fontWeight:800, background: activeUser === u.key ? `rgba(255,255,255,0.15)` : "transparent", color: activeUser === u.key ? "#fff" : "rgba(255,255,255,0.35)" }}>{u.emoji} {u.name}</button>
-                  ))}
+            <div className="max-w-md mx-auto p-4 pb-20">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-6 pt-8">
+                <h1 className="text-xl font-black tracking-tighter uppercase">Health Duel ⚔️</h1>
+                <button onClick={() => {localStorage.clear(); location.reload();}} className="text-[10px] opacity-30 uppercase font-bold">Hard Reset</button>
+              </div>
+
+              {/* Přepínač */}
+              <div className="grid grid-cols-2 gap-2 mb-6 p-1 bg-white/5 rounded-2xl">
+                {Object.values(USERS).map(u => (
+                  <button 
+                    key={u.key}
+                    onClick={() => setActiveUser(u.key)}
+                    className={`py-3 rounded-xl font-bold transition-all ${activeUser === u.key ? 'bg-white/20 shadow-xl' : 'opacity-40'}`}
+                  >
+                    {u.emoji} {u.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Trať */}
+              <div className="glass rounded-3xl p-6 mb-6 overflow-hidden relative">
+                <div className="text-[10px] font-bold opacity-30 mb-4 tracking-widest uppercase text-center">Týdenní progres (Cíl 200b)</div>
+                <div className="h-24 relative bg-black/20 rounded-xl p-2 border border-white/5">
+                    {/* Dráha Lůca */}
+                    <div className="h-1/2 border-b border-white/5 relative">
+                        <motion.div animate={{ left: `${Math.min(posA, 90)}%` }} className="absolute -top-1 text-2xl drop-shadow-[0_0_8px_#EC4899]">👱‍♀️</motion.div>
+                    </div>
+                    {/* Dráha Kája */}
+                    <div className="h-1/2 relative">
+                        <motion.div animate={{ left: `${Math.min(posB, 90)}%` }} className="absolute top-1 text-2xl drop-shadow-[0_0_8px_#F97316]">👩🏽</motion.div>
+                    </div>
+                    {/* Cíl */}
+                    <div className="absolute right-2 top-0 bottom-0 w-1 bg-yellow-400/50 shadow-[0_0_15px_yellow]"></div>
                 </div>
               </div>
-              <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", gap:16 }}>
-                <div style={{ display:"flex", gap:10 }}>
-                  <ScoreCard userKey="userA" points={state.userA.points} weeklyPoints={state.userA.weeklyPoints} />
-                  <ScoreCard userKey="userB" points={state.userB.points} weeklyPoints={state.userB.weeklyPoints} />
+
+              {/* Body */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="glass p-4 rounded-2xl text-center">
+                    <div className="text-xs opacity-50 uppercase font-bold">Lůca</div>
+                    <div className="text-3xl font-black text-pink-500">{state.userA.weeklyPoints}</div>
                 </div>
-                <div style={{ background:"rgba(255,255,255,0.04)", borderRadius:22, padding:"14px 14px 10px", border:"1px solid rgba(255,255,255,0.08)" }}>
-                  <Track posA={posA} posB={posB} shakeA={shakeA} shakeB={shakeB} jumpA={jumpA} jumpB={jumpB} />
-                </div>
-                <div style={{ background:"rgba(255,255,255,0.04)", borderRadius:22, padding:16, border:"1px solid rgba(255,255,255,0.08)" }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
-                    <div style={{ fontWeight:800 }}>📋 Denní cíle</div>
-                    {allDone && <div style={{ color: "#34D399" }}>⭐ +10 BONUS</div>}
-                  </div>
-                  {HABITS.map(h => <HabitRow key={h.id} habit={h} checked={!!cur.checkedHabits[h.id]} onToggle={toggleHabit} />)}
-                </div>
-                <div style={{ background:"rgba(139,92,246,0.1)", borderRadius:22, padding:16, border:"1px solid rgba(139,92,246,0.2)" }}>
-                   <div style={{ fontSize:10, color:"rgba(255,255,255,0.5)", marginBottom:5 }}>ÚKOL DNE</div>
-                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span>{todayQuest.icon} {todayQuest.label}</span>
-                    <button onClick={completeQuest} disabled={cur.questDone} style={{ background:"#8B5CF6", color:"#fff", border:"none", padding:"8px 12px", borderRadius:10 }}>{cur.questDone ? "Hotovo" : "Splnit +15"}</button>
-                   </div>
-                </div>
-                <div style={{ background:"rgba(52,211,153,0.1)", borderRadius:22, padding:16, border:"1px solid rgba(52,211,153,0.2)" }}>
-                  <div style={{ display:"flex", gap:10 }}>
-                    <input value={customInput} onChange={e => setCustomInput(e.target.value)} placeholder="Vlastní aktivita..." style={{ flex:1, background:"rgba(255,255,255,0.05)", border:"1px solid #333", color:"#fff", padding:10, borderRadius:10 }} />
-                    <button onClick={addCustomActivity} style={{ background:"#34D399", border:"none", padding:"0 15px", borderRadius:10, color:"#fff" }}>+10</button>
-                  </div>
-                </div>
-                <div style={{ display:"flex", gap:8 }}>
-                  {PENALTIES.map(p => <PenaltyBtn key={p.id} penalty={p} onPress={applyPenalty} />)}
-                </div>
-                <div style={{ background:"rgba(255,255,255,0.04)", borderRadius:22, padding:16 }}>
-                  <div style={{ fontWeight:800, marginBottom:10 }}>📜 Historie</div>
-                  {combinedLog.map((e, i) => <LogItem key={e.ts} entry={e} index={i} />)}
+                <div className="glass p-4 rounded-2xl text-center">
+                    <div className="text-xs opacity-50 uppercase font-bold">Kája</div>
+                    <div className="text-3xl font-black text-orange-500">{state.userB.weeklyPoints}</div>
                 </div>
               </div>
-              {resetConfirm && (
-                <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100 }}>
-                  <div style={{ background:"#1a1a2e", padding:30, borderRadius:20, textAlign:"center" }}>
-                    <p>Opravdu smazat vše?</p>
-                    <button onClick={weeklyReset} style={{ background:"#F87171", border:"none", padding:"10px 20px", borderRadius:10, color:"#fff", marginRight:10 }}>Ano, reset</button>
-                    <button onClick={() => setResetConfirm(false)} style={{ background:"#333", border:"none", padding:"10px 20px", borderRadius:10, color:"#fff" }}>Zrušit</button>
-                  </div>
+
+              {/* Denní úkoly */}
+              <div className="glass rounded-3xl p-5 mb-6">
+                <h2 className="font-bold mb-4 flex items-center gap-2">📋 Denní cíle</h2>
+                {HABITS.map(h => (
+                    <div key={h.id} onClick={() => handleHabit(h.id)} className={`flex items-center gap-4 p-3 mb-2 rounded-xl border transition-all ${state[activeUser].checkedHabits[h.id] ? 'bg-green-500/20 border-green-500/50 opacity-50' : 'bg-white/5 border-white/10'}`}>
+                        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${state[activeUser].checkedHabits[h.id] ? 'bg-green-500 border-none' : 'border-white/20'}`}>
+                            {state[activeUser].checkedHabits[h.id] && "✓"}
+                        </div>
+                        <span className="text-xl">{h.icon}</span>
+                        <span className="flex-1 font-medium">{h.label}</span>
+                        <span className="font-bold text-green-400">+{h.points}</span>
+                    </div>
+                ))}
+              </div>
+
+              {/* Speciální úkol dne */}
+              <div className="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-5 mb-6 flex items-center justify-between">
+                <div>
+                    <div className="text-[10px] font-bold opacity-50 uppercase">Úkol dne +15b</div>
+                    <div className="font-bold">{todayQuest.icon} {todayQuest.label}</div>
                 </div>
-              )}
+                <button 
+                    disabled={state[activeUser].questDone}
+                    onClick={() => updateUser(activeUser, 15, "Splnila úkol dne", todayQuest.icon, { questDone: true })}
+                    className={`px-4 py-2 rounded-xl font-bold ${state[activeUser].questDone ? 'bg-white/5 opacity-30' : 'bg-indigo-500'}`}
+                >
+                    {state[activeUser].questDone ? "Hotovo" : "Splnit"}
+                </button>
+              </div>
+
+              {/* Vlastní aktivita */}
+              <div className="glass rounded-3xl p-5 mb-6">
+                <h2 className="font-bold mb-4 uppercase text-[10px] opacity-50 tracking-widest">🏋️ Vlastní aktivita (+10b)</h2>
+                <div className="flex gap-2">
+                    <input 
+                        value={customInput}
+                        onChange={(e) => setCustomInput(e.target.value)}
+                        placeholder="Běh, Fitko, Jóga..."
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-white/30"
+                    />
+                    <button onClick={handleCustom} className="bg-white text-black font-bold px-4 rounded-xl">Přidat</button>
+                </div>
+              </div>
+
+              {/* Tresty */}
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                {PENALTIES.map(p => (
+                    <button key={p.id} onClick={() => updateUser(activeUser, p.points, p.label, p.icon)} className="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl flex flex-col items-center">
+                        <span className="text-2xl mb-1">{p.icon}</span>
+                        <span className="text-[10px] font-bold text-red-400">{p.points} b</span>
+                    </button>
+                ))}
+              </div>
+
+              {/* Log */}
+              <div className="opacity-40 text-[10px] font-bold uppercase tracking-widest mb-4">Poslední akce</div>
+              <div className="space-y-2">
+                {[...state.userA.log, ...state.userB.log].sort((a,b) => b.ts - a.ts).slice(0, 5).map((log, i) => (
+                    <div key={i} className="flex justify-between text-xs border-b border-white/5 pb-2">
+                        <span>{log.icon} <b>{log.user}</b> {log.action}</span>
+                        <span className={log.delta > 0 ? 'text-green-400' : 'text-red-400'}>{log.delta > 0 ? '+' : ''}{log.delta}b</span>
+                    </div>
+                ))}
+              </div>
             </div>
           );
         }
