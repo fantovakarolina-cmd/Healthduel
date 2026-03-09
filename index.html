@@ -18,7 +18,7 @@
         <div class="flex justify-between items-center mb-4 pt-6 text-sm">
             <h1 class="font-black italic text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 uppercase tracking-tighter text-lg">Health Duel ⚔️</h1>
             <div class="flex gap-2">
-                <button onclick="syncData(true)" class="bg-blue-600/40 text-blue-200 px-3 py-1 rounded-lg font-bold text-[10px] border border-blue-500/30">🔄 SYNC</button>
+                <button id="sync-btn" onclick="syncData(true)" class="bg-blue-600/40 text-blue-200 px-3 py-1 rounded-lg font-bold text-[10px] border border-blue-500/30 transition-all">🔄 SYNC</button>
                 <button onclick="totalReset()" class="bg-gray-800 text-gray-400 px-2 py-1 rounded-lg font-bold text-[10px]">RESET</button>
             </div>
         </div>
@@ -39,7 +39,7 @@
 
         <div class="glass rounded-3xl p-6 mb-6 overflow-hidden relative border-white/5">
             <div class="absolute top-2 right-4 text-[9px] font-bold opacity-20 uppercase tracking-widest text-blue-400">Cíl: 300 bodů</div>
-            <div class="h-24 relative bg-black/30 rounded-xl p-2 border border-white/5">
+            <div class="h-24 relative bg-black/30 rounded-xl p-2 border border-white/5 shadow-inner">
                 <div class="h-1/2 border-b border-white/5 relative">
                     <div id="avatar-userA" class="avatar -top-1 text-2xl" style="left: 0%">👱‍♀️</div>
                 </div>
@@ -63,9 +63,9 @@
 
         <div id="habit-list" class="space-y-2 mb-6"></div>
 
-        <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-5 mb-6 flex items-center justify-between">
+        <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-5 mb-6 flex items-center justify-between shadow-lg">
             <div class="text-xs">
-                <div class="opacity-50 font-bold uppercase text-[9px]">Dnešní výzva +15b</div>
+                <div class="opacity-50 font-bold uppercase text-[9px] tracking-widest">Dnešní výzva +15b</div>
                 <div id="today-quest" class="font-bold text-white uppercase italic tracking-tight">---</div>
             </div>
             <button id="quest-btn" onclick="completeQuest()" class="bg-indigo-500 px-4 py-2 rounded-xl font-bold text-xs shadow-lg active:scale-95 transition-transform">SPLNIT</button>
@@ -73,8 +73,8 @@
 
         <div class="glass rounded-3xl p-5 mb-6">
             <div class="flex gap-2">
-                <input id="custom-input" type="text" placeholder="Aktivita..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none">
-                <button onclick="addCustom()" class="bg-green-500 px-4 rounded-xl font-bold text-xs">PŘIDAT</button>
+                <input id="custom-input" type="text" placeholder="Fitko, běh, jiná aktivita..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none">
+                <button onclick="addCustom()" class="bg-green-500 px-4 rounded-xl font-bold text-xs shadow-lg shadow-green-500/20">PŘIDAT</button>
             </div>
         </div>
 
@@ -122,37 +122,57 @@
         ];
         
         let currentUser = localStorage.getItem('activeUser') || "userA";
+        
+        // Přidáno lastUpdated: 0 pro kontrolu času
         let state = { 
             userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] }, 
             userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-            lastWinner: null 
+            lastWinner: null,
+            lastUpdated: 0 
         };
+        
+        let isSaving = false;
 
-        async function syncData(force = false) {
+        async function syncData(manual = false) {
+            if (isSaving) return; 
+            
+            const btn = document.getElementById('sync-btn');
+            if (manual && btn) btn.innerText = "⏳...";
+
             try {
-                // Přidání časové značky zabrání načítání starých dat z mezipaměti
-                const url = force ? `${API_URL}?t=${Date.now()}` : API_URL;
-                const res = await fetch(url);
+                const res = await fetch(`${API_URL}?t=${Date.now()}`);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.userA && data.userB) {
-                        state = data;
-                        render();
+                    if (data && data.userA) {
+                        // OCHRANA PROTI SMAZÁNÍ: Zkontroluje, zda data ze serveru nejsou starší než ta v mobilu
+                        const serverTime = data.lastUpdated || 0;
+                        const localTime = state.lastUpdated || 0;
+                        
+                        // Pokud stahujeme manuálně (tlačítkem) nebo jsou data ze serveru novější
+                        if (serverTime >= localTime) {
+                            state = data;
+                            render();
+                        }
                     }
                 }
             } catch (e) { console.error("Sync error"); }
+
+            if (manual && btn) btn.innerText = "🔄 SYNC";
         }
 
         async function save() {
+            // Při každém uložení se zaznamená přesný čas úpravy
+            state.lastUpdated = Date.now();
             render();
+            isSaving = true;
             try {
-                // Používáme PUT pro spolehlivější zápis na npoint
                 await fetch(API_URL, {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(state)
                 });
             } catch (e) { console.error("Save error"); }
+            isSaving = false;
         }
 
         function render() {
@@ -236,7 +256,8 @@
                 state = {
                     userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
                     userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-                    lastWinner: winner
+                    lastWinner: winner,
+                    lastUpdated: Date.now()
                 };
                 save();
             }
@@ -247,7 +268,8 @@
                 state = {
                     userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
                     userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-                    lastWinner: null
+                    lastWinner: null,
+                    lastUpdated: Date.now()
                 };
                 save();
             }
@@ -255,8 +277,8 @@
 
         // První načtení
         syncData();
-        // Automatická synchronizace každých 15 sekund
-        setInterval(() => syncData(false), 15000);
+        // Automatická synchronizace každých 30 sekund (namísto 15, kvůli stabilitě)
+        setInterval(() => syncData(false), 30000);
     </script>
 </body>
 </html>
