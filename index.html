@@ -4,234 +4,209 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Zdravý Souboj: Lůca vs Kája</title>
-    
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
-        body { 
-            margin: 0; 
-            padding: 0; 
-            background-color: #09091a; 
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-        input::placeholder { color: rgba(255,255,255,0.3); }
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        body { background-color: #09091a; color: white; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .avatar { transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body className="antialiased">
+    <div id="app" class="max-w-md mx-auto p-4 pb-20">
+        <div class="flex justify-between items-center mb-6 pt-8">
+            <h1 class="text-xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400">Health Duel ⚔️</h1>
+            <button onclick="resetGame()" class="text-[10px] opacity-30 uppercase font-bold">Hard Reset</button>
+        </div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        const { motion, AnimatePresence, animate } = FramerMotion;
+        <div class="grid grid-cols-2 gap-2 mb-6 p-1 bg-white/5 rounded-2xl">
+            <button id="btn-userA" onclick="switchUser('userA')" class="py-3 rounded-xl font-bold transition-all bg-white/20">👱‍♀️ Lůca</button>
+            <button id="btn-userB" onclick="switchUser('userB')" class="py-3 rounded-xl font-bold transition-all opacity-40">👩🏽 Kája</button>
+        </div>
 
+        <div class="glass rounded-3xl p-6 mb-6 overflow-hidden">
+            <div class="text-[10px] font-bold opacity-30 mb-4 tracking-widest uppercase text-center italic">Závod o 200 bodů</div>
+            <div class="h-24 relative bg-black/30 rounded-xl p-2 border border-white/5 shadow-inner">
+                <div class="h-1/2 border-b border-white/5 relative">
+                    <div id="avatar-userA" class="avatar absolute -top-1 text-2xl" style="left: 0%">👱‍♀️</div>
+                </div>
+                <div class="h-1/2 relative">
+                    <div id="avatar-userB" class="avatar absolute top-1 text-2xl" style="left: 0%">👩🏽</div>
+                </div>
+                <div class="absolute right-0 top-0 bottom-0 w-1 bg-yellow-400 shadow-[0_0_15px_yellow]"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6 font-black">
+            <div class="glass p-4 rounded-2xl text-center border-pink-500/30">
+                <div class="text-[10px] opacity-50 uppercase tracking-tighter">Lůca</div>
+                <div id="score-userA" class="text-3xl text-pink-500">0</div>
+            </div>
+            <div class="glass p-4 rounded-2xl text-center border-orange-500/30">
+                <div class="text-[10px] opacity-50 uppercase tracking-tighter">Kája</div>
+                <div id="score-userB" class="text-3xl text-orange-500">0</div>
+            </div>
+        </div>
+
+        <div class="glass rounded-3xl p-5 mb-6">
+            <h2 class="font-bold mb-4 flex items-center gap-2">📋 Denní cíle</h2>
+            <div id="habit-list" class="space-y-2">
+                </div>
+        </div>
+
+        <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-5 mb-6 flex items-center justify-between shadow-lg shadow-indigo-500/10">
+            <div>
+                <div class="text-[10px] font-bold opacity-50 uppercase italic text-indigo-300">Dnešní výzva +15b</div>
+                <div id="today-quest" class="font-bold text-white uppercase tracking-tight">---</div>
+            </div>
+            <button id="quest-btn" onclick="completeQuest()" class="bg-indigo-500 px-4 py-2 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">Splnit</button>
+        </div>
+
+        <div class="glass rounded-3xl p-5 mb-6">
+            <h2 class="font-bold mb-4 uppercase text-[10px] opacity-50 tracking-widest italic">🏋️ Vlastní aktivita (+10b)</h2>
+            <div class="flex gap-2 text-sm">
+                <input id="custom-input" type="text" placeholder="Běh, Fitko, Jóga..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-white/30 text-white">
+                <button onclick="addCustom()" class="bg-white text-black font-black px-4 rounded-xl active:scale-95 transition-transform">PŘIDAT</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 mb-6">
+            <button onclick="addPenalty('Alkohol', -10, '🍷')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl flex flex-col items-center active:scale-90 transition-transform">
+                <span class="text-2xl mb-1">🍷</span><span class="text-[9px] font-bold text-red-400">ALKOHOL</span><span class="text-[10px] font-black">-10</span>
+            </button>
+            <button onclick="addPenalty('Po 8:00', -5, '😴')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl flex flex-col items-center active:scale-90 transition-transform">
+                <span class="text-2xl mb-1">😴</span><span class="text-[9px] font-bold text-red-400">SPÁNEK</span><span class="text-[10px] font-black">-5</span>
+            </button>
+            <button onclick="addPenalty('Cukr', -5, '🍩')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl flex flex-col items-center active:scale-90 transition-transform">
+                <span class="text-2xl mb-1">🍩</span><span class="text-[9px] font-bold text-red-400">CUKR</span><span class="text-[10px] font-black">-5</span>
+            </button>
+        </div>
+
+        <div class="opacity-30 text-[10px] font-bold uppercase tracking-widest mb-3 italic">Historie akcí</div>
+        <div id="log" class="space-y-2 text-[11px]">
+            </div>
+    </div>
+
+    <script>
         const USERS = {
-          userA: { key: "userA", name: "Lůca",  emoji: "👱‍♀️", color: "#EC4899", grad: ["#5f1a3e", "#2a0d24"], glow: "#EC489988" },
-          userB: { key: "userB", name: "Kája",  emoji: "👩🏽",  color: "#F97316", grad: ["#5f2e1e", "#401720"], glow: "#F9731688" },
+            userA: { name: "Lůca", color: "#EC4899" },
+            userB: { name: "Kája", color: "#F97316" }
         };
 
         const HABITS = [
-          { id: "water",   label: "2L vody",        points: 2, icon: "💧" },
-          { id: "sleep",   label: "8h spánek",      points: 2, icon: "🌙" },
-          { id: "nosugar", label: "Bez cukru",       points: 3, icon: "🚫" },
-          { id: "steps",   label: "10 000 kroků",   points: 3, icon: "👟" },
-          { id: "veggies", label: "Zelenina",        points: 2, icon: "🥦" },
+            { id: "water",   label: "2L vody", points: 2, icon: "💧" },
+            { id: "sleep",   label: "8h spánek", points: 2, icon: "🌙" },
+            { id: "nosugar", label: "Bez cukru", points: 3, icon: "🚫" },
+            { id: "steps",   label: "10 000 kroků", points: 3, icon: "👟" },
+            { id: "veggies", label: "Zelenina", points: 2, icon: "🥦" }
         ];
 
-        const PENALTIES = [
-          { id: "alcohol",   label: "Alkohol",          points: -10, icon: "🍷" },
-          { id: "latesleep", label: "Vstávání po 8:00", points: -5,  icon: "😴" },
-          { id: "sweets",    label: "Sladkosti",         points: -5,  icon: "🍩" },
-        ];
+        const SIDE_QUESTS = ["30 kliků 💪", "Studená sprcha 🚿", "1h bez telefonu 📵", "Číst 10 stránek 📚", "Chůze 5 km 🚶"];
 
-        const SIDE_QUESTS = [
-          { id: "pushups",    label: "30 kliků",            icon: "💪" },
-          { id: "coldshower", label: "Studená sprcha",       icon: "🚿" },
-          { id: "nophone",    label: "1h bez telefonu",      icon: "📵" },
-          { id: "reading",    label: "Přečíst 10 stránek",   icon: "📚" },
-          { id: "walk5k",     label: "Procházka 5 km",       icon: "🚶" },
-        ];
-
-        const getTodayQuest = () => SIDE_QUESTS[new Date().getDay() % SIDE_QUESTS.length];
-        const loadState = () => {
-          try { const r = localStorage.getItem("healthduel_v4"); if (r) return JSON.parse(r); } catch {}
-          return { userA: { points: 0, weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [], customActivities: [] }, 
-                   userB: { points: 0, weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [], customActivities: [] } };
+        let currentUser = "userA";
+        let state = JSON.parse(localStorage.getItem('duel_v5')) || {
+            userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
+            userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] }
         };
-        const saveState = (s) => localStorage.setItem("healthduel_v4", JSON.stringify(s));
 
-        // --- KOMPONENTY ---
-
-        function HealthDuel() {
-          const [state, setState] = useState(loadState);
-          const [activeUser, setActiveUser] = useState("userA");
-          const [customInput, setCustomInput] = useState("");
-          const todayQuest = getTodayQuest();
-
-          useEffect(() => { saveState(state); }, [state]);
-
-          const updateUser = (uk, delta, action, icon, extra = {}) => {
-            setState(prev => {
-              const u = prev[uk];
-              const newWeekly = Math.max(0, u.weeklyPoints + delta);
-              const newEntry = { user: USERS[uk].name, action, delta, icon, ts: Date.now() };
-              return { ...prev, [uk]: { ...u, ...extra, 
-                points: Math.max(0, u.points + delta), 
-                weeklyPoints: newWeekly,
-                log: [newEntry, ...u.log].slice(0, 10)
-              }};
-            });
-          };
-
-          const handleHabit = (id) => {
-            const h = HABITS.find(x => x.id === id);
-            const isChecked = !!state[activeUser].checkedHabits[id];
-            const delta = isChecked ? -h.points : h.points;
-            const newChecked = { ...state[activeUser].checkedHabits, [id]: !isChecked };
-            updateUser(activeUser, delta, isChecked ? "zrušila úkol" : "splnila úkol", h.icon, { checkedHabits: newChecked });
-          };
-
-          const handleCustom = () => {
-            if (!customInput.trim()) return;
-            updateUser(activeUser, 10, customInput, "🏋️", { 
-                customActivities: [{name: customInput, ts: Date.now()}, ...state[activeUser].customActivities] 
-            });
-            setCustomInput("");
-          };
-
-          const posA = (state.userA.weeklyPoints / 200) * 100;
-          const posB = (state.userB.weeklyPoints / 200) * 100;
-
-          return (
-            <div className="max-w-md mx-auto p-4 pb-20">
-              {/* Header */}
-              <div className="flex justify-between items-center mb-6 pt-8">
-                <h1 className="text-xl font-black tracking-tighter uppercase">Health Duel ⚔️</h1>
-                <button onClick={() => {localStorage.clear(); location.reload();}} className="text-[10px] opacity-30 uppercase font-bold">Hard Reset</button>
-              </div>
-
-              {/* Přepínač */}
-              <div className="grid grid-cols-2 gap-2 mb-6 p-1 bg-white/5 rounded-2xl">
-                {Object.values(USERS).map(u => (
-                  <button 
-                    key={u.key}
-                    onClick={() => setActiveUser(u.key)}
-                    className={`py-3 rounded-xl font-bold transition-all ${activeUser === u.key ? 'bg-white/20 shadow-xl' : 'opacity-40'}`}
-                  >
-                    {u.emoji} {u.name}
-                  </button>
-                ))}
-              </div>
-
-              {/* Trať */}
-              <div className="glass rounded-3xl p-6 mb-6 overflow-hidden relative">
-                <div className="text-[10px] font-bold opacity-30 mb-4 tracking-widest uppercase text-center">Týdenní progres (Cíl 200b)</div>
-                <div className="h-24 relative bg-black/20 rounded-xl p-2 border border-white/5">
-                    {/* Dráha Lůca */}
-                    <div className="h-1/2 border-b border-white/5 relative">
-                        <motion.div animate={{ left: `${Math.min(posA, 90)}%` }} className="absolute -top-1 text-2xl drop-shadow-[0_0_8px_#EC4899]">👱‍♀️</motion.div>
-                    </div>
-                    {/* Dráha Kája */}
-                    <div className="h-1/2 relative">
-                        <motion.div animate={{ left: `${Math.min(posB, 90)}%` }} className="absolute top-1 text-2xl drop-shadow-[0_0_8px_#F97316]">👩🏽</motion.div>
-                    </div>
-                    {/* Cíl */}
-                    <div className="absolute right-2 top-0 bottom-0 w-1 bg-yellow-400/50 shadow-[0_0_15px_yellow]"></div>
-                </div>
-              </div>
-
-              {/* Body */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="glass p-4 rounded-2xl text-center">
-                    <div className="text-xs opacity-50 uppercase font-bold">Lůca</div>
-                    <div className="text-3xl font-black text-pink-500">{state.userA.weeklyPoints}</div>
-                </div>
-                <div className="glass p-4 rounded-2xl text-center">
-                    <div className="text-xs opacity-50 uppercase font-bold">Kája</div>
-                    <div className="text-3xl font-black text-orange-500">{state.userB.weeklyPoints}</div>
-                </div>
-              </div>
-
-              {/* Denní úkoly */}
-              <div className="glass rounded-3xl p-5 mb-6">
-                <h2 className="font-bold mb-4 flex items-center gap-2">📋 Denní cíle</h2>
-                {HABITS.map(h => (
-                    <div key={h.id} onClick={() => handleHabit(h.id)} className={`flex items-center gap-4 p-3 mb-2 rounded-xl border transition-all ${state[activeUser].checkedHabits[h.id] ? 'bg-green-500/20 border-green-500/50 opacity-50' : 'bg-white/5 border-white/10'}`}>
-                        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${state[activeUser].checkedHabits[h.id] ? 'bg-green-500 border-none' : 'border-white/20'}`}>
-                            {state[activeUser].checkedHabits[h.id] && "✓"}
-                        </div>
-                        <span className="text-xl">{h.icon}</span>
-                        <span className="flex-1 font-medium">{h.label}</span>
-                        <span className="font-bold text-green-400">+{h.points}</span>
-                    </div>
-                ))}
-              </div>
-
-              {/* Speciální úkol dne */}
-              <div className="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-5 mb-6 flex items-center justify-between">
-                <div>
-                    <div className="text-[10px] font-bold opacity-50 uppercase">Úkol dne +15b</div>
-                    <div className="font-bold">{todayQuest.icon} {todayQuest.label}</div>
-                </div>
-                <button 
-                    disabled={state[activeUser].questDone}
-                    onClick={() => updateUser(activeUser, 15, "Splnila úkol dne", todayQuest.icon, { questDone: true })}
-                    className={`px-4 py-2 rounded-xl font-bold ${state[activeUser].questDone ? 'bg-white/5 opacity-30' : 'bg-indigo-500'}`}
-                >
-                    {state[activeUser].questDone ? "Hotovo" : "Splnit"}
-                </button>
-              </div>
-
-              {/* Vlastní aktivita */}
-              <div className="glass rounded-3xl p-5 mb-6">
-                <h2 className="font-bold mb-4 uppercase text-[10px] opacity-50 tracking-widest">🏋️ Vlastní aktivita (+10b)</h2>
-                <div className="flex gap-2">
-                    <input 
-                        value={customInput}
-                        onChange={(e) => setCustomInput(e.target.value)}
-                        placeholder="Běh, Fitko, Jóga..."
-                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-white/30"
-                    />
-                    <button onClick={handleCustom} className="bg-white text-black font-bold px-4 rounded-xl">Přidat</button>
-                </div>
-              </div>
-
-              {/* Tresty */}
-              <div className="grid grid-cols-3 gap-2 mb-6">
-                {PENALTIES.map(p => (
-                    <button key={p.id} onClick={() => updateUser(activeUser, p.points, p.label, p.icon)} className="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl flex flex-col items-center">
-                        <span className="text-2xl mb-1">{p.icon}</span>
-                        <span className="text-[10px] font-bold text-red-400">{p.points} b</span>
-                    </button>
-                ))}
-              </div>
-
-              {/* Log */}
-              <div className="opacity-40 text-[10px] font-bold uppercase tracking-widest mb-4">Poslední akce</div>
-              <div className="space-y-2">
-                {[...state.userA.log, ...state.userB.log].sort((a,b) => b.ts - a.ts).slice(0, 5).map((log, i) => (
-                    <div key={i} className="flex justify-between text-xs border-b border-white/5 pb-2">
-                        <span>{log.icon} <b>{log.user}</b> {log.action}</span>
-                        <span className={log.delta > 0 ? 'text-green-400' : 'text-red-400'}>{log.delta > 0 ? '+' : ''}{log.delta}b</span>
-                    </div>
-                ))}
-              </div>
-            </div>
-          );
+        function save() {
+            localStorage.setItem('duel_v5', JSON.stringify(state));
+            render();
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<HealthDuel />);
+        function switchUser(id) {
+            currentUser = id;
+            document.getElementById('btn-userA').classList.toggle('opacity-40', id !== 'userA');
+            document.getElementById('btn-userA').classList.toggle('bg-white/20', id === 'userA');
+            document.getElementById('btn-userB').classList.toggle('opacity-40', id !== 'userB');
+            document.getElementById('btn-userB').classList.toggle('bg-white/20', id === 'userB');
+            render();
+        }
+
+        function render() {
+            // Skóre a Trať
+            document.getElementById('score-userA').innerText = state.userA.weeklyPoints;
+            document.getElementById('score-userB').innerText = state.userB.weeklyPoints;
+            document.getElementById('avatar-userA').style.left = Math.min((state.userA.weeklyPoints / 200) * 90, 90) + "%";
+            document.getElementById('avatar-userB').style.left = Math.min((state.userB.weeklyPoints / 200) * 90, 90) + "%";
+
+            // Seznam úkolů
+            const habitList = document.getElementById('habit-list');
+            habitList.innerHTML = '';
+            HABITS.forEach(h => {
+                const checked = state[currentUser].checkedHabits[h.id];
+                const div = document.createElement('div');
+                div.onclick = () => toggleHabit(h.id);
+                div.className = `flex items-center gap-4 p-3 rounded-xl border transition-all ${checked ? 'bg-green-500/20 border-green-500/50 opacity-40' : 'bg-white/5 border-white/10'}`;
+                div.innerHTML = `
+                    <div class="w-6 h-6 rounded-md border-2 flex items-center justify-center ${checked ? 'bg-green-500 border-none' : 'border-white/20'}">${checked ? '✓' : ''}</div>
+                    <span class="text-xl">${h.icon}</span>
+                    <span class="flex-1 font-medium">${h.label}</span>
+                    <span class="font-black text-green-400">+${h.points}</span>
+                `;
+                habitList.appendChild(div);
+            });
+
+            // Úkol dne
+            const questIdx = new Date().getDay() % SIDE_QUESTS.length;
+            document.getElementById('today-quest').innerText = SIDE_QUESTS[questIdx];
+            const qBtn = document.getElementById('quest-btn');
+            if (state[currentUser].questDone) {
+                qBtn.innerText = "Hotovo";
+                qBtn.className = "bg-white/10 text-white/30 px-4 py-2 rounded-xl font-bold cursor-not-allowed";
+                qBtn.disabled = true;
+            } else {
+                qBtn.innerText = "Splnit";
+                qBtn.className = "bg-indigo-500 px-4 py-2 rounded-xl font-bold active:scale-95";
+                qBtn.disabled = false;
+            }
+
+            // Log
+            const logDiv = document.getElementById('log');
+            const allLogs = [...state.userA.log, ...state.userB.log].sort((a,b) => b.ts - a.ts).slice(0, 6);
+            logDiv.innerHTML = allLogs.map(l => `
+                <div class="flex justify-between border-b border-white/5 pb-1 opacity-70">
+                    <span>${l.icon} <b>${l.u}</b>: ${l.a}</span>
+                    <span class="${l.d > 0 ? 'text-green-400' : 'text-red-400'}">${l.d > 0 ? '+' : ''}${l.d}b</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleHabit(id) {
+            const h = HABITS.find(x => x.id === id);
+            const wasChecked = !!state[currentUser].checkedHabits[id];
+            state[currentUser].checkedHabits[id] = !wasChecked;
+            const delta = wasChecked ? -h.points : h.points;
+            state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
+            state[currentUser].log.push({ u: USERS[currentUser].name, a: h.label, d: delta, icon: h.icon, ts: Date.now() });
+            save();
+        }
+
+        function addPenalty(label, delta, icon) {
+            state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
+            state[currentUser].log.push({ u: USERS[currentUser].name, a: label, d: delta, icon: icon, ts: Date.now() });
+            save();
+        }
+
+        function completeQuest() {
+            state[currentUser].questDone = true;
+            state[currentUser].weeklyPoints += 15;
+            state[currentUser].log.push({ u: USERS[currentUser].name, a: "Úkol dne", d: 15, icon: "⚡", ts: Date.now() });
+            save();
+        }
+
+        function addCustom() {
+            const input = document.getElementById('custom-input');
+            const val = input.value.trim();
+            if (!val) return;
+            state[currentUser].weeklyPoints += 10;
+            state[currentUser].log.push({ u: USERS[currentUser].name, a: val, d: 10, icon: "🏋️", ts: Date.now() });
+            input.value = '';
+            save();
+        }
+
+        function resetGame() { if(confirm("Opravdu vymazat celý týden?")) { localStorage.clear(); location.reload(); } }
+
+        render();
     </script>
 </body>
 </html>
