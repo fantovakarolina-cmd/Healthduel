@@ -17,15 +17,19 @@
     <div id="app" class="max-w-md mx-auto p-4 pb-20">
         <div class="flex justify-between items-center mb-4 pt-6 text-sm">
             <h1 class="font-black italic text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 uppercase tracking-tighter text-lg">Health Duel ⚔️</h1>
-            <div class="flex gap-3">
-                <button onclick="syncData()" class="bg-white/10 px-3 py-1 rounded-lg font-bold">🔄 SYNC</button>
-                <button onclick="archiveWeek()" class="text-xs opacity-40 bg-white/5 px-2 py-1 rounded">Nový týden</button>
+            <div class="flex gap-2">
+                <button onclick="syncData()" class="bg-white/10 px-2 py-1 rounded-lg font-bold text-[10px]">🔄 SYNC</button>
+                <button onclick="totalReset()" class="bg-red-900/30 text-red-400 px-2 py-1 rounded-lg font-bold text-[10px] border border-red-500/20">RESET</button>
             </div>
         </div>
 
-        <div id="hall-of-fame" class="glass rounded-2xl p-3 mb-4 text-center text-xs hidden">
-            <span class="opacity-60 uppercase tracking-widest">🏆 Poslední vítěz:</span>
-            <span id="last-winner" class="font-bold gold ml-2"></span>
+        <div class="flex justify-end mb-4">
+            <button onclick="archiveWeek()" class="text-[10px] opacity-40 bg-white/5 px-3 py-1 rounded-full uppercase tracking-widest font-bold">🏆 Ukončit týden</button>
+        </div>
+
+        <div id="hall-of-fame" class="glass rounded-2xl p-3 mb-4 text-center text-xs hidden border-yellow-500/20 shadow-[0_0_15px_rgba(255,215,0,0.1)]">
+            <span class="opacity-60 uppercase tracking-widest">Poslední vítězka:</span>
+            <span id="last-winner" class="font-bold gold ml-2 uppercase tracking-tight"></span>
         </div>
 
         <div class="grid grid-cols-2 gap-2 mb-6 p-1 bg-white/5 rounded-2xl text-sm">
@@ -33,8 +37,8 @@
             <button id="btn-userB" onclick="switchUser('userB')" class="py-3 rounded-xl font-bold transition-all">👩🏽 Kája</button>
         </div>
 
-        <div class="glass rounded-3xl p-6 mb-6 overflow-hidden relative border-white/5 shadow-2xl">
-            <div class="absolute top-2 right-4 text-[9px] font-bold opacity-20 uppercase tracking-widest">Cíl: 300 bodů</div>
+        <div class="glass rounded-3xl p-6 mb-6 overflow-hidden relative border-white/5">
+            <div class="absolute top-2 right-4 text-[9px] font-bold opacity-20 uppercase tracking-widest text-blue-400">Cíl: 300 bodů</div>
             <div class="h-24 relative bg-black/30 rounded-xl p-2 border border-white/5 shadow-inner">
                 <div class="h-1/2 border-b border-white/5 relative">
                     <div id="avatar-userA" class="avatar -top-1 text-2xl" style="left: 0%">👱‍♀️</div>
@@ -48,11 +52,11 @@
 
         <div class="grid grid-cols-2 gap-3 mb-6 font-black">
             <div class="glass p-4 rounded-2xl text-center border-pink-500/30">
-                <div class="text-[10px] opacity-50 uppercase tracking-widest">Lůca</div>
+                <div class="text-[10px] opacity-50 uppercase tracking-widest mb-1">Lůca</div>
                 <div id="score-userA" class="text-3xl text-pink-500">0</div>
             </div>
             <div class="glass p-4 rounded-2xl text-center border-orange-500/30">
-                <div class="text-[10px] opacity-50 uppercase tracking-widest">Kája</div>
+                <div class="text-[10px] opacity-50 uppercase tracking-widest mb-1">Kája</div>
                 <div id="score-userB" class="text-3xl text-orange-500">0</div>
             </div>
         </div>
@@ -69,7 +73,7 @@
 
         <div class="glass rounded-3xl p-5 mb-6">
             <div class="flex gap-2">
-                <input id="custom-input" type="text" placeholder="Fitko, běh, jiná aktivita..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-white/30">
+                <input id="custom-input" type="text" placeholder="Fitko, běh, sport..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-white/30">
                 <button onclick="addCustom()" class="bg-green-500 px-4 rounded-xl font-bold text-xs shadow-lg shadow-green-500/20">PŘIDAT</button>
             </div>
         </div>
@@ -82,8 +86,8 @@
 
         <div id="log" class="space-y-2 text-[10px] opacity-40 italic mb-10"></div>
 
-        <div class="mt-12 mb-8 text-center px-4">
-            <div class="text-[8px] uppercase tracking-[0.3em] opacity-30 mb-2">Vesmírná energie dne</div>
+        <div class="mt-12 mb-8 text-center px-6">
+            <div class="text-[8px] uppercase tracking-[0.4em] opacity-30 mb-3">Vesmírná energie dne</div>
             <div id="ezo-quote" class="italic font-serif text-sm quote-gradient leading-relaxed"></div>
         </div>
     </div>
@@ -102,16 +106,9 @@
         ];
 
         const SIDE_QUESTS = [
-            "30 angličáků 💪", 
-            "Studená sprcha 🚿", 
-            "1h bez telefonu 📵", 
-            "Bez slazeného pití 🥤", 
-            "Chůze 5 km 🚶", 
-            "Srovnat si pokoj 🧹", 
-            "15 min strečink 🤸", 
-            "Plank 2 minuty ⏳", 
-            "Zdravé domácí jídlo 🍳", 
-            "3h před spaním nejíst 🌙"
+            "30 angličáků 💪", "Studená sprcha 🚿", "1h bez telefonu 📵", "Bez slazeného pití 🥤", 
+            "Chůze 5 km 🚶", "Srovnat si pokoj 🧹", "15 min strečink 🤸", "Plank 2 minuty ⏳", 
+            "Zdravé domácí jídlo 🍳", "3h před spaním nejíst 🌙"
         ];
 
         const EZO_QUOTES = [
@@ -119,9 +116,9 @@
             "Vesmír ti nenadělí výzvu, kterou bys nedokázala zdolat svou vnitřní silou. 🌌",
             "Dnešní pot je slzami tvého starého já, které odchází, aby uvolnilo místo bohyni. 🌸",
             "Kdo ovládne své ráno, ovládne svou manifestaci v tomto světě. ☀️",
-            "Tvá energie proudí tam, kam zaměřuješ svou pozornost. Zaměř ji na svůj růst. 🕯️",
+            "Tvá energie proudí tam, kam zaměřuješ svou pozornost. ✨",
             "V tichu mezi dvěma nádechy najdeš sílu udělat další angličák. 🌬️",
-            "Buď jako voda – měkká navenek, ale schopná prorazit i tu nejtvrdší skálu. 🌊"
+            "Buď jako voda – měkká navenek, ale schopná prorazit i skálu. 🌊"
         ];
         
         let currentUser = localStorage.getItem('activeUser') || "userA";
@@ -164,7 +161,7 @@
             if (state.lastWinner) {
                 hf.classList.remove('hidden');
                 document.getElementById('last-winner').innerText = state.lastWinner;
-            }
+            } else { hf.classList.add('hidden'); }
 
             const list = document.getElementById('habit-list');
             list.innerHTML = '';
@@ -177,7 +174,7 @@
                 list.appendChild(div);
             });
 
-            const dayIndex = new Date().getDay();
+            const dayIndex = (new Date().getDay() + 6) % 7; // Pondělí = 0
             document.getElementById('today-quest').innerText = SIDE_QUESTS[dayIndex % SIDE_QUESTS.length];
             document.getElementById('ezo-quote').innerText = `„${EZO_QUOTES[dayIndex % EZO_QUOTES.length]}“`;
             
@@ -187,7 +184,7 @@
 
             const logDiv = document.getElementById('log');
             const allLogs = [...state.userA.log, ...state.userB.log].sort((a,b) => b.ts - a.ts).slice(0, 4);
-            logDiv.innerHTML = allLogs.map(l => `<div class="flex justify-between border-b border-white/5 pb-1 uppercase tracking-tighter"><span>${l.icon} ${l.u}: ${l.a}</span><span>${l.d > 0 ? '+' : ''}${l.d}</span></div>`).join('');
+            logDiv.innerHTML = allLogs.map(l => `<div class="flex justify-between border-b border-white/5 pb-1"><span>${l.icon} ${l.u}: ${l.a}</span><span>${l.d > 0 ? '+' : ''}${l.d}</span></div>`).join('');
         }
 
         function switchUser(id) { currentUser = id; localStorage.setItem('activeUser', id); render(); }
@@ -225,7 +222,7 @@
         }
 
         function archiveWeek() {
-            if(confirm("Ukončit týden a vyhlásit vítězku?")) {
+            if(confirm("Ukončit týden a vyhlásit vítězku do Síně slávy?")) {
                 let winner = "Remíza!";
                 if (state.userA.weeklyPoints > state.userB.weeklyPoints) winner = "Lůca 🔥";
                 else if (state.userB.weeklyPoints > state.userA.weeklyPoints) winner = "Kája 🔥";
@@ -234,6 +231,17 @@
                     userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
                     userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
                     lastWinner: winner
+                };
+                save();
+            }
+        }
+
+        function totalReset() {
+            if(confirm("POZOR: Smaže úplně všechno, včetně Síně slávy. Chceš pokračovat?")) {
+                state = {
+                    userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
+                    userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
+                    lastWinner: null
                 };
                 save();
             }
