@@ -8,27 +8,26 @@
     <style>
         body { background-color: #09091a; color: white; -webkit-tap-highlight-color: transparent; font-family: sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .avatar { transition: left 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: absolute; }
+        .avatar { transition: left 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: absolute; }
     </style>
 </head>
 <body class="antialiased">
     <div id="app" class="max-w-md mx-auto p-4 pb-20">
-        <div class="flex justify-between items-center mb-6 pt-8">
-            <h1 class="text-xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400">Health Duel ⚔️</h1>
-            <div class="flex gap-4">
-                <button onclick="syncData()" class="text-[10px] opacity-60 uppercase font-bold bg-white/10 px-2 py-1 rounded">🔄 Sync</button>
-                <button onclick="resetGame()" class="text-[10px] opacity-30 uppercase font-bold">Reset</button>
+        <div class="flex justify-between items-center mb-6 pt-8 text-sm">
+            <h1 class="font-black italic text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 uppercase tracking-tighter">Health Duel ⚔️</h1>
+            <div class="flex gap-3">
+                <button onclick="syncData()" class="bg-white/10 px-3 py-1 rounded-lg font-bold">🔄 AKTUALIZOVAT</button>
+                <button onclick="resetGame()" class="opacity-30">Reset</button>
             </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2 mb-6 p-1 bg-white/5 rounded-2xl">
-            <button id="btn-userA" onclick="switchUser('userA')" class="py-3 rounded-xl font-bold transition-all bg-white/20">👱‍♀️ Lůca</button>
-            <button id="btn-userB" onclick="switchUser('userB')" class="py-3 rounded-xl font-bold transition-all opacity-40">👩🏽 Kája</button>
+            <button id="btn-userA" onclick="switchUser('userA')" class="py-3 rounded-xl font-bold transition-all">👱‍♀️ Lůca</button>
+            <button id="btn-userB" onclick="switchUser('userB')" class="py-3 rounded-xl font-bold transition-all">👩🏽 Kája</button>
         </div>
 
         <div class="glass rounded-3xl p-6 mb-6 overflow-hidden">
-            <div class="text-[10px] font-bold opacity-30 mb-4 tracking-widest uppercase text-center italic text-blue-400">Online souboj aktivní</div>
-            <div class="h-24 relative bg-black/30 rounded-xl p-2 border border-white/5 shadow-inner">
+            <div class="h-24 relative bg-black/30 rounded-xl p-2 border border-white/5">
                 <div class="h-1/2 border-b border-white/5 relative">
                     <div id="avatar-userA" class="avatar -top-1 text-2xl" style="left: 0%">👱‍♀️</div>
                 </div>
@@ -41,61 +40,41 @@
 
         <div class="grid grid-cols-2 gap-3 mb-6 font-black">
             <div class="glass p-4 rounded-2xl text-center border-pink-500/30">
-                <div class="text-[10px] opacity-50 uppercase tracking-tighter">Lůca</div>
+                <div class="text-[10px] opacity-50 uppercase">Lůca</div>
                 <div id="score-userA" class="text-3xl text-pink-500">0</div>
             </div>
             <div class="glass p-4 rounded-2xl text-center border-orange-500/30">
-                <div class="text-[10px] opacity-50 uppercase tracking-tighter">Kája</div>
+                <div class="text-[10px] opacity-50 uppercase">Kája</div>
                 <div id="score-userB" class="text-3xl text-orange-500">0</div>
             </div>
         </div>
 
-        <div class="glass rounded-3xl p-5 mb-6">
-            <h2 class="font-bold mb-4 flex items-center gap-2 text-sm uppercase opacity-70 tracking-widest italic">📋 Denní cíle</h2>
-            <div id="habit-list" class="space-y-2"></div>
-        </div>
+        <div id="habit-list" class="space-y-2 mb-6"></div>
 
-        <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-5 mb-6 flex items-center justify-between shadow-lg">
-            <div>
-                <div class="text-[10px] font-bold opacity-50 uppercase italic text-indigo-300">Dnešní výzva +15b</div>
-                <div id="today-quest" class="font-bold text-white uppercase tracking-tight italic">---</div>
-            </div>
-            <button id="quest-btn" onclick="completeQuest()" class="bg-indigo-500 px-4 py-2 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">Splnit</button>
+        <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-5 mb-6 flex items-center justify-between">
+            <div class="text-sm font-bold">⚡ ÚKOL DNE: <span id="today-quest"></span></div>
+            <button id="quest-btn" onclick="completeQuest()" class="bg-indigo-500 px-4 py-2 rounded-xl font-bold">SPLNIT</button>
         </div>
 
         <div class="glass rounded-3xl p-5 mb-6 text-sm">
-            <h2 class="font-bold mb-4 uppercase text-[10px] opacity-50 tracking-widest italic text-green-400">🏋️ Vlastní aktivita (+10b)</h2>
             <div class="flex gap-2">
-                <input id="custom-input" type="text" placeholder="Běh, fitko..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-white/30 text-white">
-                <button onclick="addCustom()" class="bg-green-500 text-white font-black px-4 rounded-xl">PŘIDAT</button>
+                <input id="custom-input" type="text" placeholder="Jiná aktivita..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white">
+                <button onclick="addCustom()" class="bg-green-500 px-4 rounded-xl font-bold">PŘIDAT</button>
             </div>
         </div>
 
         <div class="grid grid-cols-3 gap-2 mb-6">
-            <button onclick="addPenalty('Alkohol', -10, '🍷')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl flex flex-col items-center">
-                <span class="text-2xl mb-1">🍷</span><span class="text-[9px] font-bold text-red-400 italic uppercase">Alkohol</span><span class="font-black">-10</span>
-            </button>
-            <button onclick="addPenalty('Po 8:00', -5, '😴')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl flex flex-col items-center">
-                <span class="text-2xl mb-1">😴</span><span class="text-[9px] font-bold text-red-400 italic uppercase">Spánek</span><span class="font-black">-5</span>
-            </button>
-            <button onclick="addPenalty('Cukr', -5, '🍩')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl flex flex-col items-center">
-                <span class="text-2xl mb-1">🍩</span><span class="text-[9px] font-bold text-red-400 italic uppercase">Cukr</span><span class="font-black">-5</span>
-            </button>
+            <button onclick="addPenalty('Alkohol', -10, '🍷')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl text-[10px] font-bold">🍷 ALKOHOL -10</button>
+            <button onclick="addPenalty('Pozdě', -5, '😴')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl text-[10px] font-bold">😴 SPÁNEK -5</button>
+            <button onclick="addPenalty('Cukr', -5, '🍩')" class="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl text-[10px] font-bold">🍩 CUKR -5</button>
         </div>
 
-        <div id="log" class="space-y-2 text-[11px] opacity-50"></div>
+        <div id="log" class="space-y-2 text-[10px] opacity-40 italic"></div>
     </div>
 
     <script>
-        // TOKEN VLOŽEN
-        const BLOB_TOKEN = 'vercel_blob_rw_AEqxRn2zi8pWH4qR_yuqa4P2xnea3RAyXWMVzNbL0gdcDIt';
-        const BLOB_FILENAME = 'duel_shared_data_v2.json';
-        const BLOB_URL = `https://api.vercel.com/blob?pathname=${BLOB_FILENAME}`;
-
-        const USERS = {
-            userA: { name: "Lůca", color: "#EC4899" },
-            userB: { name: "Kája", color: "#F97316" }
-        };
+        const BIN_ID = 'fdf54930b04517ca8352';
+        const API_URL = `https://api.npoint.io/${BIN_ID}`;
 
         const HABITS = [
             { id: "water",   label: "2L vody", points: 2, icon: "💧" },
@@ -105,124 +84,102 @@
             { id: "veggies", label: "Zelenina", points: 2, icon: "🥦" }
         ];
 
-        const SIDE_QUESTS = ["30 kliků 💪", "Studená sprcha 🚿", "1h bez telefonu 📵", "Číst 10 stránek 📚", "Chůze 5 km 🚶"];
-
+        const SIDE_QUESTS = ["30 kliků 💪", "Studená sprcha 🚿", "1h bez mobilu 📵", "Číst 10 str. 📚", "Chůze 5 km 🚶"];
         let currentUser = localStorage.getItem('activeUser') || "userA";
-        let state = {
-            userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-            userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] }
-        };
+        let state = { userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] }, userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] } };
 
         async function syncData() {
             try {
-                const listRes = await fetch(`https://api.vercel.com/blob?limit=1`, {
-                    headers: { 'Authorization': `Bearer ${BLOB_TOKEN}` }
-                });
-                const list = await listRes.json();
-                const blob = list.blobs.find(b => b.pathname === BLOB_FILENAME);
-                if (blob) {
-                    const dataRes = await fetch(blob.url + '?t=' + Date.now());
-                    state = await dataRes.json();
+                const res = await fetch(API_URL);
+                if (res.ok) {
+                    state = await res.json();
                     render();
                 }
-            } catch (e) { console.log("Sync..."); }
+            } catch (e) { console.error("Sync error"); }
         }
 
         async function save() {
             render();
             try {
-                await fetch(BLOB_URL, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${BLOB_TOKEN}`, 'Content-Type': 'application/json' },
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(state)
                 });
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Save error"); }
         }
 
         function switchUser(id) {
             currentUser = id;
             localStorage.setItem('activeUser', id);
-            document.getElementById('btn-userA').classList.toggle('opacity-40', id !== 'userA');
-            document.getElementById('btn-userA').classList.toggle('bg-white/20', id === 'userA');
-            document.getElementById('btn-userB').classList.toggle('opacity-40', id !== 'userB');
-            document.getElementById('btn-userB').classList.toggle('bg-white/20', id === 'userB');
             render();
         }
 
         function render() {
+            document.getElementById('btn-userA').className = `py-3 rounded-xl font-bold transition-all ${currentUser === 'userA' ? 'bg-white/20' : 'opacity-40'}`;
+            document.getElementById('btn-userB').className = `py-3 rounded-xl font-bold transition-all ${currentUser === 'userB' ? 'bg-white/20' : 'opacity-40'}`;
             document.getElementById('score-userA').innerText = state.userA.weeklyPoints;
             document.getElementById('score-userB').innerText = state.userB.weeklyPoints;
             document.getElementById('avatar-userA').style.left = Math.min((state.userA.weeklyPoints / 200) * 90, 90) + "%";
             document.getElementById('avatar-userB').style.left = Math.min((state.userB.weeklyPoints / 200) * 90, 90) + "%";
 
-            const habitList = document.getElementById('habit-list');
-            habitList.innerHTML = '';
+            const list = document.getElementById('habit-list');
+            list.innerHTML = '';
             HABITS.forEach(h => {
-                const checked = state[currentUser].checkedHabits[h.id];
+                const ch = state[currentUser].checkedHabits[h.id];
                 const div = document.createElement('div');
                 div.onclick = () => toggleHabit(h.id);
-                div.className = `flex items-center gap-4 p-3 rounded-xl border transition-all ${checked ? 'bg-green-500/20 border-green-500/50 opacity-40' : 'bg-white/5 border-white/10'}`;
-                div.innerHTML = `
-                    <div class="w-6 h-6 rounded-md border-2 flex items-center justify-center ${checked ? 'bg-green-500 border-none' : 'border-white/20'}">${checked ? '✓' : ''}</div>
-                    <span class="text-xl">${h.icon}</span>
-                    <span class="flex-1 font-medium italic text-sm">${h.label}</span>
-                    <span class="font-black text-green-400">+${h.points}</span>
-                `;
-                habitList.appendChild(div);
+                div.className = `flex items-center gap-4 p-3 rounded-xl border transition-all ${ch ? 'bg-green-500/20 border-green-500/50 opacity-40' : 'bg-white/5 border-white/10'}`;
+                div.innerHTML = `<div class="w-6 h-6 rounded-md border-2 flex items-center justify-center ${ch ? 'bg-green-500 border-none' : 'border-white/20'}">${ch ? '✓' : ''}</div><span class="text-xl">${h.icon}</span><span class="flex-1 font-medium italic">${h.label}</span><span class="font-black text-green-400">+${h.points}</span>`;
+                list.appendChild(div);
             });
 
-            const questIdx = new Date().getDay() % SIDE_QUESTS.length;
-            document.getElementById('today-quest').innerText = SIDE_QUESTS[questIdx];
+            document.getElementById('today-quest').innerText = SIDE_QUESTS[new Date().getDay() % SIDE_QUESTS.length];
             const qBtn = document.getElementById('quest-btn');
             qBtn.disabled = state[currentUser].questDone;
             qBtn.innerText = state[currentUser].questDone ? "HOTOVO" : "SPLNIT";
 
             const logDiv = document.getElementById('log');
             const allLogs = [...state.userA.log, ...state.userB.log].sort((a,b) => b.ts - a.ts).slice(0, 3);
-            logDiv.innerHTML = allLogs.map(l => `<div class="flex justify-between border-b border-white/5 pb-1 italic"><span>${l.icon} ${l.u}: ${l.a}</span><span>${l.d > 0 ? '+' : ''}${l.d}</span></div>`).join('');
+            logDiv.innerHTML = allLogs.map(l => `<div class="flex justify-between border-b border-white/5"><span>${l.icon} ${l.u}: ${l.a}</span><span>${l.d > 0 ? '+' : ''}${l.d}</span></div>`).join('');
         }
 
         function toggleHabit(id) {
             const h = HABITS.find(x => x.id === id);
-            const wasChecked = !!state[currentUser].checkedHabits[id];
-            state[currentUser].checkedHabits[id] = !wasChecked;
-            const delta = wasChecked ? -h.points : h.points;
+            const was = !!state[currentUser].checkedHabits[id];
+            state[currentUser].checkedHabits[id] = !was;
+            const delta = was ? -h.points : h.points;
             state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
-            state[currentUser].log.push({ u: USERS[currentUser].name, a: h.label, d: delta, icon: h.icon, ts: Date.now() });
+            state[currentUser].log.unshift({ u: currentUser === 'userA' ? 'Lůca' : 'Kája', a: h.label, d: delta, icon: h.icon, ts: Date.now() });
             save();
         }
 
         function addPenalty(label, delta, icon) {
             state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
-            state[currentUser].log.push({ u: USERS[currentUser].name, a: label, d: delta, icon: icon, ts: Date.now() });
+            state[currentUser].log.unshift({ u: currentUser === 'userA' ? 'Lůca' : 'Kája', a: label, d: delta, icon: icon, ts: Date.now() });
             save();
         }
 
         function completeQuest() {
             state[currentUser].questDone = true;
             state[currentUser].weeklyPoints += 15;
-            state[currentUser].log.push({ u: USERS[currentUser].name, a: "Úkol dne", d: 15, icon: "⚡", ts: Date.now() });
+            state[currentUser].log.unshift({ u: currentUser === 'userA' ? 'Lůca' : 'Kája', a: "Výzva", d: 15, icon: "⚡", ts: Date.now() });
             save();
         }
 
         function addCustom() {
-            const input = document.getElementById('custom-input');
-            const val = input.value.trim();
+            const val = document.getElementById('custom-input').value.trim();
             if (!val) return;
             state[currentUser].weeklyPoints += 10;
-            state[currentUser].log.push({ u: USERS[currentUser].name, a: val, d: 10, icon: "🏋️", ts: Date.now() });
-            input.value = '';
+            state[currentUser].log.unshift({ u: currentUser === 'userA' ? 'Lůca' : 'Kája', a: val, d: 10, icon: "🏋️", ts: Date.now() });
+            document.getElementById('custom-input').value = '';
             save();
         }
 
-        function resetGame() { if(confirm("Smazat vše pro oba?")) { 
-            state = { userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] }, userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] } };
-            save();
-        } }
+        function resetGame() { if(confirm("Smazat vše?")) { state = { userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] }, userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] } }; save(); } }
 
-        switchUser(currentUser);
         syncData();
-        setInterval(syncData, 15000); // Obnova každých 15s
+        setInterval(syncData, 10000); // Každých 10s se zeptá, jestli ta druhá něco nezměnila
     </script>
 </body>
 </html>
