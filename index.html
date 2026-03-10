@@ -1,335 +1,686 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zdravý Souboj: Lůca vs Kája</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #09091a; color: white; -webkit-tap-highlight-color: transparent; font-family: sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .avatar { transition: left 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: absolute; }
-        .gold { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        .quote-gradient { background: linear-gradient(to right, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .track-bg { background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.02) 10px, rgba(255,255,255,0.02) 20px); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Health Duel ⚔️</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --luca: #FF6B9D;
+  --luca-glow: rgba(255,107,157,0.35);
+  --kaja: #FB923C;
+  --kaja-glow: rgba(251,146,60,0.35);
+  --bg: #09091a;
+  --card: rgba(255,255,255,0.05);
+  --card-border: rgba(255,255,255,0.09);
+  --text: #f0eeff;
+  --muted: rgba(255,255,255,0.35);
+  --gold: #FFD700;
+  --green: #4ade80;
+  --red: #f87171;
+  --indigo: #818cf8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 55% 35% at 15% 10%, rgba(255,107,157,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 35% at 85% 85%, rgba(251,146,60,0.07) 0%, transparent 70%);
+  pointer-events:none; z-index:0;
+}
+
+.app { max-width:480px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
+
+.header { text-align:center; padding:28px 0 18px; }
+.logo {
+  font-family:'Bebas Neue',sans-serif; font-size:54px; letter-spacing:3px; line-height:1;
+  background: linear-gradient(135deg, var(--luca), var(--kaja));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.logo-date { font-size:11px; font-weight:800; letter-spacing:4px; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+
+.winner-bar {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,215,0,0.04));
+  border:1px solid rgba(255,215,0,0.25); border-radius:50px;
+  padding:8px 22px; width:fit-content; margin:0 auto 20px;
+  font-size:12px; font-weight:800; color:var(--gold); letter-spacing:1px;
+}
+
+.user-switch {
+  display:grid; grid-template-columns:1fr 1fr; gap:6px;
+  background:rgba(255,255,255,0.04); border-radius:20px; padding:5px;
+  border:1px solid var(--card-border); margin-bottom:20px;
+}
+.switch-btn {
+  padding:12px; border-radius:14px; font-family:'Nunito',sans-serif;
+  font-size:14px; font-weight:800; border:none; cursor:pointer;
+  transition:all 0.25s ease; color:var(--text); background:transparent; opacity:0.4;
+}
+.switch-btn.active { background:rgba(255,255,255,0.15); opacity:1; box-shadow:0 2px 12px rgba(0,0,0,0.3); }
+
+.scores { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.score-card {
+  backdrop-filter:blur(12px); background:var(--card); border:1px solid var(--card-border);
+  border-radius:24px; padding:18px 16px; text-align:center; position:relative; overflow:hidden;
+}
+.score-card::before {
+  content:''; position:absolute; width:80px; height:80px; border-radius:50%;
+  top:-20px; filter:blur(24px); opacity:0.5;
+}
+.score-card.luca::before { background:var(--luca); right:-20px; }
+.score-card.kaja::before { background:var(--kaja); left:-20px; }
+.score-label { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.45; margin-bottom:4px; }
+.score-val { font-family:'Bebas Neue',sans-serif; font-size:50px; line-height:1; }
+.score-card.luca .score-val { color:var(--luca); text-shadow:0 0 20px var(--luca-glow); }
+.score-card.kaja .score-val { color:var(--kaja); text-shadow:0 0 20px var(--kaja-glow); }
+
+.track-card {
+  backdrop-filter:blur(12px); background:var(--card); border:1px solid var(--card-border);
+  border-radius:24px; padding:20px; margin-bottom:20px;
+}
+.track-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.track-title { font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.4; }
+.track-goal {
+  font-size:10px; font-weight:800; letter-spacing:2px; text-transform:uppercase;
+  color:var(--gold); background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.2);
+  padding:4px 12px; border-radius:50px;
+}
+.track-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.track-row:last-child { margin-bottom:0; }
+.track-name { font-size:11px; font-weight:900; letter-spacing:1px; width:40px; flex-shrink:0; }
+.track-name.luca { color:var(--luca); }
+.track-name.kaja { color:var(--kaja); }
+.track-bg {
+  flex:1; height:12px; background:rgba(255,255,255,0.05); border-radius:50px;
+  overflow:hidden; border:1px solid rgba(255,255,255,0.05); position:relative;
+}
+.track-fill {
+  height:100%; border-radius:50px; transition:width 1s cubic-bezier(0.22,1,0.36,1); position:relative;
+}
+.track-fill.luca { background:linear-gradient(90deg,#c94b7a,var(--luca),#ffb3d1); box-shadow:0 0 10px var(--luca-glow); }
+.track-fill.kaja { background:linear-gradient(90deg,#c4621a,var(--kaja),#fed7aa); box-shadow:0 0 10px var(--kaja-glow); }
+.track-fill::after { content:''; position:absolute; top:0; right:0; width:5px; height:100%; background:rgba(255,255,255,0.5); border-radius:50px; filter:blur(2px); }
+.track-num { font-size:12px; font-weight:900; width:28px; text-align:right; flex-shrink:0; }
+.track-num.luca { color:var(--luca); }
+.track-num.kaja { color:var(--kaja); }
+.track-marks { display:flex; justify-content:space-between; padding:4px 50px 0 50px; }
+.track-mark { font-size:9px; opacity:0.2; font-weight:700; }
+
+.section-title { font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.35; margin-bottom:12px; }
+
+.habit-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+
+.habit-item {
+  display:flex; align-items:center; gap:14px;
+  backdrop-filter:blur(10px); background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07); border-radius:18px;
+  padding:14px 16px; cursor:pointer;
+  transition:all 0.2s ease;
+}
+.habit-item:hover { background:rgba(255,255,255,0.07); }
+.habit-item:active { transform:scale(0.98); }
+.habit-item.checked {
+  background:rgba(74,222,128,0.1);
+  border-color:rgba(74,222,128,0.3);
+  opacity:0.65;
+}
+
+.habit-check {
+  width:26px; height:26px; border-radius:8px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid rgba(255,255,255,0.18); transition:all 0.2s ease;
+  font-size:14px; font-weight:900;
+}
+.habit-item.checked .habit-check {
+  background:var(--green); border-color:transparent;
+  box-shadow:0 0 10px rgba(74,222,128,0.5);
+  color:#09091a;
+}
+
+.habit-icon { font-size:22px; }
+.habit-name { flex:1; font-size:14px; font-weight:700; }
+.habit-pts {
+  font-size:13px; font-weight:900; color:var(--green);
+  background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.2);
+  padding:3px 10px; border-radius:8px;
+}
+
+.quest-card {
+  background:linear-gradient(135deg, rgba(99,102,241,0.18), rgba(99,102,241,0.06));
+  border:1px solid rgba(99,102,241,0.3); border-radius:24px;
+  padding:20px; margin-bottom:20px; position:relative; overflow:hidden;
+}
+.quest-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, var(--indigo), #a78bfa);
+}
+.quest-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.quest-label { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:var(--indigo); }
+.quest-pts {
+  font-size:11px; font-weight:800; color:var(--indigo);
+  background:rgba(129,140,248,0.15); border:1px solid rgba(129,140,248,0.3);
+  padding:3px 12px; border-radius:50px;
+}
+.quest-text { font-size:16px; font-weight:800; margin-bottom:16px; letter-spacing:-0.3px; }
+.quest-btn {
+  width:100%; padding:14px; border:none; border-radius:14px;
+  font-family:'Nunito',sans-serif; font-size:13px; font-weight:900;
+  letter-spacing:2px; text-transform:uppercase; cursor:pointer;
+  background:var(--indigo); color:white;
+  box-shadow:0 4px 20px rgba(99,102,241,0.4);
+  transition:all 0.2s ease;
+}
+.quest-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 28px rgba(99,102,241,0.5); }
+.quest-btn:active:not(:disabled) { transform:scale(0.97); }
+.quest-btn:disabled { background:rgba(74,222,128,0.3); box-shadow:none; color:rgba(255,255,255,0.7); cursor:default; }
+
+.custom-card {
+  backdrop-filter:blur(10px); background:var(--card); border:1px solid var(--card-border);
+  border-radius:20px; padding:14px; margin-bottom:20px; display:flex; gap:10px;
+}
+.custom-input {
+  flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px; padding:12px 16px; font-size:13px; font-family:'Nunito',sans-serif;
+  color:var(--text); outline:none; transition:border-color 0.2s;
+}
+.custom-input:focus { border-color:rgba(255,255,255,0.3); }
+.custom-input::placeholder { color:var(--muted); }
+.custom-btn {
+  padding:12px 18px; border:none; border-radius:12px; background:var(--green);
+  color:#09091a; font-family:'Nunito',sans-serif; font-size:12px; font-weight:900;
+  letter-spacing:1px; text-transform:uppercase; cursor:pointer;
+  transition:all 0.2s; box-shadow:0 4px 16px rgba(74,222,128,0.3);
+}
+.custom-btn:hover { transform:translateY(-1px); }
+.custom-btn:active { transform:scale(0.96); }
+
+.penalty-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
+.penalty-btn {
+  background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.15);
+  border-radius:18px; padding:14px 8px; text-align:center;
+  cursor:pointer; transition:all 0.2s ease; font-family:'Nunito',sans-serif;
+}
+.penalty-btn:hover { background:rgba(248,113,113,0.14); border-color:rgba(248,113,113,0.3); transform:translateY(-2px); }
+.penalty-btn:active { transform:scale(0.96); }
+.penalty-emoji { font-size:24px; margin-bottom:4px; }
+.penalty-name { font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--red); display:block; }
+.penalty-val { font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--red); letter-spacing:1px; }
+
+.log-card {
+  backdrop-filter:blur(10px); background:var(--card); border:1px solid var(--card-border);
+  border-radius:20px; padding:18px; margin-bottom:20px;
+}
+.log-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:12px;
+}
+.log-item:last-child { border-bottom:none; }
+.log-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.log-dot.luca { background:var(--luca); box-shadow:0 0 6px var(--luca-glow); }
+.log-dot.kaja { background:var(--kaja); box-shadow:0 0 6px var(--kaja-glow); }
+.log-text { flex:1; font-weight:600; opacity:0.75; }
+.log-pts { font-weight:900; font-size:13px; }
+.log-pts.pos { color:var(--green); }
+.log-pts.neg { color:var(--red); }
+.log-empty { font-size:12px; opacity:0.3; font-style:italic; text-align:center; padding:12px 0; }
+
+.energy-card {
+  background:linear-gradient(135deg,rgba(167,139,250,0.1),rgba(255,107,157,0.1));
+  border:1px solid rgba(255,255,255,0.07); border-radius:20px;
+  padding:22px; margin-bottom:20px; text-align:center;
+}
+.energy-icon { font-size:28px; margin-bottom:8px; }
+.energy-quote {
+  font-size:13px; font-weight:700; line-height:1.6; font-style:italic;
+  background:linear-gradient(135deg,#a78bfa,#f472b6);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+
+.mgmt-card {
+  backdrop-filter:blur(10px); background:rgba(255,255,255,0.03);
+  border:1px solid var(--card-border); border-radius:20px;
+  padding:18px; margin-bottom:20px;
+}
+.mgmt-title { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.3; margin-bottom:12px; text-align:center; }
+.mgmt-btn {
+  width:100%; padding:12px 16px; border-radius:12px; border:none;
+  font-family:'Nunito',sans-serif; font-size:12px; font-weight:800;
+  cursor:pointer; transition:all 0.2s; text-align:left;
+  display:flex; align-items:center; gap:10px; margin-bottom:8px;
+  background:rgba(255,255,255,0.04); color:var(--text);
+  border:1px solid rgba(255,255,255,0.06); letter-spacing:0.5px;
+}
+.mgmt-btn:last-child { margin-bottom:0; }
+.mgmt-btn:hover { background:rgba(255,255,255,0.08); transform:translateX(2px); }
+.mgmt-btn.danger { background:rgba(248,113,113,0.06); color:var(--red); border-color:rgba(248,113,113,0.15); }
+.mgmt-btn.danger:hover { background:rgba(248,113,113,0.12); border-color:rgba(248,113,113,0.3); }
+
+.modal-bg {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);
+  z-index:100; align-items:center; justify-content:center; padding:24px;
+}
+.modal-bg.show { display:flex; }
+.modal {
+  background:#1a1a2e; border:1px solid rgba(248,113,113,0.25);
+  border-radius:28px; padding:32px 24px; text-align:center;
+  max-width:320px; width:100%;
+  animation:popIn 0.25s cubic-bezier(0.22,1,0.36,1) both;
+}
+.modal-icon { font-size:44px; margin-bottom:14px; }
+.modal-title { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:2px; color:var(--red); margin-bottom:8px; }
+.modal-desc { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:24px; }
+.modal-actions { display:flex; gap:10px; }
+.modal-cancel {
+  flex:1; padding:13px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.05); color:var(--text); font-family:'Nunito',sans-serif;
+  font-size:13px; font-weight:800; cursor:pointer; transition:all 0.2s;
+}
+.modal-cancel:hover { background:rgba(255,255,255,0.1); }
+.modal-confirm {
+  flex:1; padding:13px; border-radius:12px; border:none;
+  background:var(--red); color:white; font-family:'Nunito',sans-serif;
+  font-size:13px; font-weight:800; cursor:pointer; transition:all 0.2s;
+  box-shadow:0 4px 18px rgba(248,113,113,0.4);
+}
+.modal-confirm:hover { transform:translateY(-1px); }
+
+.toast {
+  position:fixed; bottom:28px; left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:#1a1a2e; border:1px solid rgba(255,255,255,0.12);
+  padding:11px 22px; border-radius:50px; font-size:13px; font-weight:700;
+  z-index:200; transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
+  white-space:nowrap; pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+@keyframes popIn { from { opacity:0; transform:scale(0.9) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+@keyframes shine { from { left:-60px; } to { left:110%; } }
+
+.track-fill::before {
+  content:''; position:absolute; top:0; left:-60px;
+  width:45px; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent);
+  animation:shine 2.5s 1s ease infinite;
+}
+
+@media (max-width:380px) {
+  .logo { font-size:44px; }
+  .score-val { font-size:42px; }
+}
+</style>
 </head>
-<body class="antialiased">
-    <div id="app" class="max-w-md mx-auto p-4 pb-20">
-        
-        <div class="text-center pt-8 mb-8 relative">
-            <h1 class="font-black italic text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 uppercase tracking-tighter text-4xl mb-2 drop-shadow-lg">Health Duel ⚔️</h1>
-            <div id="current-date-display" class="text-xs font-bold uppercase tracking-[0.3em] opacity-60 text-blue-200">---</div>
-        </div>
+<body>
+<div class="app">
 
-        <div id="hall-of-fame" class="glass rounded-2xl p-3 mb-6 text-center text-xs hidden border-yellow-500/20 shadow-[0_0_15px_rgba(255,215,0,0.1)]">
-            <span class="opacity-60 uppercase tracking-widest">Poslední vítězka:</span>
-            <span id="last-winner" class="font-bold gold ml-2 uppercase tracking-tight"></span>
-        </div>
+  <div class="header">
+    <div class="logo">Health Duel ⚔️</div>
+    <div id="date-display" class="logo-date">---</div>
+  </div>
 
-        <div class="grid grid-cols-2 gap-2 mb-6 p-1 bg-white/5 rounded-2xl text-sm shadow-inner border border-white/5">
-            <button id="btn-userA" onclick="switchUser('userA')" class="py-3 rounded-xl font-bold transition-all">👱‍♀️ Lůca</button>
-            <button id="btn-userB" onclick="switchUser('userB')" class="py-3 rounded-xl font-bold transition-all">👩🏽 Kája</button>
-        </div>
+  <div id="winner-bar" class="winner-bar" style="display:none">
+    🏆 Poslední vítězka: <strong id="last-winner-name"></strong>
+  </div>
 
-        <div class="glass rounded-3xl p-5 mb-8 overflow-hidden relative border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-            <div class="flex justify-between items-center mb-3 px-1">
-                <div class="text-[10px] font-bold opacity-40 uppercase tracking-widest">Trať k vítězství</div>
-                <div class="text-[10px] font-bold uppercase tracking-widest text-yellow-500/80 bg-yellow-500/10 px-2 py-1 rounded-md">Cíl: 300 bodů</div>
-            </div>
-            
-            <div class="h-28 relative bg-black/50 track-bg rounded-xl border border-white/10 shadow-inner overflow-hidden">
-                <div class="absolute top-0 bottom-0 left-[16.6%] border-l border-white/10 flex items-end pb-1 pl-1 text-[8px] opacity-40 font-bold">50</div>
-                <div class="absolute top-0 bottom-0 left-[33.3%] border-l border-white/10 flex items-end pb-1 pl-1 text-[8px] opacity-40 font-bold">100</div>
-                <div class="absolute top-0 bottom-0 left-[50%] border-l border-white/20 flex items-end pb-1 pl-1 text-[8px] opacity-60 font-black text-white">150</div>
-                <div class="absolute top-0 bottom-0 left-[66.6%] border-l border-white/10 flex items-end pb-1 pl-1 text-[8px] opacity-40 font-bold">200</div>
-                <div class="absolute top-0 bottom-0 left-[83.3%] border-l border-white/10 flex items-end pb-1 pl-1 text-[8px] opacity-40 font-bold">250</div>
-                
-                <div class="h-1/2 border-b-2 border-dashed border-white/10 relative flex items-center">
-                    <div id="avatar-userA" class="avatar text-2xl drop-shadow-lg z-10" style="left: 0%">👱‍♀️</div>
-                </div>
-                <div class="h-1/2 relative flex items-center">
-                    <div id="avatar-userB" class="avatar text-2xl drop-shadow-lg z-10" style="left: 0%">👩🏽</div>
-                </div>
-                
-                <div class="absolute right-0 top-0 bottom-0 w-2 bg-yellow-400/80 border-l-2 border-dashed border-black shadow-[0_0_15px_yellow]"></div>
-            </div>
-        </div>
+  <div class="user-switch">
+    <button id="btn-userA" class="switch-btn" onclick="switchUser('userA')">👱‍♀️ Lůca</button>
+    <button id="btn-userB" class="switch-btn" onclick="switchUser('userB')">👩🏽 Kája</button>
+  </div>
 
-        <div class="grid grid-cols-2 gap-3 mb-8 font-black">
-            <div class="glass p-4 rounded-3xl text-center border-pink-500/30 relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 w-16 h-16 bg-pink-500/20 rounded-full blur-xl"></div>
-                <div class="text-[10px] opacity-50 uppercase tracking-widest mb-1">Lůca</div>
-                <div id="score-userA" class="text-4xl text-pink-500 drop-shadow-md">0</div>
-            </div>
-            <div class="glass p-4 rounded-3xl text-center border-orange-500/30 relative overflow-hidden">
-                <div class="absolute -left-4 -top-4 w-16 h-16 bg-orange-500/20 rounded-full blur-xl"></div>
-                <div class="text-[10px] opacity-50 uppercase tracking-widest mb-1">Kája</div>
-                <div id="score-userB" class="text-4xl text-orange-500 drop-shadow-md">0</div>
-            </div>
-        </div>
-
-        <div id="habit-list" class="space-y-3 mb-8"></div>
-
-        <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-5 mb-8 flex items-center justify-between shadow-lg relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-            <div class="text-xs">
-                <div class="opacity-50 font-bold uppercase text-[9px] tracking-widest mb-1">Dnešní výzva <span class="text-indigo-300">+15b</span></div>
-                <div id="today-quest" class="font-bold text-white uppercase italic tracking-tight text-sm">---</div>
-            </div>
-            <button id="quest-btn" onclick="completeQuest()" class="bg-indigo-500 px-5 py-3 rounded-xl font-bold text-xs shadow-lg active:scale-95 transition-transform z-10">SPLNIT</button>
-        </div>
-
-        <div class="glass rounded-3xl p-5 mb-8">
-            <div class="flex gap-2">
-                <input id="custom-input" type="text" placeholder="Fitko, běh, jiná aktivita..." class="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30 transition-colors">
-                <button onclick="addCustom()" class="bg-green-500 px-5 rounded-xl font-black text-xs shadow-lg shadow-green-500/20 active:scale-95 transition-transform">PŘIDAT</button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 mb-8 text-[9px] font-bold uppercase italic">
-            <button onclick="addPenalty('Alkohol', -10, '🍷')" class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-red-400 text-center active:bg-red-500/20 transition-colors">🍷 ALKOHOL<br>-10</button>
-            <button onclick="addPenalty('Pozdě', -5, '😴')" class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-red-400 text-center active:bg-red-500/20 transition-colors">😴 PO 8:00<br>-5</button>
-            <button onclick="addPenalty('Cukr', -5, '🍩')" class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-red-400 text-center active:bg-red-500/20 transition-colors">🍩 CUKR<br>-5</button>
-        </div>
-
-        <div class="mb-10">
-            <div class="text-[10px] uppercase tracking-[0.2em] opacity-30 mb-3 px-2">Poslední akce</div>
-            <div id="log" class="space-y-2 text-[10px] opacity-50 italic px-2 bg-black/20 p-4 rounded-2xl border border-white/5"></div>
-        </div>
-
-        <div class="glass rounded-3xl p-5 mb-10 border-white/5 flex flex-col gap-3">
-            <div class="text-[9px] uppercase tracking-[0.2em] opacity-30 text-center mb-1 font-bold">Správa souboje</div>
-            <button id="sync-btn" onclick="syncData(true)" class="bg-blue-600/20 text-blue-300 px-4 py-3 rounded-xl font-bold text-xs border border-blue-500/20 transition-all shadow-lg active:scale-95 uppercase tracking-widest w-full">🔄 Vynutit synchronizaci</button>
-            <button onclick="archiveWeek()" class="bg-gradient-to-r from-red-600 to-red-800 text-white px-4 py-3 rounded-xl uppercase tracking-widest font-black shadow-lg shadow-red-600/20 active:scale-95 transition-all text-xs w-full border border-red-500/50">🏆 Ukončit týden</button>
-            <button onclick="totalReset()" class="bg-black/50 text-gray-500 hover:text-red-400 px-4 py-3 rounded-xl font-bold text-[10px] w-full border border-white/5 transition-colors uppercase tracking-widest">⚠️ Úplný reset databáze</button>
-        </div>
-
-        <div class="mt-8 mb-8 text-center px-6">
-            <div class="text-[8px] uppercase tracking-[0.4em] opacity-30 mb-3">Vesmírná energie dne</div>
-            <div id="ezo-quote" class="italic font-serif text-sm quote-gradient leading-relaxed"></div>
-        </div>
+  <div class="scores">
+    <div class="score-card luca">
+      <div class="score-label">Lůca</div>
+      <div id="score-userA" class="score-val">0</div>
     </div>
+    <div class="score-card kaja">
+      <div class="score-label">Kája</div>
+      <div id="score-userB" class="score-val">0</div>
+    </div>
+  </div>
 
-    <script>
-        const BIN_ID = 'fdf54930b04517ca8352';
-        const API_URL = `https://api.npoint.io/${BIN_ID}`;
-        const GOAL = 300;
+  <div class="track-card">
+    <div class="track-header">
+      <div class="track-title">Trať k vítězství</div>
+      <div class="track-goal">🎯 Cíl: 300 bodů</div>
+    </div>
+    <div class="track-row">
+      <div class="track-name luca">LŮCA</div>
+      <div class="track-bg"><div id="bar-a" class="track-fill luca" style="width:0%"></div></div>
+      <div id="bar-a-val" class="track-num luca">0</div>
+    </div>
+    <div class="track-row">
+      <div class="track-name kaja">KÁJA</div>
+      <div class="track-bg"><div id="bar-b" class="track-fill kaja" style="width:0%"></div></div>
+      <div id="bar-b-val" class="track-num kaja">0</div>
+    </div>
+    <div class="track-marks">
+      <span class="track-mark">50</span>
+      <span class="track-mark">100</span>
+      <span class="track-mark">150</span>
+      <span class="track-mark">200</span>
+      <span class="track-mark">250</span>
+    </div>
+  </div>
 
-        const HABITS = [
-            { id: "water",   label: "2L vody", points: 2, icon: "💧" },
-            { id: "sleep",   label: "8h spánek", points: 2, icon: "🌙" },
-            { id: "nosugar", label: "Bez cukru", points: 3, icon: "🚫" },
-            { id: "steps",   label: "10 000 kroků", points: 3, icon: "👟" },
-            { id: "veggies", label: "Zelenina", points: 2, icon: "🥦" }
-        ];
+  <div class="section-title">✅ Dnešní návyky</div>
+  <div id="habit-list" class="habit-list"></div>
 
-        const SIDE_QUESTS = [
-            "30 angličáků 💪", "Studená sprcha 🚿", "1h bez telefonu 📵", "Bez slazeného pití 🥤", 
-            "Chůze 5 km 🚶", "Srovnat si pokoj 🧹", "15 min strečink 🤸", "Plank 2 minuty ⏳", 
-            "Zdravé domácí jídlo 🍳", "3h před spaním nejíst 🌙"
-        ];
+  <div class="quest-card">
+    <div class="quest-top">
+      <div class="quest-label">⚡ Side Quest dne</div>
+      <div class="quest-pts">+15 bodů</div>
+    </div>
+    <div id="today-quest" class="quest-text">---</div>
+    <button id="quest-btn" class="quest-btn" onclick="completeQuest()">Splnit výzvu</button>
+  </div>
 
-        const EZO_QUOTES = [
-            "Tvé tělo je chrám tvé duše, vymeť z něj prach disciplínou. ✨",
-            "Vesmír ti nenadělí výzvu, kterou bys nedokázala zdolat. 🌌",
-            "Dnešní pot je slzami tvého starého já, které odchází. 🌸",
-            "Kdo ovládne své ráno, ovládne svou manifestaci. ☀️",
-            "Tvá energie proudí tam, kam zaměřuješ pozornost. ✨",
-            "V tichu mezi nádechy najdeš sílu udělat další angličák. 🌬️",
-            "Buď jako voda – měkká navenek, ale schopná prorazit skálu. 🌊"
-        ];
-        
-        let currentUser = localStorage.getItem('activeUser') || "userA";
-        
-        let state = { 
-            userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] }, 
-            userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-            lastWinner: null,
-            lastUpdated: 0,
-            currentDay: new Date().toDateString()
-        };
-        
-        let isSaving = false;
+  <div class="custom-card">
+    <input id="custom-input" class="custom-input" type="text" placeholder="Fitko, běh, jiná aktivita...">
+    <button class="custom-btn" onclick="addCustom()">+ Přidat</button>
+  </div>
 
-        function renderDate() {
-            const dny = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
-            const d = new Date();
-            const dateStr = `${dny[d.getDay()]}, ${d.getDate()}. ${d.getMonth() + 1}.`;
-            document.getElementById('current-date-display').innerText = dateStr;
+  <div class="section-title">💀 Penalizace</div>
+  <div class="penalty-grid">
+    <div class="penalty-btn" onclick="addPenalty('Alkohol',-10,'🍷')">
+      <div class="penalty-emoji">🍷</div>
+      <span class="penalty-name">Alkohol</span>
+      <div class="penalty-val">-10</div>
+    </div>
+    <div class="penalty-btn" onclick="addPenalty('Pozdě',-5,'😴')">
+      <div class="penalty-emoji">😴</div>
+      <span class="penalty-name">Po 8:00</span>
+      <div class="penalty-val">-5</div>
+    </div>
+    <div class="penalty-btn" onclick="addPenalty('Cukr',-5,'🍩')">
+      <div class="penalty-emoji">🍩</div>
+      <span class="penalty-name">Cukr</span>
+      <div class="penalty-val">-5</div>
+    </div>
+  </div>
+
+  <div class="section-title">📋 Poslední akce</div>
+  <div class="log-card">
+    <div id="log-list"><div class="log-empty">Zatím žádné akce tento týden…</div></div>
+  </div>
+
+  <div class="energy-card">
+    <div class="energy-icon">✨</div>
+    <div id="ezo-quote" class="energy-quote"></div>
+  </div>
+
+  <div class="mgmt-card">
+    <div class="mgmt-title">⚙️ Správa souboje</div>
+    <button class="mgmt-btn" id="sync-btn" onclick="syncData(true)">🔄 Vynutit synchronizaci</button>
+    <button class="mgmt-btn" onclick="archiveWeek()">🏆 Ukončit týden</button>
+    <button class="mgmt-btn danger" onclick="showReset()">⚠️ Úplný reset databáze</button>
+  </div>
+
+</div>
+
+<div id="modal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-icon">💣</div>
+    <div class="modal-title">Opravdu reset?</div>
+    <div class="modal-desc">Smažeš <strong>všechna data</strong> souboje. Akce je <strong>nevratná</strong>!</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="hideReset()">Zpět</button>
+      <button class="modal-confirm" onclick="confirmReset()">Smazat vše</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const BIN_ID = 'fdf54930b04517ca8352';
+const API_URL = `https://api.npoint.io/${BIN_ID}`;
+const GOAL = 300;
+
+const HABITS = [
+  { id:"water",   label:"2L vody",      points:2, icon:"💧" },
+  { id:"sleep",   label:"8h spánek",    points:2, icon:"🌙" },
+  { id:"nosugar", label:"Bez cukru",    points:3, icon:"🚫" },
+  { id:"steps",   label:"10 000 kroků", points:3, icon:"👟" },
+  { id:"veggies", label:"Zelenina",     points:2, icon:"🥦" },
+];
+
+const SIDE_QUESTS = [
+  "30 angličáků 💪",
+  "Studená sprcha 🚿",
+  "1h bez telefonu 📵",
+  "Bez slazeného pití 🥤",
+  "Chůze 5 km 🚶",
+  "Srovnat si pokoj 🧹",
+  "15 min strečink 🤸",
+  "Plank 2 minuty ⏳",
+  "Zdravé domácí jídlo 🍳",
+  "3h před spaním nejíst 🌙",
+];
+
+const EZO_QUOTES = [
+  "Tvé tělo je chrám tvé duše, vymeť z něj prach disciplínou. ✨",
+  "Vesmír ti nenadělí výzvu, kterou bys nedokázala zdolat. 🌌",
+  "Dnešní pot je slzami tvého starého já, které odchází. 🌸",
+  "Kdo ovládne své ráno, ovládne svou manifestaci. ☀️",
+  "Tvá energie proudí tam, kam zaměřuješ pozornost. ✨",
+  "V tichu mezi nádechy najdeš sílu udělat další angličák. 🌬️",
+  "Buď jako voda – měkká navenek, ale schopná prorazit skálu. 🌊",
+];
+
+let currentUser = localStorage.getItem('activeUser') || 'userA';
+let isSaving = false;
+let state = {
+  userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
+  userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
+  lastWinner: null, lastUpdated:0, currentDay: new Date().toDateString()
+};
+
+function renderDate() {
+  const dny = ['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'];
+  const d = new Date();
+  document.getElementById('date-display').textContent = `${dny[d.getDay()]}, ${d.getDate()}. ${d.getMonth()+1}.`;
+}
+
+function checkNewDay() {
+  const today = new Date().toDateString();
+  if (state.currentDay && state.currentDay !== today) {
+    state.userA.checkedHabits = {}; state.userA.questDone = false;
+    state.userB.checkedHabits = {}; state.userB.questDone = false;
+    state.currentDay = today;
+    save();
+  } else if (!state.currentDay) {
+    state.currentDay = today;
+  }
+}
+
+async function syncData(manual = false) {
+  if (isSaving) return;
+  const btn = document.getElementById('sync-btn');
+  if (manual && btn) btn.textContent = '⏳ Načítám...';
+  try {
+    const res = await fetch(`${API_URL}?t=${Date.now()}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.userA) {
+        if ((data.lastUpdated || 0) >= (state.lastUpdated || 0)) {
+          state = data; checkNewDay(); render();
         }
+      }
+    }
+  } catch(e) { console.error('Sync error', e); }
+  if (manual && btn) btn.textContent = '🔄 Vynutit synchronizaci';
+}
 
-        function checkNewDay() {
-            const today = new Date().toDateString();
-            if (state.currentDay && state.currentDay !== today) {
-                state.userA.checkedHabits = {};
-                state.userA.questDone = false;
-                state.userB.checkedHabits = {};
-                state.userB.questDone = false;
-                state.currentDay = today;
-                save();
-            } else if (!state.currentDay) {
-                state.currentDay = today;
-            }
-        }
+async function save() {
+  state.lastUpdated = Date.now();
+  render(); isSaving = true;
+  try {
+    await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(state) });
+  } catch(e) { console.error('Save error', e); }
+  isSaving = false;
+}
 
-        async function syncData(manual = false) {
-            if (isSaving) return; 
-            
-            const btn = document.getElementById('sync-btn');
-            if (manual && btn) btn.innerText = "⏳ Načítám...";
+function render() {
+  renderDate();
 
-            try {
-                const res = await fetch(`${API_URL}?t=${Date.now()}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.userA) {
-                        const serverTime = data.lastUpdated || 0;
-                        const localTime = state.lastUpdated || 0;
-                        
-                        if (serverTime >= localTime) {
-                            state = data;
-                            checkNewDay();
-                            render();
-                        }
-                    }
-                }
-            } catch (e) { console.error("Sync error"); }
+  document.getElementById('btn-userA').classList.toggle('active', currentUser === 'userA');
+  document.getElementById('btn-userB').classList.toggle('active', currentUser === 'userB');
 
-            if (manual && btn) btn.innerText = "🔄 Vynutit synchronizaci";
-        }
+  document.getElementById('score-userA').textContent = state.userA.weeklyPoints;
+  document.getElementById('score-userB').textContent = state.userB.weeklyPoints;
 
-        async function save() {
-            state.lastUpdated = Date.now();
-            render();
-            isSaving = true;
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(state)
-                });
-            } catch (e) { console.error("Save error"); }
-            isSaving = false;
-        }
+  const pA = Math.min((state.userA.weeklyPoints / GOAL) * 100, 100);
+  const pB = Math.min((state.userB.weeklyPoints / GOAL) * 100, 100);
+  document.getElementById('bar-a').style.width = pA + '%';
+  document.getElementById('bar-b').style.width = pB + '%';
+  document.getElementById('bar-a-val').textContent = state.userA.weeklyPoints;
+  document.getElementById('bar-b-val').textContent = state.userB.weeklyPoints;
 
-        function render() {
-            renderDate();
+  const wb = document.getElementById('winner-bar');
+  if (state.lastWinner) {
+    wb.style.display = 'flex';
+    document.getElementById('last-winner-name').textContent = state.lastWinner;
+  } else { wb.style.display = 'none'; }
 
-            document.getElementById('btn-userA').className = `py-3 rounded-xl font-bold transition-all ${currentUser === 'userA' ? 'bg-white/20 shadow-md' : 'opacity-40'}`;
-            document.getElementById('btn-userB').className = `py-3 rounded-xl font-bold transition-all ${currentUser === 'userB' ? 'bg-white/20 shadow-md' : 'opacity-40'}`;
-            document.getElementById('score-userA').innerText = state.userA.weeklyPoints;
-            document.getElementById('score-userB').innerText = state.userB.weeklyPoints;
-            
-            document.getElementById('avatar-userA').style.left = Math.min((state.userA.weeklyPoints / GOAL) * 95, 95) + "%";
-            document.getElementById('avatar-userB').style.left = Math.min((state.userB.weeklyPoints / GOAL) * 95, 95) + "%";
+  const list = document.getElementById('habit-list');
+  list.innerHTML = '';
+  HABITS.forEach(h => {
+    const checked = !!state[currentUser].checkedHabits[h.id];
+    const div = document.createElement('div');
+    div.className = 'habit-item' + (checked ? ' checked' : '');
+    div.onclick = () => toggleHabit(h.id);
+    div.innerHTML = `
+      <div class="habit-check">${checked ? '✓' : ''}</div>
+      <span class="habit-icon">${h.icon}</span>
+      <span class="habit-name">${h.label}</span>
+      <span class="habit-pts">+${h.points}</span>
+    `;
+    list.appendChild(div);
+  });
 
-            const hf = document.getElementById('hall-of-fame');
-            if (state.lastWinner) {
-                hf.classList.remove('hidden');
-                document.getElementById('last-winner').innerText = state.lastWinner;
-            } else { hf.classList.add('hidden'); }
+  const dayIndex = (new Date().getDay() + 6) % 7;
+  document.getElementById('today-quest').textContent = SIDE_QUESTS[dayIndex % SIDE_QUESTS.length];
+  document.getElementById('ezo-quote').textContent = `„${EZO_QUOTES[dayIndex % EZO_QUOTES.length]}"`;
 
-            const list = document.getElementById('habit-list');
-            list.innerHTML = '';
-            HABITS.forEach(h => {
-                const ch = state[currentUser].checkedHabits[h.id];
-                const div = document.createElement('div');
-                div.onclick = () => toggleHabit(h.id);
-                div.className = `flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${ch ? 'bg-green-500/20 border-green-500/50 opacity-50' : 'bg-black/30 border-white/10 hover:bg-white/5'}`;
-                div.innerHTML = `<div class="w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-colors ${ch ? 'bg-green-500 border-none shadow-[0_0_10px_#22c55e]' : 'border-white/20'}">${ch ? '✓' : ''}</div><span class="text-2xl">${h.icon}</span><span class="flex-1 font-bold tracking-tight text-sm">${h.label}</span><span class="font-black text-green-400 text-sm bg-green-400/10 px-2 py-1 rounded-md">+${h.points}</span>`;
-                list.appendChild(div);
-            });
+  const qBtn = document.getElementById('quest-btn');
+  if (state[currentUser].questDone) {
+    qBtn.disabled = true;
+    qBtn.textContent = '✓ Splněno!';
+  } else {
+    qBtn.disabled = false;
+    qBtn.textContent = 'Splnit výzvu';
+  }
 
-            const dayIndex = (new Date().getDay() + 6) % 7; 
-            document.getElementById('today-quest').innerText = SIDE_QUESTS[dayIndex % SIDE_QUESTS.length];
-            document.getElementById('ezo-quote').innerText = `„${EZO_QUOTES[dayIndex % EZO_QUOTES.length]}“`;
-            
-            const qBtn = document.getElementById('quest-btn');
-            qBtn.disabled = state[currentUser].questDone;
-            if (state[currentUser].questDone) {
-                qBtn.className = "bg-green-500/50 text-white px-5 py-3 rounded-xl font-bold text-xs z-10 opacity-50";
-                qBtn.innerText = "✓ SPLNĚNO";
-            } else {
-                qBtn.className = "bg-indigo-500 px-5 py-3 rounded-xl font-bold text-xs shadow-lg shadow-indigo-500/30 active:scale-95 transition-transform z-10";
-                qBtn.innerText = "SPLNIT";
-            }
+  const logDiv = document.getElementById('log-list');
+  const allLogs = [...state.userA.log, ...state.userB.log]
+    .sort((a,b) => b.ts - a.ts).slice(0,6);
+  if (allLogs.length === 0) {
+    logDiv.innerHTML = '<div class="log-empty">Zatím žádné akce tento týden…</div>';
+  } else {
+    logDiv.innerHTML = allLogs.map(l => {
+      const who = l.u === 'Lůca' ? 'luca' : 'kaja';
+      return `<div class="log-item">
+        <div class="log-dot ${who}"></div>
+        <div class="log-text">${l.icon} <strong>${l.u}</strong>: ${l.a}</div>
+        <div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div>
+      </div>`;
+    }).join('');
+  }
+}
 
-            const logDiv = document.getElementById('log');
-            const allLogs = [...state.userA.log, ...state.userB.log].sort((a,b) => b.ts - a.ts).slice(0, 5);
-            if(allLogs.length === 0) logDiv.innerHTML = "Zatím se nic nestalo...";
-            else logDiv.innerHTML = allLogs.map(l => `<div class="flex justify-between border-b border-white/5 pb-2 pt-1"><span>${l.icon} <strong>${l.u}</strong>: ${l.a}</span><span class="font-bold ${l.d > 0 ? 'text-green-400' : 'text-red-400'}">${l.d > 0 ? '+' : ''}${l.d}</span></div>`).join('');
-        }
+function switchUser(id) { currentUser = id; localStorage.setItem('activeUser', id); render(); }
 
-        function switchUser(id) { currentUser = id; localStorage.setItem('activeUser', id); render(); }
+function toggleHabit(id) {
+  checkNewDay();
+  const h = HABITS.find(x => x.id === id);
+  const was = !!state[currentUser].checkedHabits[id];
+  state[currentUser].checkedHabits[id] = !was;
+  const delta = was ? -h.points : h.points;
+  state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
+  state[currentUser].log.unshift({ u: currentUser==='userA'?'Lůca':'Kája', a:h.label, d:delta, icon:h.icon, ts:Date.now() });
+  showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}: ${delta > 0 ? '+' : ''}${delta} bodů`);
+  save();
+}
 
-        function toggleHabit(id) {
-            checkNewDay(); 
-            const h = HABITS.find(x => x.id === id);
-            const was = !!state[currentUser].checkedHabits[id];
-            state[currentUser].checkedHabits[id] = !was;
-            const delta = was ? -h.points : h.points;
-            state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
-            state[currentUser].log.unshift({ u: currentUser === 'userA' ? 'Lůca' : 'Kája', a: h.label, d: delta, icon: h.icon, ts: Date.now() });
-            save();
-        }
+function completeQuest() {
+  checkNewDay();
+  if (state[currentUser].questDone) return;
+  state[currentUser].questDone = true;
+  state[currentUser].weeklyPoints += 15;
+  state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:'Side Quest splněn!', d:15, icon:'⚡', ts:Date.now() });
+  showToast('⚡ +15 bodů za Side Quest!');
+  save();
+}
 
-        function addPenalty(label, delta, icon) {
-            state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
-            state[currentUser].log.unshift({ u: currentUser === 'userA' ? 'Lůca' : 'Kája', a: label, d: delta, icon: icon, ts: Date.now() });
-            save();
-        }
+function addPenalty(label, delta, icon) {
+  state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
+  state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
+  showToast(`${icon} ${label}: ${delta} bodů`);
+  save();
+}
 
-        function completeQuest() {
-            checkNewDay();
-            if (state[currentUser].questDone) return;
-            state[currentUser].questDone = true;
-            state[currentUser].weeklyPoints += 15;
-            state[currentUser].log.unshift({ u: currentUser === 'userA' ? 'Lůca' : 'Kája', a: "Výzva", d: 15, icon: "⚡", ts: Date.now() });
-            save();
-        }
+function addCustom() {
+  const val = document.getElementById('custom-input').value.trim();
+  if (!val) return;
+  state[currentUser].weeklyPoints += 10;
+  state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:val, d:10, icon:'🏋️', ts:Date.now() });
+  document.getElementById('custom-input').value = '';
+  showToast(`🏋️ +10 bodů: ${val}`);
+  save();
+}
 
-        function addCustom() {
-            const val = document.getElementById('custom-input').value.trim();
-            if (!val) return;
-            state[currentUser].weeklyPoints += 10;
-            state[currentUser].log.unshift({ u: currentUser === 'userA' ? 'Lůca' : 'Kája', a: val, d: 10, icon: "🏋️", ts: Date.now() });
-            document.getElementById('custom-input').value = '';
-            save();
-        }
+function archiveWeek() {
+  if (!confirm('Opravdu ukončit tento týden a vyhlásit vítězku?')) return;
+  let winner = 'Remíza!';
+  if (state.userA.weeklyPoints > state.userB.weeklyPoints) winner = 'Lůca 🔥';
+  else if (state.userB.weeklyPoints > state.userA.weeklyPoints) winner = 'Kája 🔥';
+  state = {
+    userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
+    userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
+    lastWinner:winner, lastUpdated:Date.now(), currentDay:new Date().toDateString()
+  };
+  save();
+}
 
-        function archiveWeek() {
-            if(confirm("Opravdu ukončit tento týden a vyhlásit vítězku?")) {
-                let winner = "Remíza!";
-                if (state.userA.weeklyPoints > state.userB.weeklyPoints) winner = "Lůca 🔥";
-                else if (state.userB.weeklyPoints > state.userA.weeklyPoints) winner = "Kája 🔥";
-                
-                state = {
-                    userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-                    userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-                    lastWinner: winner,
-                    lastUpdated: Date.now(),
-                    currentDay: new Date().toDateString()
-                };
-                save();
-            }
-        }
+function showReset() { document.getElementById('modal').classList.add('show'); }
+function hideReset() { document.getElementById('modal').classList.remove('show'); }
+function confirmReset() {
+  state = {
+    userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
+    userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
+    lastWinner:null, lastUpdated:Date.now(), currentDay:new Date().toDateString()
+  };
+  hideReset();
+  showToast('💣 Databáze byla resetována');
+  save();
+}
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) hideReset(); });
 
-        function totalReset() {
-            if(confirm("POZOR! Smaže úplně všechno včetně bodů a historie. Pokračovat?")) {
-                state = {
-                    userA: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-                    userB: { weeklyPoints: 0, checkedHabits: {}, questDone: false, log: [] },
-                    lastWinner: null,
-                    lastUpdated: Date.now(),
-                    currentDay: new Date().toDateString()
-                };
-                save();
-            }
-        }
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
 
-        syncData();
-        setInterval(() => syncData(false), 30000);
-    </script>
+syncData();
+setInterval(() => syncData(false), 30000);
+</script>
 </body>
 </html>
