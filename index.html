@@ -11,11 +11,11 @@
   --luca-glow: rgba(255,107,157,0.35);
   --kaja: #FB923C;
   --kaja-glow: rgba(251,146,60,0.35);
-  --bg: #09091a;
-  --card: rgba(255,255,255,0.05);
-  --card-border: rgba(255,255,255,0.09);
+  --bg: #141428;
+  --card: rgba(255,255,255,0.08);
+  --card-border: rgba(255,255,255,0.13);
   --text: #f0eeff;
-  --muted: rgba(255,255,255,0.35);
+  --muted: rgba(255,255,255,0.45);
   --gold: #FFD700;
   --green: #4ade80;
   --red: #f87171;
@@ -36,8 +36,8 @@ body::before {
   content:'';
   position:fixed; inset:0;
   background:
-    radial-gradient(ellipse 55% 35% at 15% 10%, rgba(255,107,157,0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 55% 35% at 85% 85%, rgba(251,146,60,0.07) 0%, transparent 70%);
+    radial-gradient(ellipse 55% 35% at 15% 10%, rgba(255,107,157,0.11) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 35% at 85% 85%, rgba(251,146,60,0.11) 0%, transparent 70%);
   pointer-events:none; z-index:0;
 }
 
@@ -53,23 +53,23 @@ body::before {
 
 .winner-bar {
   display:flex; align-items:center; justify-content:center; gap:8px;
-  background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,215,0,0.04));
-  border:1px solid rgba(255,215,0,0.25); border-radius:50px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,215,0,0.06));
+  border:1px solid rgba(255,215,0,0.3); border-radius:50px;
   padding:8px 22px; width:fit-content; margin:0 auto 20px;
   font-size:12px; font-weight:800; color:var(--gold); letter-spacing:1px;
 }
 
 .user-switch {
   display:grid; grid-template-columns:1fr 1fr; gap:6px;
-  background:rgba(255,255,255,0.04); border-radius:20px; padding:5px;
+  background:rgba(255,255,255,0.06); border-radius:20px; padding:5px;
   border:1px solid var(--card-border); margin-bottom:20px;
 }
 .switch-btn {
   padding:12px; border-radius:14px; font-family:'Nunito',sans-serif;
   font-size:14px; font-weight:800; border:none; cursor:pointer;
-  transition:all 0.25s ease; color:var(--text); background:transparent; opacity:0.4;
+  transition:all 0.25s ease; color:var(--text); background:transparent; opacity:0.45;
 }
-.switch-btn.active { background:rgba(255,255,255,0.15); opacity:1; box-shadow:0 2px 12px rgba(0,0,0,0.3); }
+.switch-btn.active { background:rgba(255,255,255,0.18); opacity:1; box-shadow:0 2px 12px rgba(0,0,0,0.3); }
 
 .scores { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
 .score-card {
@@ -78,24 +78,25 @@ body::before {
 }
 .score-card::before {
   content:''; position:absolute; width:80px; height:80px; border-radius:50%;
-  top:-20px; filter:blur(24px); opacity:0.5;
+  top:-20px; filter:blur(24px); opacity:0.6;
 }
 .score-card.luca::before { background:var(--luca); right:-20px; }
 .score-card.kaja::before { background:var(--kaja); left:-20px; }
-.score-label { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.45; margin-bottom:4px; }
+.score-label { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.5; margin-bottom:4px; }
 .score-val { font-family:'Bebas Neue',sans-serif; font-size:50px; line-height:1; }
 .score-card.luca .score-val { color:var(--luca); text-shadow:0 0 20px var(--luca-glow); }
 .score-card.kaja .score-val { color:var(--kaja); text-shadow:0 0 20px var(--kaja-glow); }
+.score-val.negative { color: var(--red) !important; text-shadow: 0 0 20px rgba(248,113,113,0.4) !important; }
 
 .track-card {
   backdrop-filter:blur(12px); background:var(--card); border:1px solid var(--card-border);
   border-radius:24px; padding:20px; margin-bottom:20px;
 }
 .track-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-.track-title { font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.4; }
+.track-title { font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.45; }
 .track-goal {
   font-size:10px; font-weight:800; letter-spacing:2px; text-transform:uppercase;
-  color:var(--gold); background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.2);
+  color:var(--gold); background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.25);
   padding:4px 12px; border-radius:50px;
 }
 .track-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
@@ -104,8 +105,8 @@ body::before {
 .track-name.luca { color:var(--luca); }
 .track-name.kaja { color:var(--kaja); }
 .track-bg {
-  flex:1; height:12px; background:rgba(255,255,255,0.05); border-radius:50px;
-  overflow:hidden; border:1px solid rgba(255,255,255,0.05); position:relative;
+  flex:1; height:12px; background:rgba(255,255,255,0.07); border-radius:50px;
+  overflow:hidden; border:1px solid rgba(255,255,255,0.07); position:relative;
 }
 .track-fill {
   height:100%; border-radius:50px; transition:width 1s cubic-bezier(0.22,1,0.36,1); position:relative;
@@ -113,54 +114,53 @@ body::before {
 .track-fill.luca { background:linear-gradient(90deg,#c94b7a,var(--luca),#ffb3d1); box-shadow:0 0 10px var(--luca-glow); }
 .track-fill.kaja { background:linear-gradient(90deg,#c4621a,var(--kaja),#fed7aa); box-shadow:0 0 10px var(--kaja-glow); }
 .track-fill::after { content:''; position:absolute; top:0; right:0; width:5px; height:100%; background:rgba(255,255,255,0.5); border-radius:50px; filter:blur(2px); }
-.track-num { font-size:12px; font-weight:900; width:28px; text-align:right; flex-shrink:0; }
+.track-num { font-size:12px; font-weight:900; width:34px; text-align:right; flex-shrink:0; }
 .track-num.luca { color:var(--luca); }
 .track-num.kaja { color:var(--kaja); }
+.track-num.negative { color: var(--red) !important; }
 .track-marks { display:flex; justify-content:space-between; padding:4px 50px 0 50px; }
-.track-mark { font-size:9px; opacity:0.2; font-weight:700; }
+.track-mark { font-size:9px; opacity:0.25; font-weight:700; }
 
-.section-title { font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.35; margin-bottom:12px; }
+.section-title { font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.4; margin-bottom:12px; }
 
 .habit-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
 
 .habit-item {
   display:flex; align-items:center; gap:14px;
-  backdrop-filter:blur(10px); background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.07); border-radius:18px;
-  padding:14px 16px; cursor:pointer;
-  transition:all 0.2s ease;
+  backdrop-filter:blur(10px); background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.09); border-radius:18px;
+  padding:14px 16px; cursor:pointer; transition:all 0.2s ease;
 }
-.habit-item:hover { background:rgba(255,255,255,0.07); }
+.habit-item:hover { background:rgba(255,255,255,0.09); }
 .habit-item:active { transform:scale(0.98); }
 .habit-item.checked {
-  background:rgba(74,222,128,0.1);
-  border-color:rgba(74,222,128,0.3);
-  opacity:0.65;
+  background:rgba(74,222,128,0.12);
+  border-color:rgba(74,222,128,0.35);
+  opacity:0.7;
 }
 
 .habit-check {
   width:26px; height:26px; border-radius:8px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
-  border:2px solid rgba(255,255,255,0.18); transition:all 0.2s ease;
+  border:2px solid rgba(255,255,255,0.22); transition:all 0.2s ease;
   font-size:14px; font-weight:900;
 }
 .habit-item.checked .habit-check {
   background:var(--green); border-color:transparent;
-  box-shadow:0 0 10px rgba(74,222,128,0.5);
-  color:#09091a;
+  box-shadow:0 0 10px rgba(74,222,128,0.5); color:#09091a;
 }
 
 .habit-icon { font-size:22px; }
 .habit-name { flex:1; font-size:14px; font-weight:700; }
 .habit-pts {
   font-size:13px; font-weight:900; color:var(--green);
-  background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.2);
+  background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.25);
   padding:3px 10px; border-radius:8px;
 }
 
 .quest-card {
-  background:linear-gradient(135deg, rgba(99,102,241,0.18), rgba(99,102,241,0.06));
-  border:1px solid rgba(99,102,241,0.3); border-radius:24px;
+  background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.08));
+  border:1px solid rgba(99,102,241,0.35); border-radius:24px;
   padding:20px; margin-bottom:20px; position:relative; overflow:hidden;
 }
 .quest-card::before {
@@ -171,7 +171,7 @@ body::before {
 .quest-label { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:var(--indigo); }
 .quest-pts {
   font-size:11px; font-weight:800; color:var(--indigo);
-  background:rgba(129,140,248,0.15); border:1px solid rgba(129,140,248,0.3);
+  background:rgba(129,140,248,0.18); border:1px solid rgba(129,140,248,0.35);
   padding:3px 12px; border-radius:50px;
 }
 .quest-text { font-size:16px; font-weight:800; margin-bottom:16px; letter-spacing:-0.3px; }
@@ -180,23 +180,22 @@ body::before {
   font-family:'Nunito',sans-serif; font-size:13px; font-weight:900;
   letter-spacing:2px; text-transform:uppercase; cursor:pointer;
   background:var(--indigo); color:white;
-  box-shadow:0 4px 20px rgba(99,102,241,0.4);
-  transition:all 0.2s ease;
+  box-shadow:0 4px 20px rgba(99,102,241,0.4); transition:all 0.2s ease;
 }
 .quest-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 28px rgba(99,102,241,0.5); }
 .quest-btn:active:not(:disabled) { transform:scale(0.97); }
-.quest-btn:disabled { background:rgba(74,222,128,0.3); box-shadow:none; color:rgba(255,255,255,0.7); cursor:default; }
+.quest-btn:disabled { background:rgba(74,222,128,0.35); box-shadow:none; color:rgba(255,255,255,0.75); cursor:default; }
 
 .custom-card {
   backdrop-filter:blur(10px); background:var(--card); border:1px solid var(--card-border);
   border-radius:20px; padding:14px; margin-bottom:20px; display:flex; gap:10px;
 }
 .custom-input {
-  flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1);
+  flex:1; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.12);
   border-radius:12px; padding:12px 16px; font-size:13px; font-family:'Nunito',sans-serif;
   color:var(--text); outline:none; transition:border-color 0.2s;
 }
-.custom-input:focus { border-color:rgba(255,255,255,0.3); }
+.custom-input:focus { border-color:rgba(255,255,255,0.35); }
 .custom-input::placeholder { color:var(--muted); }
 .custom-btn {
   padding:12px 18px; border:none; border-radius:12px; background:var(--green);
@@ -209,11 +208,11 @@ body::before {
 
 .penalty-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
 .penalty-btn {
-  background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.15);
+  background:rgba(248,113,113,0.09); border:1px solid rgba(248,113,113,0.18);
   border-radius:18px; padding:14px 8px; text-align:center;
   cursor:pointer; transition:all 0.2s ease; font-family:'Nunito',sans-serif;
 }
-.penalty-btn:hover { background:rgba(248,113,113,0.14); border-color:rgba(248,113,113,0.3); transform:translateY(-2px); }
+.penalty-btn:hover { background:rgba(248,113,113,0.16); border-color:rgba(248,113,113,0.35); transform:translateY(-2px); }
 .penalty-btn:active { transform:scale(0.96); }
 .penalty-emoji { font-size:24px; margin-bottom:4px; }
 .penalty-name { font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--red); display:block; }
@@ -225,21 +224,21 @@ body::before {
 }
 .log-item {
   display:flex; align-items:center; gap:10px;
-  padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:12px;
+  padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:12px;
 }
 .log-item:last-child { border-bottom:none; }
 .log-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .log-dot.luca { background:var(--luca); box-shadow:0 0 6px var(--luca-glow); }
 .log-dot.kaja { background:var(--kaja); box-shadow:0 0 6px var(--kaja-glow); }
-.log-text { flex:1; font-weight:600; opacity:0.75; }
+.log-text { flex:1; font-weight:600; opacity:0.8; }
 .log-pts { font-weight:900; font-size:13px; }
 .log-pts.pos { color:var(--green); }
 .log-pts.neg { color:var(--red); }
-.log-empty { font-size:12px; opacity:0.3; font-style:italic; text-align:center; padding:12px 0; }
+.log-empty { font-size:12px; opacity:0.35; font-style:italic; text-align:center; padding:12px 0; }
 
 .energy-card {
-  background:linear-gradient(135deg,rgba(167,139,250,0.1),rgba(255,107,157,0.1));
-  border:1px solid rgba(255,255,255,0.07); border-radius:20px;
+  background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(255,107,157,0.12));
+  border:1px solid rgba(255,255,255,0.09); border-radius:20px;
   padding:22px; margin-bottom:20px; text-align:center;
 }
 .energy-icon { font-size:28px; margin-bottom:8px; }
@@ -250,23 +249,23 @@ body::before {
 }
 
 .mgmt-card {
-  backdrop-filter:blur(10px); background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(10px); background:rgba(255,255,255,0.04);
   border:1px solid var(--card-border); border-radius:20px;
   padding:18px; margin-bottom:20px;
 }
-.mgmt-title { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.3; margin-bottom:12px; text-align:center; }
+.mgmt-title { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.35; margin-bottom:12px; text-align:center; }
 .mgmt-btn {
-  width:100%; padding:12px 16px; border-radius:12px; border:none;
+  width:100%; padding:12px 16px; border-radius:12px;
   font-family:'Nunito',sans-serif; font-size:12px; font-weight:800;
   cursor:pointer; transition:all 0.2s; text-align:left;
   display:flex; align-items:center; gap:10px; margin-bottom:8px;
-  background:rgba(255,255,255,0.04); color:var(--text);
-  border:1px solid rgba(255,255,255,0.06); letter-spacing:0.5px;
+  background:rgba(255,255,255,0.05); color:var(--text);
+  border:1px solid rgba(255,255,255,0.08); letter-spacing:0.5px;
 }
 .mgmt-btn:last-child { margin-bottom:0; }
-.mgmt-btn:hover { background:rgba(255,255,255,0.08); transform:translateX(2px); }
-.mgmt-btn.danger { background:rgba(248,113,113,0.06); color:var(--red); border-color:rgba(248,113,113,0.15); }
-.mgmt-btn.danger:hover { background:rgba(248,113,113,0.12); border-color:rgba(248,113,113,0.3); }
+.mgmt-btn:hover { background:rgba(255,255,255,0.1); transform:translateX(2px); }
+.mgmt-btn.danger { background:rgba(248,113,113,0.08); color:var(--red); border-color:rgba(248,113,113,0.18); }
+.mgmt-btn.danger:hover { background:rgba(248,113,113,0.14); border-color:rgba(248,113,113,0.35); }
 
 .modal-bg {
   display:none; position:fixed; inset:0;
@@ -275,7 +274,7 @@ body::before {
 }
 .modal-bg.show { display:flex; }
 .modal {
-  background:#1a1a2e; border:1px solid rgba(248,113,113,0.25);
+  background:#1e1e35; border:1px solid rgba(248,113,113,0.25);
   border-radius:28px; padding:32px 24px; text-align:center;
   max-width:320px; width:100%;
   animation:popIn 0.25s cubic-bezier(0.22,1,0.36,1) both;
@@ -285,8 +284,8 @@ body::before {
 .modal-desc { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:24px; }
 .modal-actions { display:flex; gap:10px; }
 .modal-cancel {
-  flex:1; padding:13px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);
-  background:rgba(255,255,255,0.05); color:var(--text); font-family:'Nunito',sans-serif;
+  flex:1; padding:13px; border-radius:12px; border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06); color:var(--text); font-family:'Nunito',sans-serif;
   font-size:13px; font-weight:800; cursor:pointer; transition:all 0.2s;
 }
 .modal-cancel:hover { background:rgba(255,255,255,0.1); }
@@ -301,7 +300,7 @@ body::before {
 .toast {
   position:fixed; bottom:28px; left:50%;
   transform:translateX(-50%) translateY(80px);
-  background:#1a1a2e; border:1px solid rgba(255,255,255,0.12);
+  background:#1e1e35; border:1px solid rgba(255,255,255,0.14);
   padding:11px 22px; border-radius:50px; font-size:13px; font-weight:700;
   z-index:200; transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
   white-space:nowrap; pointer-events:none;
@@ -459,15 +458,9 @@ const HABITS = [
 ];
 
 const SIDE_QUESTS = [
-  "30 angličáků 💪",
-  "Studená sprcha 🚿",
-  "1h bez telefonu 📵",
-  "Bez slazeného pití 🥤",
-  "Chůze 5 km 🚶",
-  "Srovnat si pokoj 🧹",
-  "15 min strečink 🤸",
-  "Plank 2 minuty ⏳",
-  "Zdravé domácí jídlo 🍳",
+  "30 angličáků 💪", "Studená sprcha 🚿", "1h bez telefonu 📵",
+  "Bez slazeného pití 🥤", "Chůze 5 km 🚶", "Srovnat si pokoj 🧹",
+  "15 min strečink 🤸", "Plank 2 minuty ⏳", "Zdravé domácí jídlo 🍳",
   "3h před spaním nejíst 🌙",
 ];
 
@@ -540,15 +533,27 @@ function render() {
   document.getElementById('btn-userA').classList.toggle('active', currentUser === 'userA');
   document.getElementById('btn-userB').classList.toggle('active', currentUser === 'userB');
 
-  document.getElementById('score-userA').textContent = state.userA.weeklyPoints;
-  document.getElementById('score-userB').textContent = state.userB.weeklyPoints;
+  const sA = state.userA.weeklyPoints;
+  const sB = state.userB.weeklyPoints;
 
-  const pA = Math.min((state.userA.weeklyPoints / GOAL) * 100, 100);
-  const pB = Math.min((state.userB.weeklyPoints / GOAL) * 100, 100);
+  const elA = document.getElementById('score-userA');
+  const elB = document.getElementById('score-userB');
+  elA.textContent = sA;
+  elB.textContent = sB;
+  elA.classList.toggle('negative', sA < 0);
+  elB.classList.toggle('negative', sB < 0);
+
+  const pA = sA >= 0 ? Math.min((sA / GOAL) * 100, 100) : 0;
+  const pB = sB >= 0 ? Math.min((sB / GOAL) * 100, 100) : 0;
   document.getElementById('bar-a').style.width = pA + '%';
   document.getElementById('bar-b').style.width = pB + '%';
-  document.getElementById('bar-a-val').textContent = state.userA.weeklyPoints;
-  document.getElementById('bar-b-val').textContent = state.userB.weeklyPoints;
+
+  const valA = document.getElementById('bar-a-val');
+  const valB = document.getElementById('bar-b-val');
+  valA.textContent = sA;
+  valB.textContent = sB;
+  valA.classList.toggle('negative', sA < 0);
+  valB.classList.toggle('negative', sB < 0);
 
   const wb = document.getElementById('winner-bar');
   if (state.lastWinner) {
@@ -610,7 +615,7 @@ function toggleHabit(id) {
   const was = !!state[currentUser].checkedHabits[id];
   state[currentUser].checkedHabits[id] = !was;
   const delta = was ? -h.points : h.points;
-  state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
+  state[currentUser].weeklyPoints = state[currentUser].weeklyPoints + delta;
   state[currentUser].log.unshift({ u: currentUser==='userA'?'Lůca':'Kája', a:h.label, d:delta, icon:h.icon, ts:Date.now() });
   showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}: ${delta > 0 ? '+' : ''}${delta} bodů`);
   save();
@@ -627,7 +632,7 @@ function completeQuest() {
 }
 
 function addPenalty(label, delta, icon) {
-  state[currentUser].weeklyPoints = Math.max(0, state[currentUser].weeklyPoints + delta);
+  state[currentUser].weeklyPoints = state[currentUser].weeklyPoints + delta;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
   showToast(`${icon} ${label}: ${delta} bodů`);
   save();
