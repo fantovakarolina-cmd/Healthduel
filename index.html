@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* Nová tyrkysová/mátová pro Lůcu */
+  /* Tyrkysová/mátová pro Lůcu */
   --luca: #2DD4BF;
   --luca-glow: rgba(45,212,191,0.35);
   
@@ -90,7 +90,7 @@ body::before {
 }
 .score-card.luca::before { background:var(--luca); right:-20px; }
 .score-card.kaja::before { background:var(--kaja); left:-20px; }
-.score-label { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.5; margin-bottom:4px; }
+.score-label { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.8; margin-bottom:4px; display:flex; align-items:center; justify-content:center; gap:4px; }
 .score-val { font-family:'Bebas Neue',sans-serif; font-size:50px; line-height:1; }
 .score-card.luca .score-val { color:var(--luca); text-shadow:0 0 20px var(--luca-glow); }
 .score-card.kaja .score-val { color:var(--kaja); text-shadow:0 0 20px var(--kaja-glow); }
@@ -119,7 +119,6 @@ body::before {
 .track-fill {
   height:100%; border-radius:50px; transition:width 1s cubic-bezier(0.22,1,0.36,1); position:relative;
 }
-/* Změna gradientu Lůcy do mátových/zelenomodrých tónů */
 .track-fill.luca { background:linear-gradient(90deg,#0d9488,var(--luca),#ccfbf1); box-shadow:0 0 10px var(--luca-glow); }
 .track-fill.kaja { background:linear-gradient(90deg,#c4621a,var(--kaja),#fed7aa); box-shadow:0 0 10px var(--kaja-glow); }
 .track-fill::after { content:''; position:absolute; top:0; right:0; width:5px; height:100%; background:rgba(255,255,255,0.5); border-radius:50px; filter:blur(2px); }
@@ -312,7 +311,6 @@ body::before {
 .stat-row strong.neu { color: var(--indigo); }
 
 .energy-card {
-  /* Aktualizace gradientu pro novou tyrkysovou barvu */
   background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(45,212,191,0.12));
   border:1px solid rgba(255,255,255,0.09); border-radius:20px;
   padding:22px; margin-bottom:20px; text-align:center;
@@ -418,11 +416,11 @@ body::before {
 
   <div class="scores">
     <div class="score-card luca">
-      <div class="score-label">Lůca</div>
+      <div id="label-userA" class="score-label">Lůca</div>
       <div id="score-userA" class="score-val">0</div>
     </div>
     <div class="score-card kaja">
-      <div class="score-label">Kája</div>
+      <div id="label-userB" class="score-label">Kája</div>
       <div id="score-userB" class="score-val">0</div>
     </div>
   </div>
@@ -521,7 +519,6 @@ body::before {
   <div class="mgmt-card">
     <div class="mgmt-title">⚙️ Správa souboje</div>
     <button class="mgmt-btn" id="sync-btn" onclick="syncData(true)">🔄 Vynutit synchronizaci</button>
-    <button class="mgmt-btn" onclick="archiveWeek()">🏆 Ukončit týden</button>
     <button class="mgmt-btn danger" onclick="showReset()">⚠️ Úplný reset databáze</button>
   </div>
 
@@ -546,7 +543,6 @@ const BIN_ID = 'fdf54930b04517ca8352';
 const API_URL = `https://api.npoint.io/${BIN_ID}`;
 const GOAL = 300;
 
-// Upravené návyky s novými položkami
 const HABITS = [
   { id:"water",    label:"2L vody",      points:2, icon:"💧", max:1 },
   { id:"sleep",    label:"8h spánek",    points:2, icon:"🌙", max:1 },
@@ -588,10 +584,20 @@ const EZO_QUOTES = [
 
 let currentUser = localStorage.getItem('activeUser') || 'userA';
 let isSaving = false;
+
+// Pomocná funkce k určení aktuálního pondělí, abychom poznali nový týden
+function getMonday(d) {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(date.setDate(diff)).toDateString();
+}
+
 let state = {
-  userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
-  userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
-  lastWinner: null, lastUpdated:0, currentDay: new Date().toDateString()
+  userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
+  userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
+  lastWinner: null, lastUpdated:0, currentDay: new Date().toDateString(),
+  currentWeek: getMonday(new Date())
 };
 
 function renderDate() {
@@ -600,16 +606,45 @@ function renderDate() {
   document.getElementById('date-display').textContent = `${dny[d.getDay()]}, ${d.getDate()}. ${d.getMonth()+1}.`;
 }
 
-function checkNewDay() {
+// Sloučená funkce kontrolující nový den a nový týden!
+function checkTime() {
   const today = new Date().toDateString();
-  if (state.currentDay && state.currentDay !== today) {
+  const thisMonday = getMonday(new Date());
+  let needsSave = false;
+
+  // Migrace starých dat (pro jistotu, kdyby v databázi chyběly proměnné)
+  if (state.userA.totalWins === undefined) state.userA.totalWins = 0;
+  if (state.userB.totalWins === undefined) state.userB.totalWins = 0;
+  if (!state.currentWeek) { state.currentWeek = thisMonday; needsSave = true; }
+
+  // Pokud se týdenní cyklus překlopil
+  if (state.currentWeek !== thisMonday) {
+    let winner = 'Remíza!';
+    if (state.userA.weeklyPoints > state.userB.weeklyPoints) {
+      winner = 'Lůca 🔥';
+      state.userA.totalWins++;
+    } else if (state.userB.weeklyPoints > state.userA.weeklyPoints) {
+      winner = 'Kája 🔥';
+      state.userB.totalWins++;
+    }
+
+    state.lastWinner = winner;
+    state.userA.weeklyPoints = 0; state.userA.checkedHabits = {}; state.userA.questDone = false; state.userA.log = [];
+    state.userB.weeklyPoints = 0; state.userB.checkedHabits = {}; state.userB.questDone = false; state.userB.log = [];
+    
+    state.currentWeek = thisMonday;
+    state.currentDay = today;
+    needsSave = true;
+  } 
+  // Pokud se jen změnil den (o půlnoci)
+  else if (state.currentDay !== today) {
     state.userA.checkedHabits = {}; state.userA.questDone = false;
     state.userB.checkedHabits = {}; state.userB.questDone = false;
     state.currentDay = today;
-    save();
-  } else if (!state.currentDay) {
-    state.currentDay = today;
+    needsSave = true;
   }
+
+  if (needsSave) save();
 }
 
 async function syncData(manual = false) {
@@ -622,7 +657,7 @@ async function syncData(manual = false) {
       const data = await res.json();
       if (data && data.userA) {
         if ((data.lastUpdated || 0) >= (state.lastUpdated || 0)) {
-          state = data; checkNewDay(); render();
+          state = data; checkTime(); render();
         }
       }
     }
@@ -654,6 +689,10 @@ function render() {
 
   document.getElementById('btn-userA').classList.toggle('active', currentUser === 'userA');
   document.getElementById('btn-userB').classList.toggle('active', currentUser === 'userB');
+
+  // Vykreslení celoživotních výher u jmen
+  document.getElementById('label-userA').innerHTML = `Lůca <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
+  document.getElementById('label-userB').innerHTML = `Kája <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userB.totalWins || 0}</span>`;
 
   const sA = state.userA.weeklyPoints;
   const sB = state.userB.weeklyPoints;
@@ -768,7 +807,7 @@ function render() {
 function switchUser(id) { currentUser = id; localStorage.setItem('activeUser', id); render(); }
 
 function toggleHabit(id) {
-  checkNewDay();
+  checkTime();
   const h = HABITS.find(x => x.id === id);
   
   let count = state[currentUser].checkedHabits[id];
@@ -811,7 +850,7 @@ function toggleHabit(id) {
 }
 
 function completeQuest() {
-  checkNewDay();
+  checkTime();
   if (state[currentUser].questDone) return;
   state[currentUser].questDone = true;
   state[currentUser].weeklyPoints += 15;
@@ -847,26 +886,14 @@ function addCustom() {
   save();
 }
 
-function archiveWeek() {
-  if (!confirm('Opravdu ukončit tento týden a vyhlásit vítězku?')) return;
-  let winner = 'Remíza!';
-  if (state.userA.weeklyPoints > state.userB.weeklyPoints) winner = 'Lůca 🔥';
-  else if (state.userB.weeklyPoints > state.userA.weeklyPoints) winner = 'Kája 🔥';
-  state = {
-    userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
-    userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
-    lastWinner:winner, lastUpdated:Date.now(), currentDay:new Date().toDateString()
-  };
-  save();
-}
-
 function showReset() { document.getElementById('modal').classList.add('show'); }
 function hideReset() { document.getElementById('modal').classList.remove('show'); }
 function confirmReset() {
   state = {
-    userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
-    userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[] },
-    lastWinner:null, lastUpdated:Date.now(), currentDay:new Date().toDateString()
+    userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
+    userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
+    lastWinner:null, lastUpdated:Date.now(), currentDay:new Date().toDateString(),
+    currentWeek: getMonday(new Date())
   };
   hideReset();
   showToast('💣 Databáze byla resetována');
