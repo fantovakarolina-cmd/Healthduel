@@ -13,8 +13,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --luca: #FF6B9D;
-  --luca-glow: rgba(255,107,157,0.35);
+  /* Nová tyrkysová/mátová pro Lůcu */
+  --luca: #2DD4BF;
+  --luca-glow: rgba(45,212,191,0.35);
+  
   --kaja: #FB923C;
   --kaja-glow: rgba(251,146,60,0.35);
   --bg: #141428;
@@ -42,7 +44,7 @@ body::before {
   content:'';
   position:fixed; inset:0;
   background:
-    radial-gradient(ellipse 55% 35% at 15% 10%, rgba(255,107,157,0.11) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 35% at 15% 10%, rgba(45,212,191,0.11) 0%, transparent 70%),
     radial-gradient(ellipse 55% 35% at 85% 85%, rgba(251,146,60,0.11) 0%, transparent 70%);
   pointer-events:none; z-index:0;
 }
@@ -117,7 +119,8 @@ body::before {
 .track-fill {
   height:100%; border-radius:50px; transition:width 1s cubic-bezier(0.22,1,0.36,1); position:relative;
 }
-.track-fill.luca { background:linear-gradient(90deg,#c94b7a,var(--luca),#ffb3d1); box-shadow:0 0 10px var(--luca-glow); }
+/* Změna gradientu Lůcy do mátových/zelenomodrých tónů */
+.track-fill.luca { background:linear-gradient(90deg,#0d9488,var(--luca),#ccfbf1); box-shadow:0 0 10px var(--luca-glow); }
 .track-fill.kaja { background:linear-gradient(90deg,#c4621a,var(--kaja),#fed7aa); box-shadow:0 0 10px var(--kaja-glow); }
 .track-fill::after { content:''; position:absolute; top:0; right:0; width:5px; height:100%; background:rgba(255,255,255,0.5); border-radius:50px; filter:blur(2px); }
 .track-num { font-size:12px; font-weight:900; width:34px; text-align:right; flex-shrink:0; }
@@ -288,7 +291,6 @@ body::before {
 .log-pts.neg { color:var(--red); }
 .log-empty { font-size:12px; opacity:0.35; font-style:italic; text-align:center; padding:12px 0; }
 
-/* Nové styly pro statistiky */
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
 .stat-card {
   backdrop-filter: blur(10px); background: var(--card); border: 1px solid var(--card-border);
@@ -310,7 +312,8 @@ body::before {
 .stat-row strong.neu { color: var(--indigo); }
 
 .energy-card {
-  background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(255,107,157,0.12));
+  /* Aktualizace gradientu pro novou tyrkysovou barvu */
+  background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(45,212,191,0.12));
   border:1px solid rgba(255,255,255,0.09); border-radius:20px;
   padding:22px; margin-bottom:20px; text-align:center;
 }
@@ -552,6 +555,7 @@ const HABITS = [
   { id:"veggies",  label:"Zelenina",     points:2, icon:"🥦", max:1 },
   { id:"stairs",   label:"Schody",       points:2, icon:"🧗‍♀️", max:1 },
   { id:"walk",     label:"Venčení",      points:1, icon:"🐕", max:3 },
+  { id:"caffeine", label:"Bez kofeinu",  points:2, icon:"☕", max:1 },
   { id:"fruit",    label:"Ovoce",        points:1, icon:"🍎", max:1 },
 ];
 
@@ -728,7 +732,6 @@ function render() {
     qBtn.textContent = 'Splnit výzvu';
   }
 
-  // Dnešní akce
   const logDiv = document.getElementById('log-list');
   const startOfToday = new Date();
   startOfToday.setHours(0,0,0,0);
@@ -751,7 +754,6 @@ function render() {
     }).join('');
   }
 
-  // Vykreslení statistik týdne
   const statsA = calculateStats(state.userA.log);
   const statsB = calculateStats(state.userB.log);
 
