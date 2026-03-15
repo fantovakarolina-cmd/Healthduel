@@ -135,9 +135,13 @@ body::before {
   display:flex; align-items:center; gap:14px;
   backdrop-filter:blur(10px); background:rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.09); border-radius:18px;
-  padding:14px 16px; cursor:pointer; transition:all 0.2s ease;
+  padding:14px 16px; cursor:pointer; transition:all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-.habit-item:hover { background:rgba(255,255,255,0.09); }
+.habit-item:hover { 
+  background:rgba(255,255,255,0.09); 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
 .habit-item:active { transform:scale(0.98); }
 .habit-item.checked {
   background:rgba(74,222,128,0.12);
@@ -151,9 +155,25 @@ body::before {
   border:2px solid rgba(255,255,255,0.22); transition:all 0.2s ease;
   font-size:14px; font-weight:900;
 }
+.habit-dots {
+  display:flex; gap:4px; width:26px; flex-wrap:wrap;
+  flex-shrink:0; align-items:center; justify-content:center;
+}
+.h-dot {
+  width:10px; height:10px; border-radius:3px;
+  border:2px solid rgba(255,255,255,0.22); transition:all 0.2s ease;
+}
+.h-dot.filled {
+  background:var(--green); border-color:transparent;
+  box-shadow:0 0 6px rgba(74,222,128,0.5);
+}
+
 .habit-item.checked .habit-check {
   background:var(--green); border-color:transparent;
   box-shadow:0 0 10px rgba(74,222,128,0.5); color:#09091a;
+}
+.habit-item.checked .h-dot.filled {
+  background:#09091a; box-shadow:none;
 }
 
 .habit-icon { font-size:22px; }
@@ -161,7 +181,8 @@ body::before {
 .habit-pts {
   font-size:13px; font-weight:900; color:var(--green);
   background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.25);
-  padding:3px 10px; border-radius:8px;
+  padding:3px 10px; border-radius:8px; white-space:nowrap;
+  box-shadow: 0 2px 8px rgba(74,222,128,0.15);
 }
 
 .quest-card {
@@ -181,16 +202,36 @@ body::before {
   padding:3px 12px; border-radius:50px;
 }
 .quest-text { font-size:16px; font-weight:800; margin-bottom:16px; letter-spacing:-0.3px; }
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+  50% { box-shadow: 0 4px 35px rgba(99,102,241,0.7); transform: translateY(-1px); }
+  100% { box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+}
+
 .quest-btn {
   width:100%; padding:14px; border:none; border-radius:14px;
   font-family:'Nunito',sans-serif; font-size:13px; font-weight:900;
   letter-spacing:2px; text-transform:uppercase; cursor:pointer;
   background:var(--indigo); color:white;
-  box-shadow:0 4px 20px rgba(99,102,241,0.4); transition:all 0.2s ease;
+  transition:all 0.2s ease;
 }
-.quest-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 28px rgba(99,102,241,0.5); }
+.quest-btn:not(:disabled) {
+  animation: pulseGlow 2.5s infinite;
+}
+.quest-btn:hover:not(:disabled) { 
+  transform:translateY(-2px); 
+  box-shadow:0 6px 28px rgba(99,102,241,0.6); 
+  animation: none;
+}
 .quest-btn:active:not(:disabled) { transform:scale(0.97); }
-.quest-btn:disabled { background:rgba(74,222,128,0.35); box-shadow:none; color:rgba(255,255,255,0.75); cursor:default; }
+.quest-btn:disabled { 
+  background:rgba(74,222,128,0.35); 
+  box-shadow:none; 
+  color:rgba(255,255,255,0.75); 
+  cursor:default; 
+  animation: none;
+}
 
 .custom-card {
   backdrop-filter:blur(10px); background:var(--card); border:1px solid var(--card-border);
@@ -246,6 +287,27 @@ body::before {
 .log-pts.pos { color:var(--green); }
 .log-pts.neg { color:var(--red); }
 .log-empty { font-size:12px; opacity:0.35; font-style:italic; text-align:center; padding:12px 0; }
+
+/* Nové styly pro statistiky */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.stat-card {
+  backdrop-filter: blur(10px); background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 20px; padding: 14px 16px; font-size: 12px; position: relative; overflow: hidden;
+}
+.stat-card.luca { border-top: 3px solid var(--luca); }
+.stat-card.kaja { border-top: 3px solid var(--kaja); }
+.stat-name { 
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; 
+  margin-bottom: 10px; text-align: center; 
+}
+.stat-card.luca .stat-name { color: var(--luca); }
+.stat-card.kaja .stat-name { color: var(--kaja); }
+.stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; opacity: 0.9; }
+.stat-row:last-child { margin-bottom: 0; }
+.stat-row strong { font-size: 14px; font-weight: 900; }
+.stat-row strong.pos { color: var(--green); }
+.stat-row strong.neg { color: var(--red); }
+.stat-row strong.neu { color: var(--indigo); }
 
 .energy-card {
   background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(255,107,157,0.12));
@@ -427,9 +489,25 @@ body::before {
     </div>
   </div>
 
-  <div class="section-title">📋 Poslední akce</div>
-  <div class="log-card">
-    <div id="log-list"><div class="log-empty">Zatím žádné akce tento týden…</div></div>
+  <div class="section-title">📋 Dnešní akce</div>
+  <div class="log-card" style="margin-bottom: 30px;">
+    <div id="log-list"><div class="log-empty">Zatím žádné akce dnešní den…</div></div>
+  </div>
+
+  <div class="section-title">📊 Statistiky týdne</div>
+  <div class="stats-grid">
+    <div class="stat-card luca">
+      <div class="stat-name">LŮCA</div>
+      <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-a-gained" class="pos">+0</strong></div>
+      <div class="stat-row"><span>💀 Ztraceno:</span> <strong id="stat-a-lost" class="neg">-0</strong></div>
+      <div class="stat-row"><span>⚡ Questy:</span> <strong id="stat-a-quests" class="neu">0</strong></div>
+    </div>
+    <div class="stat-card kaja">
+      <div class="stat-name">KÁJA</div>
+      <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-b-gained" class="pos">+0</strong></div>
+      <div class="stat-row"><span>💀 Ztraceno:</span> <strong id="stat-b-lost" class="neg">-0</strong></div>
+      <div class="stat-row"><span>⚡ Questy:</span> <strong id="stat-b-quests" class="neu">0</strong></div>
+    </div>
   </div>
 
   <div class="energy-card">
@@ -465,19 +543,35 @@ const BIN_ID = 'fdf54930b04517ca8352';
 const API_URL = `https://api.npoint.io/${BIN_ID}`;
 const GOAL = 300;
 
+// Upravené návyky s novými položkami
 const HABITS = [
-  { id:"water",   label:"2L vody",      points:2, icon:"💧" },
-  { id:"sleep",   label:"8h spánek",    points:2, icon:"🌙" },
-  { id:"nosugar", label:"Bez cukru",    points:3, icon:"🚫" },
-  { id:"steps",   label:"10 000 kroků", points:3, icon:"👟" },
-  { id:"veggies", label:"Zelenina",     points:2, icon:"🥦" },
+  { id:"water",    label:"2L vody",      points:2, icon:"💧", max:1 },
+  { id:"sleep",    label:"8h spánek",    points:2, icon:"🌙", max:1 },
+  { id:"nosugar",  label:"Bez cukru",    points:3, icon:"🚫", max:1 },
+  { id:"steps",    label:"10 000 kroků", points:3, icon:"👟", max:1 },
+  { id:"veggies",  label:"Zelenina",     points:2, icon:"🥦", max:1 },
+  { id:"stairs",   label:"Schody",       points:2, icon:"🧗‍♀️", max:1 },
+  { id:"walk",     label:"Venčení",      points:1, icon:"🐕", max:3 },
+  { id:"caffeine", label:"Bez kofeinu",  points:2, icon:"☕", max:1 },
+  { id:"fruit",    label:"Ovoce",        points:1, icon:"🍎", max:1 },
 ];
 
 const SIDE_QUESTS = [
-  "30 angličáků 💪", "Studená sprcha 🚿", "1h bez telefonu 📵",
-  "Bez slazeného pití 🥤", "Chůze 5 km 🚶", "Srovnat si pokoj 🧹",
-  "15 min strečink 🤸", "Plank 2 minuty ⏳", "Zdravé domácí jídlo 🍳",
-  "3h před spaním nejíst 🌙",
+  "Ledoborec (30s studená sprcha) 🧊",
+  "Zen master (10 min jóga) 🧘‍♀️",
+  "Offline zóna (1h bez mobilu před spaním) 📵",
+  "Knihomol (Přečíst 10 stran knihy) 📖",
+  "Zelená vlna (Zelenina ke každému jídlu) 🥗",
+  "30 angličáků během dne 💪",
+  "Chůze alespoň 5 km v kuse 🚶",
+  "Srovnat si pokoj / pracovní stůl 🧹",
+  "Vydržet v planku 2 minuty ⏳",
+  "Uvařit si zdravé domácí jídlo 🍳",
+  "Masáž obličeje / Skincare routine 🧖‍♀️",
+  "50 dřepů navíc 🏋️‍♀️",
+  "Alespoň 5 minut řízené meditace 🧘",
+  "Jít dnes spát před 22:30 🛌",
+  "Celý den absolutně bez alkoholu 🥂🚫"
 ];
 
 const EZO_QUOTES = [
@@ -543,6 +637,16 @@ async function save() {
   isSaving = false;
 }
 
+function calculateStats(userLog) {
+  let gained = 0, lost = 0, quests = 0;
+  userLog.forEach(l => {
+    if (l.d > 0) gained += l.d;
+    if (l.d < 0) lost += Math.abs(l.d);
+    if (l.icon === '⚡') quests++;
+  });
+  return { gained, lost, quests };
+}
+
 function render() {
   renderDate();
 
@@ -580,12 +684,28 @@ function render() {
   const list = document.getElementById('habit-list');
   list.innerHTML = '';
   HABITS.forEach(h => {
-    const checked = !!state[currentUser].checkedHabits[h.id];
+    let count = state[currentUser].checkedHabits[h.id];
+    if (typeof count === 'boolean') count = count ? 1 : 0;
+    else count = Number(count) || 0;
+
+    const isFullyChecked = count === h.max;
     const div = document.createElement('div');
-    div.className = 'habit-item' + (checked ? ' checked' : '');
+    div.className = 'habit-item' + (isFullyChecked ? ' checked' : '');
     div.onclick = () => toggleHabit(h.id);
+    
+    let checkVisual = '';
+    if (h.max === 1) {
+      checkVisual = `<div class="habit-check">${count > 0 ? '✓' : ''}</div>`;
+    } else {
+      checkVisual = `<div class="habit-dots">`;
+      for(let i=1; i<=h.max; i++) {
+        checkVisual += `<div class="h-dot ${count >= i ? 'filled' : ''}"></div>`;
+      }
+      checkVisual += `</div>`;
+    }
+
     div.innerHTML = `
-      <div class="habit-check">${checked ? '✓' : ''}</div>
+      ${checkVisual}
       <span class="habit-icon">${h.icon}</span>
       <span class="habit-name">${h.label}</span>
       <span class="habit-pts">+${h.points}</span>
@@ -593,8 +713,11 @@ function render() {
     list.appendChild(div);
   });
 
+  const daySeed = Math.floor(new Date().getTime() / 86400000);
+  const randomQuestIndex = (daySeed * 7 + 3) % SIDE_QUESTS.length; 
+  document.getElementById('today-quest').textContent = SIDE_QUESTS[randomQuestIndex];
+  
   const dayIndex = (new Date().getDay() + 6) % 7;
-  document.getElementById('today-quest').textContent = SIDE_QUESTS[dayIndex % SIDE_QUESTS.length];
   document.getElementById('ezo-quote').textContent = `„${EZO_QUOTES[dayIndex % EZO_QUOTES.length]}"`;
 
   const qBtn = document.getElementById('quest-btn');
@@ -606,11 +729,18 @@ function render() {
     qBtn.textContent = 'Splnit výzvu';
   }
 
+  // Dnešní akce
   const logDiv = document.getElementById('log-list');
+  const startOfToday = new Date();
+  startOfToday.setHours(0,0,0,0);
+  const todayMs = startOfToday.getTime();
+
   const allLogs = [...state.userA.log, ...state.userB.log]
-    .sort((a,b) => b.ts - a.ts).slice(0,6);
+    .filter(l => l.ts >= todayMs)
+    .sort((a,b) => b.ts - a.ts);
+
   if (allLogs.length === 0) {
-    logDiv.innerHTML = '<div class="log-empty">Zatím žádné akce tento týden…</div>';
+    logDiv.innerHTML = '<div class="log-empty">Zatím žádné akce dnešní den…</div>';
   } else {
     logDiv.innerHTML = allLogs.map(l => {
       const who = l.u === 'Lůca' ? 'luca' : 'kaja';
@@ -621,6 +751,18 @@ function render() {
       </div>`;
     }).join('');
   }
+
+  // Vykreslení statistik týdne
+  const statsA = calculateStats(state.userA.log);
+  const statsB = calculateStats(state.userB.log);
+
+  document.getElementById('stat-a-gained').textContent = '+' + statsA.gained;
+  document.getElementById('stat-a-lost').textContent = '-' + statsA.lost;
+  document.getElementById('stat-a-quests').textContent = statsA.quests;
+
+  document.getElementById('stat-b-gained').textContent = '+' + statsB.gained;
+  document.getElementById('stat-b-lost').textContent = '-' + statsB.lost;
+  document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
 
 function switchUser(id) { currentUser = id; localStorage.setItem('activeUser', id); render(); }
@@ -628,11 +770,42 @@ function switchUser(id) { currentUser = id; localStorage.setItem('activeUser', i
 function toggleHabit(id) {
   checkNewDay();
   const h = HABITS.find(x => x.id === id);
-  const was = !!state[currentUser].checkedHabits[id];
-  state[currentUser].checkedHabits[id] = !was;
-  const delta = was ? -h.points : h.points;
-  state[currentUser].weeklyPoints = state[currentUser].weeklyPoints + delta;
-  state[currentUser].log.unshift({ u: currentUser==='userA'?'Lůca':'Kája', a:h.label, d:delta, icon:h.icon, ts:Date.now() });
+  
+  let count = state[currentUser].checkedHabits[id];
+  if (typeof count === 'boolean') count = count ? 1 : 0;
+  else count = Number(count) || 0;
+
+  let delta = 0;
+  let newCount = count;
+
+  if (h.max > 1) {
+    if (count < h.max) {
+      newCount = count + 1;
+      delta = h.points;
+    } else {
+      newCount = 0; 
+      delta = -(h.points * h.max);
+    }
+  } else {
+    newCount = count === 0 ? 1 : 0;
+    delta = newCount === 1 ? h.points : -h.points;
+  }
+
+  state[currentUser].checkedHabits[id] = newCount;
+  state[currentUser].weeklyPoints += delta;
+  
+  let actionText = h.label;
+  if (h.max > 1 && newCount > 0) actionText += ` (${newCount}/${h.max})`;
+  if (h.max > 1 && newCount === 0) actionText += ` (Reset)`;
+
+  state[currentUser].log.unshift({ 
+    u: currentUser==='userA'?'Lůca':'Kája', 
+    a: actionText, 
+    d: delta, 
+    icon: h.icon, 
+    ts: Date.now() 
+  });
+  
   showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}: ${delta > 0 ? '+' : ''}${delta} bodů`);
   save();
 }
@@ -642,7 +815,17 @@ function completeQuest() {
   if (state[currentUser].questDone) return;
   state[currentUser].questDone = true;
   state[currentUser].weeklyPoints += 15;
-  state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:'Side Quest splněn!', d:15, icon:'⚡', ts:Date.now() });
+  
+  const currentQuestText = document.getElementById('today-quest').textContent;
+  
+  state[currentUser].log.unshift({ 
+    u: currentUser==='userA'?'Lůca':'Kája', 
+    a: `Side Quest: ${currentQuestText}`, 
+    d: 15, 
+    icon: '⚡', 
+    ts: Date.now() 
+  });
+  
   showToast('⚡ +15 bodů za Side Quest!');
   save();
 }
