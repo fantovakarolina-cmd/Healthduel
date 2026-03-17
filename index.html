@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Health Duel</title>
+<title>Health Duel ⚔️</title>
 
 <link rel="icon" type="image/png" href="./icon.png">
 <link rel="apple-touch-icon" href="./icon.png">
@@ -38,15 +38,25 @@ body {
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background-color 0.5s ease; /* Plynulý přechod pro pozadí (pokud bysme ho menily) */
 }
 
+/* Dynamické pozadí se mění pomocí třídy na body */
 body::before {
   content:'';
   position:fixed; inset:0;
-  background:
-    radial-gradient(ellipse 55% 35% at 15% 10%, rgba(45,212,191,0.11) 0%, transparent 70%),
-    radial-gradient(ellipse 55% 35% at 85% 85%, rgba(251,146,60,0.11) 0%, transparent 70%);
   pointer-events:none; z-index:0;
+  transition: background 0.6s ease;
+}
+
+body.theme-luca::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(45,212,191,0.08) 0%, transparent 80%);
+}
+
+body.theme-kaja::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(251,146,60,0.08) 0%, transparent 80%);
 }
 
 .app { max-width:480px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
@@ -340,6 +350,8 @@ body::before {
 .mgmt-btn:hover { background:rgba(255,255,255,0.1); transform:translateX(2px); }
 .mgmt-btn.danger { background:rgba(248,113,113,0.08); color:var(--red); border-color:rgba(248,113,113,0.18); }
 .mgmt-btn.danger:hover { background:rgba(248,113,113,0.14); border-color:rgba(248,113,113,0.35); }
+.mgmt-btn.warning { background:rgba(251,146,60,0.08); color:var(--kaja); border-color:rgba(251,146,60,0.18); }
+.mgmt-btn.warning:hover { background:rgba(251,146,60,0.14); border-color:rgba(251,146,60,0.35); }
 
 .modal-bg {
   display:none; position:fixed; inset:0;
@@ -371,6 +383,12 @@ body::before {
 }
 .modal-confirm:hover { transform:translateY(-1px); }
 
+/* Nové barvy pro potvrzovací tlačítko v modalu pro denní reset */
+.modal-confirm.warning {
+  background: var(--kaja);
+  box-shadow: 0 4px 18px rgba(251,146,60,0.4);
+}
+
 .toast {
   position:fixed; bottom:28px; left:50%;
   transform:translateX(-50%) translateY(80px);
@@ -397,7 +415,7 @@ body::before {
 }
 </style>
 </head>
-<body>
+<body class="theme-luca">
 <div class="app">
 
   <div class="header">
@@ -519,6 +537,7 @@ body::before {
   <div class="mgmt-card">
     <div class="mgmt-title">⚙️ Správa souboje</div>
     <button class="mgmt-btn" id="sync-btn" onclick="syncData(true)">🔄 Vynutit synchronizaci</button>
+    <button class="mgmt-btn warning" onclick="showDailyReset()">🧹 Vymazat dnešní akce</button>
     <button class="mgmt-btn danger" onclick="showReset()">⚠️ Úplný reset databáze</button>
   </div>
 
@@ -532,6 +551,18 @@ body::before {
     <div class="modal-actions">
       <button class="modal-cancel" onclick="hideReset()">Zpět</button>
       <button class="modal-confirm" onclick="confirmReset()">Smazat vše</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-daily" class="modal-bg">
+  <div class="modal">
+    <div class="modal-icon">🧹</div>
+    <div class="modal-title" style="color: var(--kaja);">Reset dne?</div>
+    <div class="modal-desc">Smažeš <strong>dnešní akce a body</strong> pro právě vybranou uživatelku (<span id="daily-reset-name"></span>). Historie předchozích dnů zůstane zachována.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="hideDailyReset()">Zpět</button>
+      <button class="modal-confirm warning" onclick="confirmDailyReset()">Smazat dnešek</button>
     </div>
   </div>
 </div>
@@ -551,6 +582,7 @@ const HABITS = [
   { id:"veggies",  label:"Zelenina",     points:2, icon:"🥦", max:1 },
   { id:"stairs",   label:"Schody",       points:2, icon:"🧗‍♀️", max:1 },
   { id:"walk",     label:"Venčení",      points:1, icon:"🐕", max:3 },
+  { id:"dishes",   label:"Nádobí",       points:1, icon:"🍽️", max:3 },
   { id:"fruit",    label:"Ovoce",        points:1, icon:"🍎", max:1 },
 ];
 
@@ -585,7 +617,6 @@ const EZO_QUOTES = [
 let currentUser = localStorage.getItem('activeUser') || 'userA';
 let isSaving = false;
 
-// Pomocná funkce k určení aktuálního pondělí, abychom poznali nový týden
 function getMonday(d) {
   const date = new Date(d);
   const day = date.getDay();
@@ -606,18 +637,15 @@ function renderDate() {
   document.getElementById('date-display').textContent = `${dny[d.getDay()]}, ${d.getDate()}. ${d.getMonth()+1}.`;
 }
 
-// Sloučená funkce kontrolující nový den a nový týden!
 function checkTime() {
   const today = new Date().toDateString();
   const thisMonday = getMonday(new Date());
   let needsSave = false;
 
-  // Migrace starých dat (pro jistotu, kdyby v databázi chyběly proměnné)
   if (state.userA.totalWins === undefined) state.userA.totalWins = 0;
   if (state.userB.totalWins === undefined) state.userB.totalWins = 0;
   if (!state.currentWeek) { state.currentWeek = thisMonday; needsSave = true; }
 
-  // Pokud se týdenní cyklus překlopil
   if (state.currentWeek !== thisMonday) {
     let winner = 'Remíza!';
     if (state.userA.weeklyPoints > state.userB.weeklyPoints) {
@@ -636,7 +664,6 @@ function checkTime() {
     state.currentDay = today;
     needsSave = true;
   } 
-  // Pokud se jen změnil den (o půlnoci)
   else if (state.currentDay !== today) {
     state.userA.checkedHabits = {}; state.userA.questDone = false;
     state.userB.checkedHabits = {}; state.userB.questDone = false;
@@ -684,13 +711,23 @@ function calculateStats(userLog) {
   return { gained, lost, quests };
 }
 
+function applyTheme() {
+  if (currentUser === 'userA') {
+    document.body.classList.remove('theme-kaja');
+    document.body.classList.add('theme-luca');
+  } else {
+    document.body.classList.remove('theme-luca');
+    document.body.classList.add('theme-kaja');
+  }
+}
+
 function render() {
   renderDate();
+  applyTheme(); // Aktivace správného barevného podkreslení
 
   document.getElementById('btn-userA').classList.toggle('active', currentUser === 'userA');
   document.getElementById('btn-userB').classList.toggle('active', currentUser === 'userB');
 
-  // Vykreslení celoživotních výher u jmen
   document.getElementById('label-userA').innerHTML = `Lůca <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
   document.getElementById('label-userB').innerHTML = `Kája <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userB.totalWins || 0}</span>`;
 
@@ -804,7 +841,11 @@ function render() {
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
 
-function switchUser(id) { currentUser = id; localStorage.setItem('activeUser', id); render(); }
+function switchUser(id) { 
+  currentUser = id; 
+  localStorage.setItem('activeUser', id); 
+  render(); 
+}
 
 function toggleHabit(id) {
   checkTime();
@@ -899,7 +940,49 @@ function confirmReset() {
   showToast('💣 Databáze byla resetována');
   save();
 }
+
+// Funkce pro denní reset vybrané uživatelky
+function showDailyReset() { 
+  const name = currentUser === 'userA' ? 'Lůca' : 'Kája';
+  document.getElementById('daily-reset-name').textContent = name;
+  document.getElementById('modal-daily').classList.add('show'); 
+}
+function hideDailyReset() { document.getElementById('modal-daily').classList.remove('show'); }
+
+function confirmDailyReset() {
+  const startOfToday = new Date();
+  startOfToday.setHours(0,0,0,0);
+  const todayMs = startOfToday.getTime();
+
+  // Spočítáme, o kolik bodů celkem přišla dnešními akcemi a odečteme je
+  let pointsToDeduct = 0;
+  const userLog = state[currentUser].log;
+  
+  // Najdeme pouze dnešní záznamy dané uživatelky a spočítáme jejich body
+  for (let i = 0; i < userLog.length; i++) {
+    if (userLog[i].ts >= todayMs) {
+      pointsToDeduct += userLog[i].d;
+    }
+  }
+
+  // Odečteme body
+  state[currentUser].weeklyPoints -= pointsToDeduct;
+  
+  // Vyfiltrujeme log tak, aby v něm zůstaly POUZE záznamy starší než dnešek
+  state[currentUser].log = state[currentUser].log.filter(l => l.ts < todayMs);
+  
+  // Vynulujeme dnešní odškrtávátka a questy
+  state[currentUser].checkedHabits = {};
+  state[currentUser].questDone = false;
+
+  hideDailyReset();
+  showToast(`🧹 Dnešní akce pro uživatelku byly smazány.`);
+  save();
+}
+
+// Zamezení prokliku přes modal okna
 document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) hideReset(); });
+document.getElementById('modal-daily').addEventListener('click', e => { if (e.target === e.currentTarget) hideDailyReset(); });
 
 let toastTimer;
 function showToast(msg) {
@@ -910,6 +993,7 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+// První spuštění (applyTheme proběhne hned v renderu)
 syncData();
 setInterval(() => syncData(false), 30000);
 </script>
