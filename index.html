@@ -128,15 +128,13 @@ body.theme-kaja::after {
 
 /* LÉTAJÍCÍ BODY - ANIMACE (Nové CSS pravidlo pro čísla) */
 .points-animation {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  position: fixed; /* Osvobozeno z kartičky! */
   transform: translate(-50%, -50%);
   font-family: 'Bebas Neue', sans-serif;
   font-size: 38px;
   font-weight: bold;
   pointer-events: none;
-  z-index: 100;
+  z-index: 99999; /* Úplně navrch přes celou appku */
   white-space: nowrap;
   animation: floatUpAndFade 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
@@ -227,10 +225,7 @@ body.theme-kaja::after {
   background:var(--green); border-color:transparent;
   box-shadow:0 0 10px rgba(74,222,128,0.5); color:#09091a;
 }
-.habit-item.checked .h-dot.filled {
-  background:#09091a; box-shadow:none;
-}
-
+  
 .habit-icon { font-size:22px; }
 .habit-name { flex:1; font-size:14px; font-weight:700; }
 .habit-pts {
@@ -929,16 +924,25 @@ function render() {
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
 
-/* ANIMACE LÉTAJÍCÍCH BODŮ */
+/* ANIMACE LÉTAJÍCÍCH BODŮ - OSVOBOZENÁ VERZE */
 function animatePoints(id, delta) {
   const scoreCard = document.querySelector(`.score-card.${id === 'userA' ? 'luca' : 'kaja'}`);
   if (!scoreCard) return;
+
+  // Zjistíme přesnou pozici kartičky na konkrétním displeji
+  const rect = scoreCard.getBoundingClientRect();
 
   const animatedNumber = document.createElement('div');
   animatedNumber.className = `points-animation ${delta > 0 ? 'positive' : 'negative'}`;
   animatedNumber.textContent = `${delta > 0 ? '+' : ''}${delta}`;
 
-  scoreCard.appendChild(animatedNumber);
+  // Nastavíme startovní pozici přesně doprostřed kartičky
+  animatedNumber.style.left = (rect.left + rect.width / 2) + 'px';
+  animatedNumber.style.top = (rect.top + rect.height / 2) + 'px';
+
+  // Připneme to přímo na hlavní tělo appky, aby to nic neblokovalo
+  document.body.appendChild(animatedNumber);
+
   setTimeout(() => animatedNumber.remove(), 1200);
 }
 
