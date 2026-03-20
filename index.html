@@ -451,7 +451,38 @@ body.theme-kaja::after {
   .logo { font-size:44px; }
   .score-val { font-size:42px; }
 }
+  /* LÉTAJÍCÍ BODY - ANIMACE */
+.points-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+  animation: floatUpAndFade 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+.points-animation.positive {
+  color: var(--green);
+  text-shadow: 0 0 20px rgba(74, 222, 128, 0.8);
+}
+
+.points-animation.negative {
+  color: var(--red);
+  text-shadow: 0 0 20px rgba(248, 113, 113, 0.8);
+}
+
+@keyframes floatUpAndFade {
+  0% { opacity: 0; transform: translate(-50%, -10%) scale(0.5); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, -150%) scale(1); }
+}
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/confetti.browser.min.js"></script>
 </head>
 <body class="theme-luca">
 <div class="app">
@@ -904,7 +935,26 @@ function render() {
   document.getElementById('stat-b-habits').textContent = statsB.habits;
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
+/* POMOCNÁ FUNKCE PRO ANIMACI BODŮ (vložit nad switchUser) */
+function animatePoints(id, delta) {
+  // Najdeme kartu skóre dané uživatelky
+  const scoreCard = document.querySelector(`.score-card.${id === 'userA' ? 'luca' : 'kaja'}`);
+  
+  if (!scoreCard) return;
 
+  // Vytvoříme element pro létající číslo
+  const animatedNumber = document.createElement('div');
+  animatedNumber.className = `points-animation ${delta > 0 ? 'positive' : 'negative'}`;
+  animatedNumber.textContent = `${delta > 0 ? '+' : ''}${delta}`;
+
+  // Přidáme ho do karty
+  scoreCard.appendChild(animatedNumber);
+
+  // Po skončení animace (1.2s) element odstraníme, ať nezahlcujeme paměť
+  setTimeout(() => {
+    animatedNumber.remove();
+  }, 1200);
+}
 function switchUser(id) { 
   currentUser = id; 
   localStorage.setItem('activeUser', id); 
@@ -949,7 +999,8 @@ function toggleHabit(id) {
     icon: h.icon, 
     ts: Date.now() 
   });
-  
+
+  animatePoints(currentUser, delta); // Spustit animaci
   showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}: ${delta > 0 ? '+' : ''}${delta} bodů`);
   save();
 }
@@ -959,6 +1010,8 @@ function completeQuest() {
   if (state[currentUser].questDone) return;
   state[currentUser].questDone = true;
   state[currentUser].weeklyPoints += 15;
+  
+  confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); // BUM! Konfety!
   
   const currentQuestText = document.getElementById('today-quest').textContent;
   
@@ -970,6 +1023,7 @@ function completeQuest() {
     ts: Date.now() 
   });
   
+  animatePoints(currentUser, 15); // Spustit animaci
   showToast('⚡ +15 bodů za Side Quest!');
   save();
 }
@@ -977,6 +1031,7 @@ function completeQuest() {
 function addPenalty(label, delta, icon) {
   state[currentUser].weeklyPoints = state[currentUser].weeklyPoints + delta;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
+  animatePoints(currentUser, delta); // Spustit animaci
   showToast(`${icon} ${label}: ${delta} bodů`);
   save();
 }
@@ -987,6 +1042,7 @@ function addCustom() {
   state[currentUser].weeklyPoints += 10;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:val, d:10, icon:'🏋️', ts:Date.now() });
   document.getElementById('custom-input').value = '';
+  animatePoints(currentUser, 10); // Spustit animaci
   showToast(`🏋️ +10 bodů: ${val}`);
   save();
 }
