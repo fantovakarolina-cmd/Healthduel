@@ -559,8 +559,18 @@ body.theme-kaja::after {
       <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-a-gained" class="pos">+0</strong></div>
       <div class="stat-row"><span>💀 Ztraceno:</span> <strong id="stat-a-lost" class="neg">-0</strong></div>
       <div class="stat-row"><span>✅ Návyky:</span> <strong id="stat-a-habits" class="pos">0</strong></div>
+      <div class="stat-row"><span>🏋️ Aktivity:</span> <strong id="stat-a-custom" class="pos">0</strong></div>
       <div class="stat-row"><span>⚡ Questy:</span> <strong id="stat-a-quests" class="neu">0</strong></div>
     </div>
+    <div class="stat-card kaja">
+      <div class="stat-name">KÁJA</div>
+      <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-b-gained" class="pos">+0</strong></div>
+      <div class="stat-row"><span>💀 Ztraceno:</span> <strong id="stat-b-lost" class="neg">-0</strong></div>
+      <div class="stat-row"><span>✅ Návyky:</span> <strong id="stat-b-habits" class="pos">0</strong></div>
+      <div class="stat-row"><span>🏋️ Aktivity:</span> <strong id="stat-b-custom" class="pos">0</strong></div>
+      <div class="stat-row"><span>⚡ Questy:</span> <strong id="stat-b-quests" class="neu">0</strong></div>
+    </div>
+  </div>
     <div class="stat-card kaja">
       <div class="stat-name">KÁJA</div>
       <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-b-gained" class="pos">+0</strong></div>
@@ -756,21 +766,23 @@ async function save() {
 }
 
 function calculateStats(userLog) {
-  let gained = 0, lost = 0, quests = 0, habits = 0;
+  let gained = 0, lost = 0, quests = 0, habits = 0, custom = 0;
   const penaltyIcons = ['🍷', '😴', '🍩', '🍔']; 
   
   userLog.forEach(l => {
     if (l.d > 0) {
       gained += l.d;
-      if (l.icon === '⚡') quests++;
-      else if (l.icon !== '🏋️') habits++; 
+      // Zde už nesčítáme akce (quests++), ale reálné body (quests += l.d)
+      if (l.icon === '⚡') quests += l.d;
+      else if (l.icon === '🏋️') custom += l.d; 
+      else habits += l.d; 
     } else if (l.d < 0) {
       if (penaltyIcons.includes(l.icon)) {
         lost += Math.abs(l.d); 
       }
     }
   });
-  return { gained, lost, quests, habits };
+  return { gained, lost, quests, habits, custom };
 }
 
 function applyTheme() {
@@ -897,13 +909,15 @@ function render() {
   document.getElementById('stat-a-gained').textContent = '+' + statsA.gained;
   document.getElementById('stat-a-lost').textContent = '-' + statsA.lost;
   document.getElementById('stat-a-habits').textContent = statsA.habits;
+  document.getElementById('stat-a-custom').textContent = statsA.custom;
   document.getElementById('stat-a-quests').textContent = statsA.quests;
 
   document.getElementById('stat-b-gained').textContent = '+' + statsB.gained;
   document.getElementById('stat-b-lost').textContent = '-' + statsB.lost;
   document.getElementById('stat-b-habits').textContent = statsB.habits;
+  document.getElementById('stat-b-custom').textContent = statsB.custom;
   document.getElementById('stat-b-quests').textContent = statsB.quests;
-}
+} 
   
 function switchUser(id) { 
   currentUser = id; 
