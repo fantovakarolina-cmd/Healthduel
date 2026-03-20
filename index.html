@@ -45,19 +45,23 @@ body::before, body::after {
   content: '';
   position: fixed;
   top: 0; bottom: 0;
-  width: 8px; /* Šířka svítícího pruhu */
+  width: 10px; /* Šířka pro desktop */
   pointer-events: none;
   z-index: 9999;
-  
-  /* Základní barva s plynulým přechodem */
   transition: background 0.4s ease;
-  
-  /* Rozostření pro efekt záře */
-  filter: blur(5px);
-  
-  /* CSS Maska, která nahoře a dole zprůhlední okraje (pro zaoblené rohy mobilu) */
+  filter: blur(6px);
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
   mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+}
+
+/* SPECIFICKÉ ÚPRAVY PRO MOBILNÍ TELEFONY (do 480px) */
+@media (max-width: 480px) {
+  body::before, body::after {
+    width: 3px; /* Tenoučká linie pro mobil */
+    filter: blur(1.5px); /* Velmi jemné rozostření, aby to zůstalo ostré a čisté */
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+  }
 }
 
 body::before { left: 0; }  /* Levá linie */
