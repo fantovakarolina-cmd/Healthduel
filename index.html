@@ -248,23 +248,23 @@ body.theme-kaja::after {
   background:var(--indigo); color:white;
   transition:all 0.2s ease;
 }
-.quest-btn:not(:disabled) {
+.quest-btn:not(.done) {
   animation: pulseGlow 2.5s infinite;
 }
-.quest-btn:hover:not(:disabled) { 
+.quest-btn:hover:not(.done) { 
   transform:translateY(-2px); 
   box-shadow:0 6px 28px rgba(99,102,241,0.6); 
   animation: none;
 }
-.quest-btn:active:not(:disabled) { transform:scale(0.97); }
-.quest-btn:disabled { 
+.quest-btn:active:not(.done) { transform:scale(0.97); }
+.quest-btn.done { 
   background:rgba(74,222,128,0.35); 
   box-shadow:none; 
-  color:rgba(255,255,255,0.75); 
-  cursor:default; 
+  color:rgba(255,255,255,0.9); 
+  cursor:pointer; /* Změna: teď na to jde kliknout! */
   animation: none;
 }
-
+  
 .custom-card {
   backdrop-filter:blur(10px); background:var(--card); border:1px solid var(--card-border);
   border-radius:20px; padding:14px; margin-bottom:20px; display:flex; gap:10px;
@@ -885,7 +885,7 @@ function render() {
   });
 
   const daySeed = Math.floor(new Date().getTime() / 86400000);
-  const randomQuestIndex = (daySeed * 7 + 6) % SIDE_QUESTS.length; 
+  const randomQuestIndex = (daySeed * 7 + 0) % SIDE_QUESTS.length; 
   document.getElementById('today-quest').textContent = SIDE_QUESTS[randomQuestIndex];
   
   const dayIndex = (new Date().getDay() + 6) % 7;
@@ -893,10 +893,10 @@ function render() {
 
   const qBtn = document.getElementById('quest-btn');
   if (state[currentUser].questDone) {
-    qBtn.disabled = true;
-    qBtn.textContent = '✓ Splněno!';
+    qBtn.classList.add('done');
+    qBtn.textContent = '✓ Splněno (zrušit)';
   } else {
-    qBtn.disabled = false;
+    qBtn.classList.remove('done');
     qBtn.textContent = 'Splnit výzvu';
   }
 
@@ -1026,24 +1026,40 @@ function toggleHabit(id) {
 
 function completeQuest() {
   checkTime();
-  if (state[currentUser].questDone) return;
-  state[currentUser].questDone = true;
-  state[currentUser].weeklyPoints += 15;
-  
-  confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); // BUM! Konfety!
-  
   const currentQuestText = document.getElementById('today-quest').textContent;
-  
-  state[currentUser].log.unshift({ 
-    u: currentUser==='userA'?'Lůca':'Kája', 
-    a: `Side Quest: ${currentQuestText}`, 
-    d: 15, 
-    icon: '⚡', 
-    ts: Date.now() 
-  });
-  
-  animatePoints(currentUser, 15); // Spustit animaci
-  showToast('⚡ +15 bodů za Side Quest!');
+
+  if (state[currentUser].questDone) {
+    // ↩️ ZRUŠENÍ QUESTU (Pokud jsi klikla omylem)
+    state[currentUser].questDone = false;
+    state[currentUser].weeklyPoints -= 15;
+
+    // Chytré smazání záznamu z dnešní historie
+    let todayStart = new Date().setHours(0,0,0,0);
+    let logIndex = state[currentUser].log.findIndex(l => l.icon === '⚡' && l.ts >= todayStart);
+    if (logIndex !== -1) {
+      state[currentUser].log.splice(logIndex, 1);
+    }
+
+    animatePoints(currentUser, -15);
+    showToast('↩️ Side Quest zrušen');
+  } else {
+    // ✅ SPLNĚNÍ QUESTU
+    state[currentUser].questDone = true;
+    state[currentUser].weeklyPoints += 15;
+    
+    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); // BUM!
+
+    state[currentUser].log.unshift({ 
+      u: currentUser==='userA'?'Lůca':'Kája', 
+      a: `Side Quest: ${currentQuestText}`, 
+      d: 15, 
+      icon: '⚡', 
+      ts: Date.now() 
+    });
+
+    animatePoints(currentUser, 15);
+    showToast('⚡ +15 bodů za Side Quest!');
+  }
   save();
 }
 
