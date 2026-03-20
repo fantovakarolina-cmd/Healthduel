@@ -885,7 +885,7 @@ function render() {
   });
 
   const daySeed = Math.floor(new Date().getTime() / 86400000);
-  const randomQuestIndex = (daySeed * 7 + 3) % SIDE_QUESTS.length; 
+  const randomQuestIndex = (daySeed * 7 + 6) % SIDE_QUESTS.length; 
   document.getElementById('today-quest').textContent = SIDE_QUESTS[randomQuestIndex];
   
   const dayIndex = (new Date().getDay() + 6) % 7;
@@ -990,17 +990,36 @@ function toggleHabit(id) {
   
   let actionText = h.label;
   if (h.max > 1 && newCount > 0) actionText += ` (${newCount}/${h.max})`;
-  if (h.max > 1 && newCount === 0) actionText += ` (Reset)`;
 
-  state[currentUser].log.unshift({ 
-    u: currentUser==='userA'?'Lůca':'Kája', 
-    a: actionText, 
-    d: delta, 
-    icon: h.icon, 
-    ts: Date.now() 
-  });
+  // NOVÁ CHYTRÁ LOGIKA PRO HISTORII
+  if (delta < 0) {
+    // Pokud odebíráme bod, nezapisujeme mínus, ale vymažeme původní záznam z dneška!
+    let pointsToRemove = Math.abs(delta);
+    let todayStart = new Date().setHours(0,0,0,0);
+    let i = 0;
+    
+    // Prohledáme historii a mažeme, dokud nesmažeme přesný počet omylem přidaných bodů
+    while (i < state[currentUser].log.length && pointsToRemove > 0) {
+      let l = state[currentUser].log[i];
+      if (l.icon === h.icon && l.d > 0 && l.ts >= todayStart) {
+        pointsToRemove -= l.d;
+        state[currentUser].log.splice(i, 1); // Odstranění záznamu
+      } else {
+        i++;
+      }
+    }
+  } else {
+    // Pokud přidáváme bod, zapíšeme ho normálně do historie
+    state[currentUser].log.unshift({ 
+      u: currentUser==='userA'?'Lůca':'Kája', 
+      a: actionText, 
+      d: delta, 
+      icon: h.icon, 
+      ts: Date.now() 
+    });
+  }
 
-  animatePoints(currentUser, delta); // Spustit animaci
+  animatePoints(currentUser, delta); // Spustit animaci nad číslem
   showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}: ${delta > 0 ? '+' : ''}${delta} bodů`);
   save();
 }
