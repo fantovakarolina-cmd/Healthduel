@@ -40,30 +40,39 @@ body {
   overflow-x: hidden;
 }
 
-/* Postranní LED linie podle uživatelky - NEONOVÝ EFEKT (pouze boky) */
-body::after {
+/* Nové postranní LED linie s postupným mizetím přes MASKu (pouze boky) */
+body::before, body::after {
   content: '';
   position: fixed;
-  /* Schválně protaženo mimo displej, aby zmizely horní a spodní stíny */
-  top: -50px; bottom: -50px; 
-  left: 0; right: 0;
+  top: 0; bottom: 0;
+  width: 8px; /* Šířka svítícího pruhu */
   pointer-events: none;
   z-index: 9999;
-  transition: box-shadow 0.4s ease;
+  
+  /* Základní barva s plynulým přechodem */
+  transition: background 0.4s ease;
+  
+  /* Rozostření pro efekt záře */
+  filter: blur(5px);
+  
+  /* CSS Maska, která nahoře a dole zprůhlední okraje (pro zaoblené rohy mobilu) */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
 }
 
+body::before { left: 0; }  /* Levá linie */
+body::after { right: 0; } /* Pravá linie */
+
+/* Definice pro Lůcu */
+body.theme-luca::before,
 body.theme-luca::after {
-  /* Neonová tyrkysová záře čistě zleva a zprava */
-  box-shadow: 
-    inset 18px 0 25px -12px rgba(45,212,191,0.6), 
-    inset -18px 0 25px -12px rgba(45,212,191,0.6); 
+  background: var(--luca);
 }
 
+/* Definice pro Káju */
+body.theme-kaja::before,
 body.theme-kaja::after {
-  /* Neonová oranžová záře čistě zleva a zprava */
-  box-shadow: 
-    inset 18px 0 25px -12px rgba(251,146,60,0.6), 
-    inset -18px 0 25px -12px rgba(251,146,60,0.6); 
+  background: var(--kaja);
 }
 
 .app { max-width:480px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
