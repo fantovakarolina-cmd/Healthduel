@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Health Duel</title>
+<title>Health Duel ⚔️</title>
 
 <link rel="icon" type="image/png" href="./icon.png">
 <link rel="apple-touch-icon" href="./icon.png">
@@ -40,7 +40,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Nové barevné linie po stranách podle vybrané uživatelky */
+/* Postranní LED linie podle uživatelky - NEONOVÝ EFEKT */
 body::after {
   content: '';
   position: fixed;
@@ -51,11 +51,19 @@ body::after {
 }
 
 body.theme-luca::after {
-  box-shadow: inset 5px 0 0 var(--luca), inset -5px 0 0 var(--luca);
+  /* Neonová tyrkysová záře - vnitřní i vnější pro maximální efekt */
+  box-shadow: 
+    inset 8px 0 15px -2px rgba(45,212,191,0.5), /* Vnitřní levá záře */
+    inset -8px 0 15px -2px rgba(45,212,191,0.5), /* Vnitřní pravá záře */
+    0 0 25px 3px rgba(45,212,191,0.2); /* Jemné rozptýlení po celém obvodu displeje */
 }
 
 body.theme-kaja::after {
-  box-shadow: inset 5px 0 0 var(--kaja), inset -5px 0 0 var(--kaja);
+  /* Neonová oranžová záře - vnitřní i vnější pro maximální efekt */
+  box-shadow: 
+    inset 8px 0 15px -2px rgba(251,146,60,0.5), /* Vnitřní levá záře */
+    inset -8px 0 15px -2px rgba(251,146,60,0.5), /* Vnitřní pravá záře */
+    0 0 25px 3px rgba(251,146,60,0.2); /* Jemné rozptýlení po celém obvodu displeje */
 }
 
 .app { max-width:480px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
@@ -981,6 +989,7 @@ function confirmReset() {
   save();
 }
 
+// Funkce pro denní reset vybrané uživatelky
 function showDailyReset() { 
   const name = currentUser === 'userA' ? 'Lůca' : 'Kája';
   document.getElementById('daily-reset-name').textContent = name;
