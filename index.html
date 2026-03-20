@@ -126,27 +126,6 @@ body.theme-kaja::after {
 .score-card.kaja .score-val { color:var(--kaja); text-shadow:0 0 20px var(--kaja-glow); }
 .score-val.negative { color: var(--red) !important; text-shadow: 0 0 20px rgba(248,113,113,0.4) !important; }
 
-/* LÉTAJÍCÍ BODY - ANIMACE (Nové CSS pravidlo pro čísla, fixed pozice přes celou appku) */
-.points-animation {
-  position: absolute; /* Bezpečnější pozice */
-  transform: translate(-50%, -50%);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 38px;
-  font-weight: bold;
-  pointer-events: none;
-  z-index: 9999;
-  white-space: nowrap;
-  animation: floatUpAndFade 1.2s ease-out forwards;
-}
-.points-animation.positive {
-  color: var(--green);
-  text-shadow: 0 0 20px rgba(74, 222, 128, 0.8);
-}
-.points-animation.negative {
-  color: var(--red);
-  text-shadow: 0 0 20px rgba(248, 113, 113, 0.8);
-}
-
 .track-card {
   backdrop-filter:blur(12px); background:var(--card); border:1px solid var(--card-border);
   border-radius:24px; padding:20px; margin-bottom:20px;
@@ -472,14 +451,7 @@ body.theme-kaja::after {
   from { left:-60px; } 
   to { left:110%; } 
 }
-@keyframes floatUpAndFade {
-  0% { opacity: 0; transform: translate(-50%, 0px) scale(0.5); }
-  20% { opacity: 1; transform: translate(-50%, -30px) scale(1.2); }
-  100% { opacity: 0; transform: translate(-50%, -100px) scale(1); }
-}
 </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/confetti.browser.min.js"></script>
 
 </head>
 <body class="theme-luca">
@@ -932,27 +904,6 @@ function render() {
   document.getElementById('stat-b-habits').textContent = statsB.habits;
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
-
-/* ANIMACE LÉTAJÍCÍCH BODŮ - NEPRŮSTŘELNÁ VERZE */
-function animatePoints(id, delta) {
-  const scoreCard = document.querySelector(`.score-card.${id === 'userA' ? 'luca' : 'kaja'}`);
-  const appContainer = document.querySelector('.app');
-  if (!scoreCard || !appContainer) return;
-
-  const rect = scoreCard.getBoundingClientRect();
-  const appRect = appContainer.getBoundingClientRect();
-
-  const animatedNumber = document.createElement('div');
-  animatedNumber.className = `points-animation ${delta > 0 ? 'positive' : 'negative'}`;
-  animatedNumber.textContent = `${delta > 0 ? '+' : ''}${delta}`;
-
-  // Bezpečný výpočet pozice přímo vůči obalu aplikace
-  animatedNumber.style.left = (rect.left - appRect.left + rect.width / 2) + 'px';
-  animatedNumber.style.top = (rect.top - appRect.top + rect.height / 2) + 'px';
-
-  appContainer.appendChild(animatedNumber);
-  setTimeout(() => animatedNumber.remove(), 1200);
-}
   
 function switchUser(id) { 
   currentUser = id; 
@@ -1006,6 +957,7 @@ function toggleHabit(id) {
       }
     }
   } else {
+    // Tady chyběl tento zápis do historie, když PŘIDÁVÁME body
     state[currentUser].log.unshift({ 
       u: currentUser==='userA'?'Lůca':'Kája', 
       a: actionText, 
@@ -1015,7 +967,6 @@ function toggleHabit(id) {
     });
   }
 
-  animatePoints(currentUser, delta);
   showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}: ${delta > 0 ? '+' : ''}${delta} bodů`);
   save();
 }
@@ -1034,18 +985,11 @@ function completeQuest() {
     if (logIndex !== -1) {
       state[currentUser].log.splice(logIndex, 1);
     }
-
-    animatePoints(currentUser, -15);
     showToast('↩️ Side Quest zrušen');
   } else {
     // SPLNĚNÍ QUESTU
     state[currentUser].questDone = true;
     state[currentUser].weeklyPoints += 15;
-    
-    // Bezpečné volání konfet
-    if (typeof window.confetti === 'function') {
-      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-    }
 
     state[currentUser].log.unshift({ 
       u: currentUser==='userA'?'Lůca':'Kája', 
@@ -1055,7 +999,6 @@ function completeQuest() {
       ts: Date.now() 
     });
 
-    animatePoints(currentUser, 15);
     showToast('⚡ +15 bodů za Side Quest!');
   }
   save();
@@ -1064,7 +1007,6 @@ function completeQuest() {
 function addPenalty(label, delta, icon) {
   state[currentUser].weeklyPoints = state[currentUser].weeklyPoints + delta;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
-  animatePoints(currentUser, delta);
   showToast(`${icon} ${label}: ${delta} bodů`);
   save();
 }
@@ -1075,7 +1017,6 @@ function addCustom() {
   state[currentUser].weeklyPoints += 10;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:val, d:10, icon:'🏋️', ts:Date.now() });
   document.getElementById('custom-input').value = '';
-  animatePoints(currentUser, 10);
   showToast(`🏋️ +10 bodů: ${val}`);
   save();
 }
