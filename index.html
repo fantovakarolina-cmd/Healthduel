@@ -38,25 +38,24 @@ body {
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background-color 0.5s ease; /* Plynulý přechod pro pozadí (pokud bysme ho menily) */
 }
 
-/* Dynamické pozadí se mění pomocí třídy na body */
-body::before {
-  content:'';
-  position:fixed; inset:0;
-  pointer-events:none; z-index:0;
-  transition: background 0.6s ease;
+/* Nové barevné linie po stranách podle vybrané uživatelky */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: box-shadow 0.4s ease;
 }
 
-body.theme-luca::before {
-  background:
-    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(45,212,191,0.08) 0%, transparent 80%);
+body.theme-luca::after {
+  box-shadow: inset 5px 0 0 var(--luca), inset -5px 0 0 var(--luca);
 }
 
-body.theme-kaja::before {
-  background:
-    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(251,146,60,0.08) 0%, transparent 80%);
+body.theme-kaja::after {
+  box-shadow: inset 5px 0 0 var(--kaja), inset -5px 0 0 var(--kaja);
 }
 
 .app { max-width:480px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
@@ -313,7 +312,7 @@ body.theme-kaja::before {
 }
 .stat-card.luca .stat-name { color: var(--luca); }
 .stat-card.kaja .stat-name { color: var(--kaja); }
-.stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; opacity: 0.9; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; opacity: 0.9; }
 .stat-row:last-child { margin-bottom: 0; }
 .stat-row strong { font-size: 14px; font-weight: 900; }
 .stat-row strong.pos { color: var(--green); }
@@ -352,6 +351,8 @@ body.theme-kaja::before {
 .mgmt-btn.danger:hover { background:rgba(248,113,113,0.14); border-color:rgba(248,113,113,0.35); }
 .mgmt-btn.warning { background:rgba(251,146,60,0.08); color:var(--kaja); border-color:rgba(251,146,60,0.18); }
 .mgmt-btn.warning:hover { background:rgba(251,146,60,0.14); border-color:rgba(251,146,60,0.35); }
+.mgmt-btn.info { background:rgba(129,140,248,0.08); color:var(--indigo); border-color:rgba(129,140,248,0.18); }
+.mgmt-btn.info:hover { background:rgba(129,140,248,0.14); border-color:rgba(129,140,248,0.35); }
 
 .modal-bg {
   display:none; position:fixed; inset:0;
@@ -387,6 +388,22 @@ body.theme-kaja::before {
 .modal-confirm.warning {
   background: var(--kaja);
   box-shadow: 0 4px 18px rgba(251,146,60,0.4);
+}
+
+/* Úprava pro History Modal */
+.modal.history-modal {
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+.history-content {
+  overflow-y: auto;
+  flex: 1;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  padding-right: 5px;
+  text-align: left;
 }
 
 .toast {
@@ -519,12 +536,14 @@ body.theme-kaja::before {
       <div class="stat-name">LŮCA</div>
       <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-a-gained" class="pos">+0</strong></div>
       <div class="stat-row"><span>💀 Ztraceno:</span> <strong id="stat-a-lost" class="neg">-0</strong></div>
+      <div class="stat-row"><span>✅ Návyky:</span> <strong id="stat-a-habits" class="pos">0</strong></div>
       <div class="stat-row"><span>⚡ Questy:</span> <strong id="stat-a-quests" class="neu">0</strong></div>
     </div>
     <div class="stat-card kaja">
       <div class="stat-name">KÁJA</div>
       <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-b-gained" class="pos">+0</strong></div>
       <div class="stat-row"><span>💀 Ztraceno:</span> <strong id="stat-b-lost" class="neg">-0</strong></div>
+      <div class="stat-row"><span>✅ Návyky:</span> <strong id="stat-b-habits" class="pos">0</strong></div>
       <div class="stat-row"><span>⚡ Questy:</span> <strong id="stat-b-quests" class="neu">0</strong></div>
     </div>
   </div>
@@ -536,6 +555,7 @@ body.theme-kaja::before {
 
   <div class="mgmt-card">
     <div class="mgmt-title">⚙️ Správa souboje</div>
+    <button class="mgmt-btn info" onclick="showHistory()">📅 Historie celého týdne</button>
     <button class="mgmt-btn" id="sync-btn" onclick="syncData(true)">🔄 Vynutit synchronizaci</button>
     <button class="mgmt-btn warning" onclick="showDailyReset()">🧹 Vymazat dnešní akce</button>
     <button class="mgmt-btn danger" onclick="showReset()">⚠️ Úplný reset databáze</button>
@@ -564,6 +584,15 @@ body.theme-kaja::before {
       <button class="modal-cancel" onclick="hideDailyReset()">Zpět</button>
       <button class="modal-confirm warning" onclick="confirmDailyReset()">Smazat dnešek</button>
     </div>
+  </div>
+</div>
+
+<div id="modal-history" class="modal-bg">
+  <div class="modal history-modal">
+    <div class="modal-icon">📅</div>
+    <div class="modal-title" style="color: var(--text);">Historie týdne</div>
+    <div id="history-content" class="history-content"></div>
+    <button class="modal-cancel" style="width: 100%;" onclick="hideHistory()">Zavřít archiv</button>
   </div>
 </div>
 
@@ -701,14 +730,23 @@ async function save() {
   isSaving = false;
 }
 
+// Opravená funkce pro statistiky (ignoruje falešné mínusy z překliků v návycích)
 function calculateStats(userLog) {
-  let gained = 0, lost = 0, quests = 0;
+  let gained = 0, lost = 0, quests = 0, habits = 0;
+  const penaltyIcons = ['🍷', '😴', '🍩', '🍔']; // Ikony, které jsou reálná penalizace
+  
   userLog.forEach(l => {
-    if (l.d > 0) gained += l.d;
-    if (l.d < 0) lost += Math.abs(l.d);
-    if (l.icon === '⚡') quests++;
+    if (l.d > 0) {
+      gained += l.d;
+      if (l.icon === '⚡') quests++;
+      else if (l.icon !== '🏋️') habits++; // Vše, co není quest a custom přidání, bereme jako klasický návyk
+    } else if (l.d < 0) {
+      if (penaltyIcons.includes(l.icon)) {
+        lost += Math.abs(l.d); // Přičte ztrátu JEN když jde o penalizační ikonku
+      }
+    }
   });
-  return { gained, lost, quests };
+  return { gained, lost, quests, habits };
 }
 
 function applyTheme() {
@@ -723,7 +761,7 @@ function applyTheme() {
 
 function render() {
   renderDate();
-  applyTheme(); // Aktivace správného barevného podkreslení
+  applyTheme();
 
   document.getElementById('btn-userA').classList.toggle('active', currentUser === 'userA');
   document.getElementById('btn-userB').classList.toggle('active', currentUser === 'userB');
@@ -834,10 +872,12 @@ function render() {
 
   document.getElementById('stat-a-gained').textContent = '+' + statsA.gained;
   document.getElementById('stat-a-lost').textContent = '-' + statsA.lost;
+  document.getElementById('stat-a-habits').textContent = statsA.habits;
   document.getElementById('stat-a-quests').textContent = statsA.quests;
 
   document.getElementById('stat-b-gained').textContent = '+' + statsB.gained;
   document.getElementById('stat-b-lost').textContent = '-' + statsB.lost;
+  document.getElementById('stat-b-habits').textContent = statsB.habits;
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
 
@@ -941,7 +981,6 @@ function confirmReset() {
   save();
 }
 
-// Funkce pro denní reset vybrané uživatelky
 function showDailyReset() { 
   const name = currentUser === 'userA' ? 'Lůca' : 'Kája';
   document.getElementById('daily-reset-name').textContent = name;
@@ -954,24 +993,18 @@ function confirmDailyReset() {
   startOfToday.setHours(0,0,0,0);
   const todayMs = startOfToday.getTime();
 
-  // Spočítáme, o kolik bodů celkem přišla dnešními akcemi a odečteme je
   let pointsToDeduct = 0;
   const userLog = state[currentUser].log;
   
-  // Najdeme pouze dnešní záznamy dané uživatelky a spočítáme jejich body
   for (let i = 0; i < userLog.length; i++) {
     if (userLog[i].ts >= todayMs) {
       pointsToDeduct += userLog[i].d;
     }
   }
 
-  // Odečteme body
   state[currentUser].weeklyPoints -= pointsToDeduct;
-  
-  // Vyfiltrujeme log tak, aby v něm zůstaly POUZE záznamy starší než dnešek
   state[currentUser].log = state[currentUser].log.filter(l => l.ts < todayMs);
   
-  // Vynulujeme dnešní odškrtávátka a questy
   state[currentUser].checkedHabits = {};
   state[currentUser].questDone = false;
 
@@ -980,9 +1013,36 @@ function confirmDailyReset() {
   save();
 }
 
+// Funkce pro otevření Historie celého týdne
+function showHistory() {
+  const content = document.getElementById('history-content');
+  const allLogs = [...state.userA.log, ...state.userB.log].sort((a,b) => b.ts - a.ts);
+  
+  if(allLogs.length === 0) {
+    content.innerHTML = '<div class="log-empty">Zatím žádné akce tento týden…</div>';
+  } else {
+    content.innerHTML = allLogs.map(l => {
+      const who = l.u === 'Lůca' ? 'luca' : 'kaja';
+      const d = new Date(l.ts);
+      const time = `${d.getDate()}.${d.getMonth()+1}. ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+      return `<div class="log-item">
+        <div class="log-dot ${who}"></div>
+        <div class="log-text" style="font-size:12px;">
+          <span style="opacity:0.5; font-size:10px; margin-right:4px;">[${time}]</span> 
+          ${l.icon} <strong>${l.u}</strong>: ${l.a}
+        </div>
+        <div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('modal-history').classList.add('show');
+}
+function hideHistory() { document.getElementById('modal-history').classList.remove('show'); }
+
 // Zamezení prokliku přes modal okna
 document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) hideReset(); });
 document.getElementById('modal-daily').addEventListener('click', e => { if (e.target === e.currentTarget) hideDailyReset(); });
+document.getElementById('modal-history').addEventListener('click', e => { if (e.target === e.currentTarget) hideHistory(); });
 
 let toastTimer;
 function showToast(msg) {
@@ -993,7 +1053,6 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// První spuštění (applyTheme proběhne hned v renderu)
 syncData();
 setInterval(() => syncData(false), 30000);
 </script>
