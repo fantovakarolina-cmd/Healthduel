@@ -126,15 +126,15 @@ body.theme-kaja::after {
 .score-card.kaja .score-val { color:var(--kaja); text-shadow:0 0 20px var(--kaja-glow); }
 .score-val.negative { color: var(--red) !important; text-shadow: 0 0 20px rgba(248,113,113,0.4) !important; }
 
-/* LÉTAJÍCÍ BODY - ANIMACE (Nové CSS pravidlo pro čísla) */
+/* LÉTAJÍCÍ BODY - ANIMACE (Nové CSS pravidlo pro čísla, fixed pozice přes celou appku) */
 .points-animation {
-  position: fixed; /* Osvobozeno z kartičky! */
+  position: fixed;
   transform: translate(-50%, -50%);
   font-family: 'Bebas Neue', sans-serif;
   font-size: 38px;
   font-weight: bold;
   pointer-events: none;
-  z-index: 99999; /* Úplně navrch přes celou appku */
+  z-index: 99999;
   white-space: nowrap;
   animation: floatUpAndFade 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
@@ -225,7 +225,8 @@ body.theme-kaja::after {
   background:var(--green); border-color:transparent;
   box-shadow:0 0 10px rgba(74,222,128,0.5); color:#09091a;
 }
-  
+/* Smazáno problematické černé pozadí pro filled tečky po splnění venčení */
+
 .habit-icon { font-size:22px; }
 .habit-name { flex:1; font-size:14px; font-weight:700; }
 .habit-pts {
@@ -253,7 +254,7 @@ body.theme-kaja::after {
 }
 .quest-text { font-size:16px; font-weight:800; margin-bottom:16px; letter-spacing:-0.3px; }
 
-/* Tlačítko Questu - nová logika (.done místo :disabled) */
+/* Tlačítko Questu - logika (.done místo :disabled) */
 .quest-btn {
   width:100%; padding:14px; border:none; border-radius:14px;
   font-family:'Nunito',sans-serif; font-size:13px; font-weight:900;
@@ -464,9 +465,9 @@ body.theme-kaja::after {
   to { left:110%; } 
 }
 @keyframes floatUpAndFade {
-  0% { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
-  20% { opacity: 1; transform: translate(-50%, -30%) scale(1.2); }
-  100% { opacity: 0; transform: translate(-50%, -80%) scale(1); }
+  0% { opacity: 0; transform: translate(-50%, 0px) scale(0.5); }
+  20% { opacity: 1; transform: translate(-50%, -30px) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, -100px) scale(1); }
 }
 </style>
 
@@ -924,25 +925,20 @@ function render() {
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
 
-/* ANIMACE LÉTAJÍCÍCH BODŮ - OSVOBOZENÁ VERZE */
+/* ANIMACE LÉTAJÍCÍCH BODŮ - Osvobozená verze (přes body) */
 function animatePoints(id, delta) {
   const scoreCard = document.querySelector(`.score-card.${id === 'userA' ? 'luca' : 'kaja'}`);
   if (!scoreCard) return;
 
-  // Zjistíme přesnou pozici kartičky na konkrétním displeji
   const rect = scoreCard.getBoundingClientRect();
-
   const animatedNumber = document.createElement('div');
   animatedNumber.className = `points-animation ${delta > 0 ? 'positive' : 'negative'}`;
   animatedNumber.textContent = `${delta > 0 ? '+' : ''}${delta}`;
 
-  // Nastavíme startovní pozici přesně doprostřed kartičky
   animatedNumber.style.left = (rect.left + rect.width / 2) + 'px';
   animatedNumber.style.top = (rect.top + rect.height / 2) + 'px';
 
-  // Připneme to přímo na hlavní tělo appky, aby to nic neblokovalo
   document.body.appendChild(animatedNumber);
-
   setTimeout(() => animatedNumber.remove(), 1200);
 }
 
@@ -1034,7 +1030,10 @@ function completeQuest() {
     state[currentUser].questDone = true;
     state[currentUser].weeklyPoints += 15;
     
-    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); // BUM! Konfety!
+    // Bezpečné volání konfet
+    if (typeof window.confetti === 'function') {
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+    }
 
     state[currentUser].log.unshift({ 
       u: currentUser==='userA'?'Lůca':'Kája', 
