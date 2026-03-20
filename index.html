@@ -40,30 +40,30 @@ body {
   overflow-x: hidden;
 }
 
-/* Postranní LED linie podle uživatelky - NEONOVÝ EFEKT */
+/* Postranní LED linie podle uživatelky - NEONOVÝ EFEKT (pouze boky) */
 body::after {
   content: '';
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  /* Schválně protaženo mimo displej, aby zmizely horní a spodní stíny */
+  top: -50px; bottom: -50px; 
+  left: 0; right: 0;
   pointer-events: none;
   z-index: 9999;
   transition: box-shadow 0.4s ease;
 }
 
 body.theme-luca::after {
-  /* Neonová tyrkysová záře - vnitřní i vnější pro maximální efekt */
+  /* Neonová tyrkysová záře čistě zleva a zprava */
   box-shadow: 
-    inset 8px 0 15px -2px rgba(45,212,191,0.5), /* Vnitřní levá záře */
-    inset -8px 0 15px -2px rgba(45,212,191,0.5), /* Vnitřní pravá záře */
-    0 0 25px 3px rgba(45,212,191,0.2); /* Jemné rozptýlení po celém obvodu displeje */
+    inset 18px 0 25px -12px rgba(45,212,191,0.6), 
+    inset -18px 0 25px -12px rgba(45,212,191,0.6); 
 }
 
 body.theme-kaja::after {
-  /* Neonová oranžová záře - vnitřní i vnější pro maximální efekt */
+  /* Neonová oranžová záře čistě zleva a zprava */
   box-shadow: 
-    inset 8px 0 15px -2px rgba(251,146,60,0.5), /* Vnitřní levá záře */
-    inset -8px 0 15px -2px rgba(251,146,60,0.5), /* Vnitřní pravá záře */
-    0 0 25px 3px rgba(251,146,60,0.2); /* Jemné rozptýlení po celém obvodu displeje */
+    inset 18px 0 25px -12px rgba(251,146,60,0.6), 
+    inset -18px 0 25px -12px rgba(251,146,60,0.6); 
 }
 
 .app { max-width:480px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
