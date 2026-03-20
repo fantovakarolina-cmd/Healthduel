@@ -128,15 +128,15 @@ body.theme-kaja::after {
 
 /* LÉTAJÍCÍ BODY - ANIMACE (Nové CSS pravidlo pro čísla, fixed pozice přes celou appku) */
 .points-animation {
-  position: fixed;
+  position: absolute; /* Bezpečnější pozice */
   transform: translate(-50%, -50%);
   font-family: 'Bebas Neue', sans-serif;
   font-size: 38px;
   font-weight: bold;
   pointer-events: none;
-  z-index: 99999;
+  z-index: 9999;
   white-space: nowrap;
-  animation: floatUpAndFade 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  animation: floatUpAndFade 1.2s ease-out forwards;
 }
 .points-animation.positive {
   color: var(--green);
@@ -447,6 +447,14 @@ body.theme-kaja::after {
   white-space:nowrap; pointer-events:none;
 }
 .toast.show { transform:translateX(-50%) translateY(0); }
+  
+  /* ZTRACENÝ EFEKT BĚŽÍCÍCH TRATÍ */
+.track-fill::before {
+  content:''; position:absolute; top:0; left:-60px;
+  width:45px; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
+  animation:shine 2s infinite linear;
+}
 
 /* ========================================= */
 /* 🎬 VŠECHNY ANIMACE PĚKNĚ POHROMADĚ 🎬     */
@@ -925,23 +933,27 @@ function render() {
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
 
-/* ANIMACE LÉTAJÍCÍCH BODŮ - Osvobozená verze (přes body) */
+/* ANIMACE LÉTAJÍCÍCH BODŮ - NEPRŮSTŘELNÁ VERZE */
 function animatePoints(id, delta) {
   const scoreCard = document.querySelector(`.score-card.${id === 'userA' ? 'luca' : 'kaja'}`);
-  if (!scoreCard) return;
+  const appContainer = document.querySelector('.app');
+  if (!scoreCard || !appContainer) return;
 
   const rect = scoreCard.getBoundingClientRect();
+  const appRect = appContainer.getBoundingClientRect();
+
   const animatedNumber = document.createElement('div');
   animatedNumber.className = `points-animation ${delta > 0 ? 'positive' : 'negative'}`;
   animatedNumber.textContent = `${delta > 0 ? '+' : ''}${delta}`;
 
-  animatedNumber.style.left = (rect.left + rect.width / 2) + 'px';
-  animatedNumber.style.top = (rect.top + rect.height / 2) + 'px';
+  // Bezpečný výpočet pozice přímo vůči obalu aplikace
+  animatedNumber.style.left = (rect.left - appRect.left + rect.width / 2) + 'px';
+  animatedNumber.style.top = (rect.top - appRect.top + rect.height / 2) + 'px';
 
-  document.body.appendChild(animatedNumber);
+  appContainer.appendChild(animatedNumber);
   setTimeout(() => animatedNumber.remove(), 1200);
 }
-
+  
 function switchUser(id) { 
   currentUser = id; 
   localStorage.setItem('activeUser', id); 
