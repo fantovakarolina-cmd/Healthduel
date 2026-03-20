@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Health Duel</title>
+<title>Health Duel ⚔️</title>
 
 <link rel="icon" type="image/png" href="./icon.png">
 <link rel="apple-touch-icon" href="./icon.png">
@@ -40,7 +40,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Nové postranní LED linie s postupným mizetím přes MASKu (pouze boky) */
+/* Postranní LED linie s postupným mizetím přes MASKu (pouze boky) */
 body::before, body::after {
   content: '';
   position: fixed;
@@ -125,6 +125,29 @@ body.theme-kaja::after {
 .score-card.luca .score-val { color:var(--luca); text-shadow:0 0 20px var(--luca-glow); }
 .score-card.kaja .score-val { color:var(--kaja); text-shadow:0 0 20px var(--kaja-glow); }
 .score-val.negative { color: var(--red) !important; text-shadow: 0 0 20px rgba(248,113,113,0.4) !important; }
+
+/* LÉTAJÍCÍ BODY - ANIMACE (Nové CSS pravidlo pro čísla) */
+.points-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+  animation: floatUpAndFade 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+.points-animation.positive {
+  color: var(--green);
+  text-shadow: 0 0 20px rgba(74, 222, 128, 0.8);
+}
+.points-animation.negative {
+  color: var(--red);
+  text-shadow: 0 0 20px rgba(248, 113, 113, 0.8);
+}
 
 .track-card {
   backdrop-filter:blur(12px); background:var(--card); border:1px solid var(--card-border);
@@ -235,12 +258,7 @@ body.theme-kaja::after {
 }
 .quest-text { font-size:16px; font-weight:800; margin-bottom:16px; letter-spacing:-0.3px; }
 
-@keyframes pulseGlow {
-  0% { box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
-  50% { box-shadow: 0 4px 35px rgba(99,102,241,0.7); transform: translateY(-1px); }
-  100% { box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
-}
-
+/* Tlačítko Questu - nová logika (.done místo :disabled) */
 .quest-btn {
   width:100%; padding:14px; border:none; border-radius:14px;
   font-family:'Nunito',sans-serif; font-size:13px; font-weight:900;
@@ -261,10 +279,10 @@ body.theme-kaja::after {
   background:rgba(74,222,128,0.35); 
   box-shadow:none; 
   color:rgba(255,255,255,0.9); 
-  cursor:pointer; /* Změna: teď na to jde kliknout! */
+  cursor:pointer; 
   animation: none;
 }
-  
+
 .custom-card {
   backdrop-filter:blur(10px); background:var(--card); border:1px solid var(--card-border);
   border-radius:20px; padding:14px; margin-bottom:20px; display:flex; gap:10px;
@@ -404,14 +422,11 @@ body.theme-kaja::after {
   box-shadow:0 4px 18px rgba(248,113,113,0.4);
 }
 .modal-confirm:hover { transform:translateY(-1px); }
-
-/* Nové barvy pro potvrzovací tlačítko v modalu pro denní reset */
 .modal-confirm.warning {
   background: var(--kaja);
   box-shadow: 0 4px 18px rgba(251,146,60,0.4);
 }
 
-/* Úprava pro History Modal */
 .modal.history-modal {
   max-height: 80vh;
   display: flex;
@@ -437,52 +452,31 @@ body.theme-kaja::after {
 }
 .toast.show { transform:translateX(-50%) translateY(0); }
 
-@keyframes popIn { from { opacity:0; transform:scale(0.9) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
-@keyframes shine { from { left:-60px; } to { left:110%; } }
-
-.track-fill::before {
-  content:''; position:absolute; top:0; left:-60px;
-  width:45px; height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent);
-  animation:shine 2.5s 1s ease infinite;
+/* ========================================= */
+/* 🎬 VŠECHNY ANIMACE PĚKNĚ POHROMADĚ 🎬     */
+/* ========================================= */
+@keyframes pulseGlow {
+  0% { box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+  50% { box-shadow: 0 4px 35px rgba(99,102,241,0.7); transform: translateY(-1px); }
+  100% { box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
 }
-
-@media (max-width:380px) {
-  .logo { font-size:44px; }
-  .score-val { font-size:42px; }
+@keyframes popIn { 
+  from { opacity:0; transform:scale(0.9) translateY(10px); } 
+  to { opacity:1; transform:scale(1) translateY(0); } 
 }
-  /* LÉTAJÍCÍ BODY - ANIMACE */
-.points-animation {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 38px;
-  font-weight: bold;
-  pointer-events: none;
-  z-index: 100;
-  white-space: nowrap;
-  animation: floatUpAndFade 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+@keyframes shine { 
+  from { left:-60px; } 
+  to { left:110%; } 
 }
-
-.points-animation.positive {
-  color: var(--green);
-  text-shadow: 0 0 20px rgba(74, 222, 128, 0.8);
-}
-
-.points-animation.negative {
-  color: var(--red);
-  text-shadow: 0 0 20px rgba(248, 113, 113, 0.8);
-}
-
 @keyframes floatUpAndFade {
-  0% { opacity: 0; transform: translate(-50%, -10%) scale(0.5); }
-  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-  100% { opacity: 0; transform: translate(-50%, -150%) scale(1); }
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
+  20% { opacity: 1; transform: translate(-50%, -30%) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, -80%) scale(1); }
 }
 </style>
+
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/confetti.browser.min.js"></script>
+
 </head>
 <body class="theme-luca">
 <div class="app">
@@ -631,7 +625,7 @@ body.theme-kaja::after {
   <div class="modal">
     <div class="modal-icon">🧹</div>
     <div class="modal-title" style="color: var(--kaja);">Reset dne?</div>
-    <div class="modal-desc">Smažeš <strong>dnešní akce a body</strong> pro právě vybranou uživatelku (<span id="daily-reset-name"></span>). Historie předchozích dnů zůstane zachována.</div>
+    <div class="modal-desc">Smažeš <strong>dnešní akce a body</strong> pro (<span id="daily-reset-name"></span>). Historie předchozích dnů zůstane.</div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="hideDailyReset()">Zpět</button>
       <button class="modal-confirm warning" onclick="confirmDailyReset()">Smazat dnešek</button>
@@ -785,19 +779,18 @@ async function save() {
   isSaving = false;
 }
 
-// Opravená funkce pro statistiky (ignoruje falešné mínusy z překliků v návycích)
 function calculateStats(userLog) {
   let gained = 0, lost = 0, quests = 0, habits = 0;
-  const penaltyIcons = ['🍷', '😴', '🍩', '🍔']; // Ikony, které jsou reálná penalizace
+  const penaltyIcons = ['🍷', '😴', '🍩', '🍔']; 
   
   userLog.forEach(l => {
     if (l.d > 0) {
       gained += l.d;
       if (l.icon === '⚡') quests++;
-      else if (l.icon !== '🏋️') habits++; // Vše, co není quest a custom přidání, bereme jako klasický návyk
+      else if (l.icon !== '🏋️') habits++; 
     } else if (l.d < 0) {
       if (penaltyIcons.includes(l.icon)) {
-        lost += Math.abs(l.d); // Přičte ztrátu JEN když jde o penalizační ikonku
+        lost += Math.abs(l.d); 
       }
     }
   });
@@ -885,7 +878,7 @@ function render() {
   });
 
   const daySeed = Math.floor(new Date().getTime() / 86400000);
-  const randomQuestIndex = (daySeed * 7 + 0) % SIDE_QUESTS.length; 
+  const randomQuestIndex = (daySeed * 7) % SIDE_QUESTS.length; 
   document.getElementById('today-quest').textContent = SIDE_QUESTS[randomQuestIndex];
   
   const dayIndex = (new Date().getDay() + 6) % 7;
@@ -935,26 +928,20 @@ function render() {
   document.getElementById('stat-b-habits').textContent = statsB.habits;
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 }
-/* POMOCNÁ FUNKCE PRO ANIMACI BODŮ (vložit nad switchUser) */
+
+/* ANIMACE LÉTAJÍCÍCH BODŮ */
 function animatePoints(id, delta) {
-  // Najdeme kartu skóre dané uživatelky
   const scoreCard = document.querySelector(`.score-card.${id === 'userA' ? 'luca' : 'kaja'}`);
-  
   if (!scoreCard) return;
 
-  // Vytvoříme element pro létající číslo
   const animatedNumber = document.createElement('div');
   animatedNumber.className = `points-animation ${delta > 0 ? 'positive' : 'negative'}`;
   animatedNumber.textContent = `${delta > 0 ? '+' : ''}${delta}`;
 
-  // Přidáme ho do karty
   scoreCard.appendChild(animatedNumber);
-
-  // Po skončení animace (1.2s) element odstraníme, ať nezahlcujeme paměť
-  setTimeout(() => {
-    animatedNumber.remove();
-  }, 1200);
+  setTimeout(() => animatedNumber.remove(), 1200);
 }
+
 function switchUser(id) { 
   currentUser = id; 
   localStorage.setItem('activeUser', id); 
@@ -991,25 +978,22 @@ function toggleHabit(id) {
   let actionText = h.label;
   if (h.max > 1 && newCount > 0) actionText += ` (${newCount}/${h.max})`;
 
-  // NOVÁ CHYTRÁ LOGIKA PRO HISTORII
+  // CHYTRÁ HISTORIE - mazání omylů
   if (delta < 0) {
-    // Pokud odebíráme bod, nezapisujeme mínus, ale vymažeme původní záznam z dneška!
     let pointsToRemove = Math.abs(delta);
     let todayStart = new Date().setHours(0,0,0,0);
     let i = 0;
     
-    // Prohledáme historii a mažeme, dokud nesmažeme přesný počet omylem přidaných bodů
     while (i < state[currentUser].log.length && pointsToRemove > 0) {
       let l = state[currentUser].log[i];
       if (l.icon === h.icon && l.d > 0 && l.ts >= todayStart) {
         pointsToRemove -= l.d;
-        state[currentUser].log.splice(i, 1); // Odstranění záznamu
+        state[currentUser].log.splice(i, 1);
       } else {
         i++;
       }
     }
   } else {
-    // Pokud přidáváme bod, zapíšeme ho normálně do historie
     state[currentUser].log.unshift({ 
       u: currentUser==='userA'?'Lůca':'Kája', 
       a: actionText, 
@@ -1019,7 +1003,7 @@ function toggleHabit(id) {
     });
   }
 
-  animatePoints(currentUser, delta); // Spustit animaci nad číslem
+  animatePoints(currentUser, delta);
   showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}: ${delta > 0 ? '+' : ''}${delta} bodů`);
   save();
 }
@@ -1029,11 +1013,10 @@ function completeQuest() {
   const currentQuestText = document.getElementById('today-quest').textContent;
 
   if (state[currentUser].questDone) {
-    // ↩️ ZRUŠENÍ QUESTU (Pokud jsi klikla omylem)
+    // ZRUŠENÍ QUESTU
     state[currentUser].questDone = false;
     state[currentUser].weeklyPoints -= 15;
 
-    // Chytré smazání záznamu z dnešní historie
     let todayStart = new Date().setHours(0,0,0,0);
     let logIndex = state[currentUser].log.findIndex(l => l.icon === '⚡' && l.ts >= todayStart);
     if (logIndex !== -1) {
@@ -1043,11 +1026,11 @@ function completeQuest() {
     animatePoints(currentUser, -15);
     showToast('↩️ Side Quest zrušen');
   } else {
-    // ✅ SPLNĚNÍ QUESTU
+    // SPLNĚNÍ QUESTU
     state[currentUser].questDone = true;
     state[currentUser].weeklyPoints += 15;
     
-    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); // BUM!
+    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); // BUM! Konfety!
 
     state[currentUser].log.unshift({ 
       u: currentUser==='userA'?'Lůca':'Kája', 
@@ -1066,7 +1049,7 @@ function completeQuest() {
 function addPenalty(label, delta, icon) {
   state[currentUser].weeklyPoints = state[currentUser].weeklyPoints + delta;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
-  animatePoints(currentUser, delta); // Spustit animaci
+  animatePoints(currentUser, delta);
   showToast(`${icon} ${label}: ${delta} bodů`);
   save();
 }
@@ -1077,7 +1060,7 @@ function addCustom() {
   state[currentUser].weeklyPoints += 10;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:val, d:10, icon:'🏋️', ts:Date.now() });
   document.getElementById('custom-input').value = '';
-  animatePoints(currentUser, 10); // Spustit animaci
+  animatePoints(currentUser, 10);
   showToast(`🏋️ +10 bodů: ${val}`);
   save();
 }
@@ -1096,7 +1079,6 @@ function confirmReset() {
   save();
 }
 
-// Funkce pro denní reset vybrané uživatelky
 function showDailyReset() { 
   const name = currentUser === 'userA' ? 'Lůca' : 'Kája';
   document.getElementById('daily-reset-name').textContent = name;
@@ -1129,7 +1111,6 @@ function confirmDailyReset() {
   save();
 }
 
-// Funkce pro otevření Historie celého týdne
 function showHistory() {
   const content = document.getElementById('history-content');
   const allLogs = [...state.userA.log, ...state.userB.log].sort((a,b) => b.ts - a.ts);
@@ -1155,7 +1136,6 @@ function showHistory() {
 }
 function hideHistory() { document.getElementById('modal-history').classList.remove('show'); }
 
-// Zamezení prokliku přes modal okna
 document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) hideReset(); });
 document.getElementById('modal-daily').addEventListener('click', e => { if (e.target === e.currentTarget) hideDailyReset(); });
 document.getElementById('modal-history').addEventListener('click', e => { if (e.target === e.currentTarget) hideHistory(); });
