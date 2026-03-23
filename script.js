@@ -132,9 +132,12 @@ function checkTime() {
     }
 
     state.lastWinner = winner;
-    state.userA.weeklyPoints = 0; state.userA.checkedHabits = {}; state.userA.questDone = false; state.userA.log = [];
-    state.userB.weeklyPoints = 0; state.userB.checkedHabits = {}; state.userB.questDone = false; state.userB.log = [];
-    
+    state.userA.weeklyPoints = 0; state.userA.checkedHabits = {}; state.userA.questDone = false;
+    state.userB.weeklyPoints = 0; state.userB.checkedHabits = {}; state.userB.questDone = false;
+    // Udržujeme historii jen za posledních 30 dní (30 * 24 * 60 * 60 * 1000 milisekund)
+    const thirtyDaysAgo = Date.now() - 2592000000;
+    state.userA.log = (state.userA.log || []).filter(l => l.ts >= thirtyDaysAgo);
+    state.userB.log = (state.userB.log || []).filter(l => l.ts >= thirtyDaysAgo);
     state.currentWeek = thisMonday;
     state.currentDay = today;
     needsSave = true;
@@ -291,8 +294,17 @@ function render() {
     }).join('');
   }
 
-  const statsA = calculateStats(state.userA.log);
-  const statsB = calculateStats(state.userB.log);
+// Zjistíme přesný čas tohoto pondělí (půlnoc)
+  const thisMondayDate = new Date(getMonday(new Date()));
+  thisMondayDate.setHours(0,0,0,0);
+  const thisMondayMs = thisMondayDate.getTime();
+
+  // Do statistik pošleme jen akce, které se staly od pondělí
+  const weeklyLogA = (state.userA.log || []).filter(l => l.ts >= thisMondayMs);
+  const weeklyLogB = (state.userB.log || []).filter(l => l.ts >= thisMondayMs);
+
+  const statsA = calculateStats(weeklyLogA);
+  const statsB = calculateStats(weeklyLogB);
 
   document.getElementById('stat-a-gained').textContent = '+' + statsA.gained;
   document.getElementById('stat-a-lost').textContent = '-' + statsA.lost;
@@ -459,7 +471,7 @@ window.showHistory = function() {
   const allLogs = [...userALog, ...userBLog].sort((a,b) => b.ts - a.ts);
   
   if(allLogs.length === 0) {
-    content.innerHTML = '<div class="log-empty">Zatím žádné akce tento týden…</div>';
+    content.innerHTML = '<div class="log-empty">Zatím žádné akce za posledních 30 dní…</div>';
   } else {
     content.innerHTML = allLogs.map(l => {
       const who = l.u === 'Lůca' ? 'luca' : 'kaja';
