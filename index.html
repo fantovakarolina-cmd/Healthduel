@@ -138,8 +138,7 @@
 
   <div class="mgmt-card">
     <div class="mgmt-title">⚙️ Správa souboje</div>
-    <button class="mgmt-btn danger" onclick="destroyOldData()">💥 Zničit data na Npointu</button>
-    <button class="mgmt-btn info" onclick="showHistory()">📅 Historie celého týdne</button>
+    <button class="mgmt-btn info" onclick="showHistory()">📅 Historie posledních 30 dní</button>
     <button class="mgmt-btn" id="sync-btn" onclick="syncData(true)">🔄 Vynutit synchronizaci</button>
     <button class="mgmt-btn warning" onclick="showDailyReset()">🧹 Vymazat dnešní akce</button>
     <button class="mgmt-btn danger" onclick="showReset()">⚠️ Úplný reset databáze</button> 
@@ -174,7 +173,7 @@
 <div id="modal-history" class="modal-bg">
   <div class="modal history-modal">
     <div class="modal-icon">📅</div>
-    <div class="modal-title" style="color: var(--text);">Historie týdne</div>
+    <div class="modal-title" style="color: var(--text);">Historie měsíce</div>
     <div id="history-content" class="history-content"></div>
     <button class="modal-cancel" style="width: 100%;" onclick="hideHistory()">Zavřít archiv</button>
   </div>
