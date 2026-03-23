@@ -495,19 +495,3 @@ function showToast(msg) {
 
 // Manuální sync už není potřeba, ale necháme tlačítku funkci, aby se uživatel cítil dobře
 window.syncData = function() { showToast('⚡ Připojeno k Firebase Real-time'); };
-
-window.migrateData = async function() {
-  try {
-    showToast('⏳ Stahuji data ze staré databáze...');
-    const res = await fetch('https://api.npoint.io/fdf54930b04517ca8352');
-    if (res.ok) {
-      const oldData = await res.json();
-      state = oldData;
-      save(); // Tohle stará data zapíše do nového Firebase!
-      showToast('✅ Stará data úspěšně přesunuta!');
-    }
-  } catch(e) {
-    showToast('❌ Nepodařilo se stáhnout data.');
-    console.error(e);
-  }
-};
