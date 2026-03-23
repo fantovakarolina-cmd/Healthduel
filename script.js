@@ -19,7 +19,7 @@ const db = getDatabase(app);
 const dbRef = ref(db, 'healthDuelState'); // Sem se budou ukládat data
 
 // 4. HERNÍ LOGIKA A DATA
-const GOAL = 300;
+const GOAL = 200;
 
 const HABITS = [
   { id:"water",    label:"2L vody",      points:2, icon:"💧", max:1 },
