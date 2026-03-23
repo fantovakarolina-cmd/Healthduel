@@ -495,17 +495,3 @@ function showToast(msg) {
 
 // Manuální sync už není potřeba, ale necháme tlačítku funkci, aby se uživatel cítil dobře
 window.syncData = function() { showToast('⚡ Připojeno k Firebase Real-time'); };
-
-window.destroyOldData = async function() {
-  try {
-    // Pošleme na starou adresu úplně prázdná data se vzkazem
-    await fetch('https://api.npoint.io/fdf54930b04517ca8352', { 
-      method: 'POST', 
-      headers: {'Content-Type': 'application/json'}, 
-      body: JSON.stringify({ status: "Zničeno", message: "Tato data byla přesunuta na zabezpečený server." }) 
-    });
-    showToast('💥 Stará data byla úspěšně přepsána!');
-  } catch(e) {
-    showToast('❌ Nepodařilo se přepsat data.');
-  }
-};
