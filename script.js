@@ -423,20 +423,6 @@ window.addCustom = function() {
   save();
 };
 
-window.showReset = function() { document.getElementById('modal').classList.add('show'); };
-window.hideReset = function() { document.getElementById('modal').classList.remove('show'); };
-window.confirmReset = function() {
-  state = {
-    userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
-    userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
-    lastWinner:null, lastUpdated:Date.now(), currentDay:new Date().toDateString(),
-    currentWeek: getMonday(new Date())
-  };
-  hideReset();
-  showToast('💣 Databáze byla resetována');
-  save();
-};
-
 window.showDailyReset = function() { 
   const name = currentUser === 'userA' ? 'Lůca' : 'Kája';
   document.getElementById('daily-reset-name').textContent = name;
@@ -492,7 +478,6 @@ window.showHistory = function() {
 window.hideHistory = function() { document.getElementById('modal-history').classList.remove('show'); };
 
 // Modals close on background click
-document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) window.hideReset(); });
 document.getElementById('modal-daily').addEventListener('click', e => { if (e.target === e.currentTarget) window.hideDailyReset(); });
 document.getElementById('modal-history').addEventListener('click', e => { if (e.target === e.currentTarget) window.hideHistory(); });
 
@@ -504,6 +489,3 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
-
-// Manuální sync už není potřeba, ale necháme tlačítku funkci, aby se uživatel cítil dobře
-window.syncData = function() { showToast('⚡ Připojeno k Firebase Real-time'); };
