@@ -1,6 +1,7 @@
-// 1. IMPORTY FIREBASE
+// 1. IMPORTY FIREBASE (přidáno Auth)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 // 2. TVOJE FIREBASE KONFIGURACE
 const firebaseConfig = {
@@ -13,10 +14,31 @@ const firebaseConfig = {
   appId: "1:559742355193:web:a2ece11d46565b76c40428"
 };
 
-// 3. INICIALIZACE DATABÁZE
+// 3. INICIALIZACE DATABÁZE A AUTH
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const dbRef = ref(db, 'healthDuelState'); // Sem se budou ukládat data
+const auth = getAuth(app);
+const dbRef = ref(db, 'healthDuelState');
+
+// 4. NEVIDITELNÉ PŘIHLÁŠENÍ NA POZADÍ
+signInAnonymously(auth).then(() => {
+  // Až po ověření začne appka číst a zapisovat data
+  onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      state = data;
+      checkTime(); 
+      render();
+    } else {
+      save();
+    }
+  });
+}).catch((error) => {
+  console.error("Chyba neviditelného ověření:", error);
+});
+
+// ZDE POKRAČUJE TVŮJ PŮVODNÍ KÓD:
+const GOAL = 200;
 
 // 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
