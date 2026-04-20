@@ -37,9 +37,6 @@ signInAnonymously(auth).then(() => {
   console.error("Chyba neviditelného ověření:", error);
 });
 
-// ZDE POKRAČUJE TVŮJ PŮVODNÍ KÓD:
-const GOAL = 200;
-
 // 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
 
