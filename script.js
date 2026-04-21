@@ -22,27 +22,20 @@ const dbRef = ref(db, 'healthDuelState');
 
 const loginScreen = document.getElementById('login-screen');
 const appScreen = document.querySelector('.app');
-const loadingScreen = document.getElementById('loading-screen'); // Zaregistrujeme načítání
+const loadingScreen = document.getElementById('loading-screen'); 
 
-let isAppStarted = false; // Pojistka proti dvojitému načtení dat
+let isAppStarted = false; 
 
 // 3. HLÍDAČ STAVU (Jsme přihlášení?)
 onAuthStateChanged(auth, (user) => {
-    
-    // Jakmile nám Google odpoví (ať už tak nebo tak), schováme nápis "Načítám duel..."
-    if (loadingScreen) loadingScreen.style.display = 'none';
-
     if (user) {
-        // TADY NAPIŠ VAŠE MAILY!
         const allowedEmails = ["pokyna15@gmail.com", "fantova.karolina@gmail.com"];
         const currentEmail = user.email.toLowerCase();
         
         if (allowedEmails.includes(currentEmail)) {
             loginScreen.style.display = 'none';
-            // ZMĚNA: Prázdné uvozovky vrátí appce její původní CSS rozložení (nic se nerozhodí)
             appScreen.style.display = ''; 
             
-            // Načteme data jen tehdy, pokud ještě nejsou načtená
             if (!isAppStarted) {
                 startApp();
                 isAppStarted = true;
@@ -52,24 +45,31 @@ onAuthStateChanged(auth, (user) => {
             auth.signOut();
         }
     } else {
-        // Uživatel není přihlášen, ukážeme mu přihlašovací okno
+        if (loadingScreen) loadingScreen.style.display = 'none';
         loginScreen.style.display = 'flex';
         appScreen.style.display = 'none';
     }
 });
+
 // FUNKCE PRO START APLIKACE (načtení dat)
 function startApp() {
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
+        
+        if (loadingScreen) loadingScreen.style.display = 'none';
+
         if (data) {
             state = data;
+            // Pokaždé když Firebase pošle data, uložíme si je i lokálně do mobilu
+            localStorage.setItem('healthDuelCache', JSON.stringify(state));
             checkTime(); 
             render();
         } else {
-            save(); // Pokud je databáze prázdná, uložíme základní stav
+            save(); 
         }
     });
 }
+
 // 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
 
@@ -126,6 +126,7 @@ function getMonday(d) {
   return new Date(date.setDate(diff)).toDateString();
 }
 
+// 5. VÝCHOZÍ STAV (Předtím než tam vložíme rychlou paměť)
 let state = {
   userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
   userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
@@ -133,25 +134,24 @@ let state = {
   currentWeek: getMonday(new Date())
 };
 
-// 5. NASLOUCHÁNÍ DATABÁZI (REAL-TIME KOUZLO)
-onValue(dbRef, (snapshot) => {
-  const data = snapshot.val();
-  if (data) {
-    state = data;
-    checkTime(); 
+// --- BLESKOVÉ NAČTENÍ Z PAMĚTI TELEFONU (Cache) ---
+const lokalniData = localStorage.getItem('healthDuelCache');
+if (lokalniData) {
+    state = JSON.parse(lokalniData);
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    if (appScreen) appScreen.style.display = '';
+    checkTime();
     render();
-  } else {
-    // Pokud je databáze úplně prázdná, pošleme tam výchozí stav
-    save();
-  }
-});
+}
 
-// 6. ULOŽENÍ DO FIREBASE
+// 6. ULOŽENÍ DO FIREBASE A DO CACHE
 async function save() {
   state.lastUpdated = Date.now();
-  render(); // Ihned překreslíme displej (pro plynulost)
+  // Rovnou to střelíme i do lokální paměti pro největší rychlost
+  localStorage.setItem('healthDuelCache', JSON.stringify(state)); 
+  render(); 
   try {
-    await set(dbRef, state); // Odešle stav do Firebase
+    await set(dbRef, state); 
   } catch(e) { 
     console.error('Chyba při ukládání do Firebase:', e); 
     showToast('❌ Chyba připojení');
@@ -186,7 +186,6 @@ function checkTime() {
     state.lastWinner = winner;
     state.userA.weeklyPoints = 0; state.userA.checkedHabits = {}; state.userA.questDone = false;
     state.userB.weeklyPoints = 0; state.userB.checkedHabits = {}; state.userB.questDone = false;
-    // Udržujeme historii jen za posledních 30 dní (30 * 24 * 60 * 60 * 1000 milisekund)
     const thirtyDaysAgo = Date.now() - 2592000000;
     state.userA.log = (state.userA.log || []).filter(l => l.ts >= thirtyDaysAgo);
     state.userB.log = (state.userB.log || []).filter(l => l.ts >= thirtyDaysAgo);
@@ -208,7 +207,6 @@ function calculateStats(userLog) {
   let gained = 0, lost = 0, quests = 0, habits = 0, custom = 0;
   const penaltyIcons = ['🍷', '😴', '🍩', '🍔']; 
   
-  // Ochrana: pokud by v databázi log chyběl
   if (!userLog) return { gained:0, lost:0, quests:0, habits:0, custom:0 };
 
   userLog.forEach(l => {
@@ -284,7 +282,7 @@ function render() {
     const isFullyChecked = count === h.max;
     const div = document.createElement('div');
     div.className = 'habit-item' + (isFullyChecked ? ' checked' : '');
-    div.onclick = () => window.toggleHabit(h.id); // Napojeno na window
+    div.onclick = () => window.toggleHabit(h.id); 
     
     let checkVisual = '';
     if (h.max === 1) {
@@ -346,12 +344,10 @@ function render() {
     }).join('');
   }
 
-// Zjistíme přesný čas tohoto pondělí (půlnoc)
   const thisMondayDate = new Date(getMonday(new Date()));
   thisMondayDate.setHours(0,0,0,0);
   const thisMondayMs = thisMondayDate.getTime();
 
-  // Do statistik pošleme jen akce, které se staly od pondělí
   const weeklyLogA = (state.userA.log || []).filter(l => l.ts >= thisMondayMs);
   const weeklyLogB = (state.userB.log || []).filter(l => l.ts >= thisMondayMs);
 
@@ -371,7 +367,7 @@ function render() {
   document.getElementById('stat-b-quests').textContent = statsB.quests;
 } 
 
-// --- FUNKCE PRO HTML (přiřazujeme k window, aby je modul viděl) ---
+// --- FUNKCE PRO HTML ---
 window.switchUser = function(id) { 
   currentUser = id; 
   localStorage.setItem('activeUser', id); 
@@ -529,7 +525,6 @@ window.showHistory = function() {
 };
 window.hideHistory = function() { document.getElementById('modal-history').classList.remove('show'); };
 
-// Modals close on background click
 document.getElementById('modal-daily').addEventListener('click', e => { if (e.target === e.currentTarget) window.hideDailyReset(); });
 document.getElementById('modal-history').addEventListener('click', e => { if (e.target === e.currentTarget) window.hideHistory(); });
 
