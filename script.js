@@ -1,7 +1,7 @@
-// 1. IMPORTY FIREBASE (přidáno Auth)
+// 1. IMPORTY FIREBASE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 // 2. TVOJE FIREBASE KONFIGURACE
 const firebaseConfig = {
@@ -14,29 +14,54 @@ const firebaseConfig = {
   appId: "1:559742355193:web:a2ece11d46565b76c40428"
 };
 
-// 3. INICIALIZACE DATABÁZE A AUTH
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 const dbRef = ref(db, 'healthDuelState');
 
-// 4. NEVIDITELNÉ PŘIHLÁŠENÍ NA POZADÍ
-signInAnonymously(auth).then(() => {
-  // Až po ověření začne appka číst a zapisovat data
-  onValue(dbRef, (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      state = data;
-      checkTime(); 
-      render();
-    } else {
-      save();
-    }
-  });
-}).catch((error) => {
-  console.error("Chyba neviditelného ověření:", error);
+const loginScreen = document.getElementById('login-screen');
+const appScreen = document.querySelector('.app');
+const loginBtn = document.getElementById('login-btn');
+
+// 3. FUNKCE PRO PŘIHLÁŠENÍ
+loginBtn.addEventListener('click', () => {
+    signInWithPopup(auth, provider).catch(err => console.error("Chyba přihlášení:", err));
 });
 
+// 4. HLÍDAČ STAVU (Jsme přihlášení?)
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // TADY MŮŽEME OMEZIT VSTUP JEN PRO VÁS DVĚ
+        const allowedEmails = ["tvuj-email@gmail.com", "kajin-email@gmail.com"];
+        
+        // Pokud chceš, aby tam mohl kdokoli s Google účtem, tuhle podmínku smaž
+        if (allowedEmails.includes(user.email)) {
+            loginScreen.style.display = 'none';
+            appScreen.style.display = 'block';
+            startApp();
+        } else {
+            alert("Promiň, do tohoto duelu mají přístup jen Lůca a Kája.");
+            auth.signOut();
+        }
+    } else {
+        loginScreen.style.display = 'flex';
+        appScreen.style.display = 'none';
+    }
+});
+
+function startApp() {
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            state = data;
+            checkTime(); 
+            render();
+        } else {
+            save();
+        }
+    });
+}
 // 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
 
