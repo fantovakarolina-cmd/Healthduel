@@ -32,16 +32,20 @@ loginBtn.addEventListener('click', () => {
 // 4. HLÍDAČ STAVU (Jsme přihlášení?)
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // TADY MŮŽEME OMEZIT VSTUP JEN PRO VÁS DVĚ
-        const allowedEmails = ["pokyna15@gmail.com", "fantova.karolina@gmail.com"];
+        // TADY NAPIŠ VAŠE MAILY - DŮLEŽITÉ: všechno pouze malými písmeny!
+        const allowedEmails = ["tvuj-email@gmail.com", "kajin-email@gmail.com"];
         
-        // Pokud chceš, aby tam mohl kdokoli s Google účtem, tuhle podmínku smaž
-        if (allowedEmails.includes(user.email)) {
+        // Převedeme e-mail od Googlu na malá písmena, aby se to nehádalo
+        const currentEmail = user.email.toLowerCase();
+        
+        if (allowedEmails.includes(currentEmail)) {
+            // Jste to vy, pustíme vás dovnitř
             loginScreen.style.display = 'none';
             appScreen.style.display = 'block';
             startApp();
         } else {
-            alert("Promiň, do tohoto duelu mají přístup jen Lůca a Kája.");
+            // Neznámý e-mail - tahle hláška ti teď přesně ukáže, jaký e-mail se tam cpe!
+            alert("Pozor! Google se snaží přihlásit s e-mailem: " + user.email + " - tento e-mail není na seznamu hostů.");
             auth.signOut();
         }
     } else {
@@ -49,20 +53,7 @@ onAuthStateChanged(auth, (user) => {
         appScreen.style.display = 'none';
     }
 });
-
-function startApp() {
-    onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            state = data;
-            checkTime(); 
-            render();
-        } else {
-            save();
-        }
-    });
-}
-// 4. HERNÍ LOGIKA A DATA
+// 5. HERNÍ LOGIKA A DATA
 const GOAL = 200;
 
 const HABITS = [
