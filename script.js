@@ -33,7 +33,7 @@ loginBtn.addEventListener('click', () => {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // TADY MŮŽEME OMEZIT VSTUP JEN PRO VÁS DVĚ
-        const allowedEmails = ["tvuj-email@gmail.com", "kajin-email@gmail.com"];
+        const allowedEmails = ["pokyna15@gmail.com", "fantova.karolina@gmail.com"];
         
         // Pokud chceš, aby tam mohl kdokoli s Google účtem, tuhle podmínku smaž
         if (allowedEmails.includes(user.email)) {
