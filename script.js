@@ -22,33 +22,37 @@ const dbRef = ref(db, 'healthDuelState');
 
 const loginScreen = document.getElementById('login-screen');
 const appScreen = document.querySelector('.app');
-const loginBtn = document.getElementById('login-btn');
+const loadingScreen = document.getElementById('loading-screen'); // Zaregistrujeme načítání
 
-// 3. FUNKCE PRO PŘIHLÁŠENÍ
-loginBtn.addEventListener('click', () => {
-    signInWithPopup(auth, provider).catch(err => console.error("Chyba přihlášení:", err));
-});
+let isAppStarted = false; // Pojistka proti dvojitému načtení dat
 
 // 4. HLÍDAČ STAVU (Jsme přihlášení?)
 onAuthStateChanged(auth, (user) => {
+    
+    // Jakmile nám Google odpoví (ať už tak nebo tak), schováme nápis "Načítám duel..."
+    if (loadingScreen) loadingScreen.style.display = 'none';
+
     if (user) {
-        // TADY NAPIŠ VAŠE MAILY - DŮLEŽITÉ: všechno pouze malými písmeny!
+        // TADY NAPIŠ VAŠE MAILY!
         const allowedEmails = ["pokyna15@gmail.com", "fantova.karolina@gmail.com"];
-        
-        // Převedeme e-mail od Googlu na malá písmena, aby se to nehádalo
         const currentEmail = user.email.toLowerCase();
         
         if (allowedEmails.includes(currentEmail)) {
-            // Jste to vy, pustíme vás dovnitř
             loginScreen.style.display = 'none';
-            appScreen.style.display = 'block';
-            startApp();
+            // ZMĚNA: Prázdné uvozovky vrátí appce její původní CSS rozložení (nic se nerozhodí)
+            appScreen.style.display = ''; 
+            
+            // Načteme data jen tehdy, pokud ještě nejsou načtená
+            if (!isAppStarted) {
+                startApp();
+                isAppStarted = true;
+            }
         } else {
-            // Neznámý e-mail - tahle hláška ti teď přesně ukáže, jaký e-mail se tam cpe!
             alert("Pozor! Google se snaží přihlásit s e-mailem: " + user.email + " - tento e-mail není na seznamu hostů.");
             auth.signOut();
         }
     } else {
+        // Uživatel není přihlášen, ukážeme mu přihlašovací okno
         loginScreen.style.display = 'flex';
         appScreen.style.display = 'none';
     }
