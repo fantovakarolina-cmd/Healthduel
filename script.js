@@ -26,7 +26,7 @@ const loadingScreen = document.getElementById('loading-screen'); // Zaregistruje
 
 let isAppStarted = false; // Pojistka proti dvojitému načtení dat
 
-// 4. HLÍDAČ STAVU (Jsme přihlášení?)
+// 3. HLÍDAČ STAVU (Jsme přihlášení?)
 onAuthStateChanged(auth, (user) => {
     
     // Jakmile nám Google odpoví (ať už tak nebo tak), schováme nápis "Načítám duel..."
@@ -57,7 +57,20 @@ onAuthStateChanged(auth, (user) => {
         appScreen.style.display = 'none';
     }
 });
-// 6. HERNÍ LOGIKA A DATA
+// FUNKCE PRO START APLIKACE (načtení dat)
+function startApp() {
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            state = data;
+            checkTime(); 
+            render();
+        } else {
+            save(); // Pokud je databáze prázdná, uložíme základní stav
+        }
+    });
+}
+// 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
 
 const HABITS = [
@@ -133,7 +146,7 @@ onValue(dbRef, (snapshot) => {
   }
 });
 
-// 7. ULOŽENÍ DO FIREBASE
+// 6. ULOŽENÍ DO FIREBASE
 async function save() {
   state.lastUpdated = Date.now();
   render(); // Ihned překreslíme displej (pro plynulost)
