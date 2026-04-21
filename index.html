@@ -16,17 +16,22 @@
   
 </head>
 <body class="theme-luca">
-  <div id="login-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif;">
+  
+  <div id="loading-screen" style="display: flex; height: 100vh; align-items: center; justify-content: center; background-color: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 1.2rem; font-weight: bold;">
+    Načítám duel... ⚔️
+  </div>
+
+  <div id="login-screen" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif;">
     <h1 style="font-family: 'Bebas Neue', cursive; font-size: 3rem; margin-bottom: 2rem;">Health Duel</h1>
     <p style="margin-bottom: 2rem; opacity: 0.8;">Vstup pouze pro hráče</p>
     <button id="login-btn" style="background-color: white; color: #444; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
         Přihlásit se přes Google
     </button>
-</div>
-<div class="app" style="display: none;">
+  </div>
 
-  <div class="header">
+  <div class="app" style="display: none;">
+      <div class="header">
     <div class="logo">Health Duel</div>
     <div id="date-display" class="logo-date">---</div>
   </div>
