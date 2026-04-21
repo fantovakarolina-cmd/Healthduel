@@ -53,7 +53,7 @@ onAuthStateChanged(auth, (user) => {
         appScreen.style.display = 'none';
     }
 });
-// 5. HERNÍ LOGIKA A DATA
+// 6. HERNÍ LOGIKA A DATA
 const GOAL = 200;
 
 const HABITS = [
@@ -129,7 +129,7 @@ onValue(dbRef, (snapshot) => {
   }
 });
 
-// 6. ULOŽENÍ DO FIREBASE
+// 7. ULOŽENÍ DO FIREBASE
 async function save() {
   state.lastUpdated = Date.now();
   render(); // Ihned překreslíme displej (pro plynulost)
