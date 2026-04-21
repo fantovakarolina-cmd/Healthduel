@@ -33,7 +33,7 @@ loginBtn.addEventListener('click', () => {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // TADY NAPIŠ VAŠE MAILY - DŮLEŽITÉ: všechno pouze malými písmeny!
-        const allowedEmails = ["tvuj-email@gmail.com", "kajin-email@gmail.com"];
+        const allowedEmails = ["pokyna15@gmail.com", "fantova.karolina@gmail.com"];
         
         // Převedeme e-mail od Googlu na malá písmena, aby se to nehádalo
         const currentEmail = user.email.toLowerCase();
