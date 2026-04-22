@@ -51,6 +51,17 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// --- KLIKNUTÍ NA PŘIHLAŠOVACÍ TLAČÍTKO ---
+const loginBtn = document.getElementById('login-btn');
+if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+        signInWithPopup(auth, provider).catch((error) => {
+            console.error("Chyba při přihlašování:", error);
+            alert("Nepodařilo se otevřít okno pro přihlášení.");
+        });
+    });
+}
+
 // FUNKCE PRO START APLIKACE (načtení dat)
 function startApp() {
     onValue(dbRef, (snapshot) => {
