@@ -151,7 +151,10 @@ if (lokalniData) {
     state = JSON.parse(lokalniData);
     if (loadingScreen) loadingScreen.style.display = 'none';
     if (appScreen) appScreen.style.display = '';
-    checkTime();
+    
+    // ZMĚNA TADY: True znamená "zkontroluj čas, ale ZAKAŽ odeslání do Firebase"
+    checkTime(true); 
+    
     render();
 }
 
