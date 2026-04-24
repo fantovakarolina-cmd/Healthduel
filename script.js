@@ -307,7 +307,12 @@ function render() {
 
   const qBtn = document.getElementById('quest-btn');
   if (qBtn) {
-    qBtn.className = 'quest-button' + (state[currentUser].questDone ? ' done' : '');
+    // OPRAVA TLAČÍTKA: Místo přepisu všech tříd (className) jen přidáváme/odebíráme třídu 'done'
+    if (state[currentUser].questDone) {
+        qBtn.classList.add('done');
+    } else {
+        qBtn.classList.remove('done');
+    }
     qBtn.textContent = state[currentUser].questDone ? '✓ Splněno (zrušit)' : 'Splnit výzvu';
   }
 
