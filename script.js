@@ -34,8 +34,8 @@ onAuthStateChanged(auth, (user) => {
         const currentEmail = user.email.toLowerCase();
         
         if (allowedEmails.includes(currentEmail)) {
-            loginScreen.style.display = 'none';
-            appScreen.style.display = ''; 
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (appScreen) appScreen.style.display = ''; 
             
             if (!isAppStarted) {
                 startApp();
@@ -47,8 +47,8 @@ onAuthStateChanged(auth, (user) => {
         }
     } else {
         if (loadingScreen) loadingScreen.style.display = 'none';
-        loginScreen.style.display = 'flex';
-        appScreen.style.display = 'none';
+        if (loginScreen) loginScreen.style.display = 'flex';
+        if (appScreen) appScreen.style.display = 'none';
     }
 });
 
@@ -67,17 +67,13 @@ if (loginBtn) {
 function startApp() {
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
-        
-        // MÁME ČERSTVÁ DATA! Odemkneme zámek pro ukládání
         isSyncing = false; 
-        
         if (loadingScreen) loadingScreen.style.display = 'none';
 
         if (data) {
             state = data;
-            // Aktualizujeme lokální paměť čerstvými daty
             localStorage.setItem('healthDuelCache', JSON.stringify(state));
-            checkTime(); // Tady už může ukládat, jsme synchronizovaní
+            checkTime(); 
             render();
         } else {
             save(); 
@@ -153,16 +149,13 @@ if (lokalniData) {
     state = JSON.parse(lokalniData);
     if (loadingScreen) loadingScreen.style.display = 'none';
     if (appScreen) appScreen.style.display = '';
-    // Zakážeme ukládání do Firebase (true), díváme se jen na cache
     checkTime(true); 
     render();
 }
 
 // 6. ULOŽENÍ DO FIREBASE A DO CACHE
 async function save() {
-  // Pojistka: Nikdy neukládat, pokud zrovna probíhá synchronizace
   if (isSyncing) return;
-
   state.lastUpdated = Date.now();
   localStorage.setItem('healthDuelCache', JSON.stringify(state)); 
   render(); 
@@ -177,7 +170,8 @@ async function save() {
 function renderDate() {
   const dny = ['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'];
   const d = new Date();
-  document.getElementById('date-display').textContent = `${dny[d.getDay()]}, ${d.getDate()}. ${d.getMonth()+1}.`;
+  const display = document.getElementById('date-display');
+  if (display) display.textContent = `${dny[d.getDay()]}, ${d.getDate()}. ${d.getMonth()+1}.`;
 }
 
 function checkTime(skipSave = false) {
@@ -246,76 +240,94 @@ function render() {
   renderDate();
   applyTheme();
 
-  document.getElementById('btn-userA').classList.toggle('active', currentUser === 'userA');
-  document.getElementById('btn-userB').classList.toggle('active', currentUser === 'userB');
+  const bA = document.getElementById('btn-userA');
+  const bB = document.getElementById('btn-userB');
+  if (bA) bA.classList.toggle('active', currentUser === 'userA');
+  if (bB) bB.classList.toggle('active', currentUser === 'userB');
 
-  document.getElementById('label-userA').innerHTML = `Lůca <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
-  document.getElementById('label-userB').innerHTML = `Kája <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userB.totalWins || 0}</span>`;
+  const lA = document.getElementById('label-userA');
+  const lB = document.getElementById('label-userB');
+  if (lA) lA.innerHTML = `Lůca <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
+  if (lB) lB.innerHTML = `Kája <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userB.totalWins || 0}</span>`;
 
   const sA = state.userA.weeklyPoints || 0;
   const sB = state.userB.weeklyPoints || 0;
 
-  document.getElementById('score-userA').textContent = sA;
-  document.getElementById('score-userB').textContent = sB;
+  const scA = document.getElementById('score-userA');
+  const scB = document.getElementById('score-userB');
+  if (scA) scA.textContent = sA;
+  if (scB) scB.textContent = sB;
 
   const pA = sA >= 0 ? Math.min((sA / GOAL) * 100, 100) : 0;
   const pB = sB >= 0 ? Math.min((sB / GOAL) * 100, 100) : 0;
-  document.getElementById('bar-a').style.width = pA + '%';
-  document.getElementById('bar-b').style.width = pB + '%';
-  document.getElementById('bar-a-val').textContent = sA;
-  document.getElementById('bar-b-val').textContent = sB;
+  
+  const barA = document.getElementById('bar-a');
+  const barB = document.getElementById('bar-b');
+  if (barA) { barA.style.width = pA + '%'; document.getElementById('bar-a-val').textContent = sA; }
+  if (barB) { barB.style.width = pB + '%'; document.getElementById('bar-b-val').textContent = sB; }
 
   const wb = document.getElementById('winner-bar');
-  if (state.lastWinner) {
-    wb.style.display = 'flex';
-    document.getElementById('last-winner-name').textContent = state.lastWinner;
-  } else { wb.style.display = 'none'; }
+  if (wb) {
+    if (state.lastWinner) {
+      wb.style.display = 'flex';
+      document.getElementById('last-winner-name').textContent = state.lastWinner;
+    } else { wb.style.display = 'none'; }
+  }
 
   const list = document.getElementById('habit-list');
-  list.innerHTML = '';
-  HABITS.forEach(h => {
-    let count = state[currentUser].checkedHabits ? (state[currentUser].checkedHabits[h.id] || 0) : 0;
-    const isFullyChecked = count === h.max;
-    const div = document.createElement('div');
-    div.className = 'habit-item' + (isFullyChecked ? ' checked' : '');
-    div.onclick = () => window.toggleHabit(h.id); 
-    
-    let checkVisual = '';
-    if (h.max === 1) {
-      checkVisual = `<div class="habit-check">${count > 0 ? '✓' : ''}</div>`;
-    } else {
-      checkVisual = `<div class="habit-dots">`;
-      for(let i=1; i<=h.max; i++) checkVisual += `<div class="h-dot ${count >= i ? 'filled' : ''}"></div>`;
-      checkVisual += `</div>`;
-    }
+  if (list) {
+      list.innerHTML = '';
+      HABITS.forEach(h => {
+        let count = state[currentUser].checkedHabits ? (state[currentUser].checkedHabits[h.id] || 0) : 0;
+        const isFullyChecked = count === h.max;
+        const div = document.createElement('div');
+        div.className = 'habit-item' + (isFullyChecked ? ' checked' : '');
+        div.onclick = () => window.toggleHabit(h.id); 
+        
+        let checkVisual = '';
+        if (h.max === 1) {
+          checkVisual = `<div class="habit-check">${count > 0 ? '✓' : ''}</div>`;
+        } else {
+          checkVisual = `<div class="habit-dots">`;
+          for(let i=1; i<=h.max; i++) checkVisual += `<div class="h-dot ${count >= i ? 'filled' : ''}"></div>`;
+          checkVisual += `</div>`;
+        }
 
-    div.innerHTML = `${checkVisual}<span class="habit-icon">${h.icon}</span><span class="habit-name">${h.label}</span><span class="habit-pts">+${h.points}</span>`;
-    list.appendChild(div);
-  });
+        div.innerHTML = `${checkVisual}<span class="habit-icon">${h.icon}</span><span class="habit-name">${h.label}</span><span class="habit-pts">+${h.points}</span>`;
+        list.appendChild(div);
+      });
+  }
 
   const daySeed = Math.floor(new Date().getTime() / 86400000);
-  document.getElementById('today-quest').textContent = SIDE_QUESTS[(daySeed * 7) % SIDE_QUESTS.length];
-  document.getElementById('ezo-quote').textContent = `„${EZO_QUOTES[(new Date().getDay() + 6) % 7 % EZO_QUOTES.length]}"`;
+  const questEl = document.getElementById('today-quest');
+  if (questEl) questEl.textContent = SIDE_QUESTS[(daySeed * 7) % SIDE_QUESTS.length];
+  
+  const quoteEl = document.getElementById('ezo-quote');
+  if (quoteEl) quoteEl.textContent = `„${EZO_QUOTES[(new Date().getDay() + 6) % 7 % EZO_QUOTES.length]}"`;
 
   const qBtn = document.getElementById('quest-btn');
-  qBtn.className = 'quest-button' + (state[currentUser].questDone ? ' done' : '');
-  qBtn.textContent = state[currentUser].questDone ? '✓ Splněno (zrušit)' : 'Splnit výzvu';
+  if (qBtn) {
+    qBtn.className = 'quest-button' + (state[currentUser].questDone ? ' done' : '');
+    qBtn.textContent = state[currentUser].questDone ? '✓ Splněno (zrušit)' : 'Splnit výzvu';
+  }
 
   const logDiv = document.getElementById('log-list');
-  const startOfToday = new Date().setHours(0,0,0,0);
-  const allLogs = [...(state.userA.log || []), ...(state.userB.log || [])]
-    .filter(l => l.ts >= startOfToday)
-    .sort((a,b) => b.ts - a.ts);
+  if (logDiv) {
+      const startOfToday = new Date().setHours(0,0,0,0);
+      const allLogs = [...(state.userA.log || []), ...(state.userB.log || [])]
+        .filter(l => l.ts >= startOfToday)
+        .sort((a,b) => b.ts - a.ts);
 
-  if (allLogs.length === 0) {
-    logDiv.innerHTML = '<div class="log-empty">Zatím žádné akce dnes…</div>';
-  } else {
-    logDiv.innerHTML = allLogs.map(l => `
-      <div class="log-item">
-        <div class="log-dot ${l.u === 'Lůca' ? 'luca' : 'kaja'}"></div>
-        <div class="log-text">${l.icon} <strong>${l.u}</strong>: ${l.a}</div>
-        <div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div>
-      </div>`).join('');
+      if (allLogs.length === 0) {
+        logDiv.innerHTML = '<div class="log-empty">Zatím žádné akce dnes…</div>';
+      } else {
+        logDiv.innerHTML = allLogs.map(l => `
+          <div class="log-item">
+            <div class="log-dot ${l.u === 'Lůca' ? 'luca' : 'kaja'}"></div>
+            <div class="log-text">${l.icon} <strong>${l.u}</strong>: ${l.a}</div>
+            <div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div>
+          </div>`).join('');
+      }
   }
 
   const thisMondayMs = new Date(getMonday(new Date())).setHours(0,0,0,0);
@@ -323,16 +335,19 @@ function render() {
   const statsB = calculateStats((state.userB.log || []).filter(l => l.ts >= thisMondayMs));
 
   const updateStats = (pref, s) => {
-    document.getElementById(`stat-${pref}-gained`).textContent = '+' + s.gained;
-    document.getElementById(`stat-${pref}-lost`).textContent = '-' + s.lost;
-    document.getElementById(`stat-${pref}-habits`).textContent = s.habits;
-    document.getElementById(`stat-${pref}-custom`).textContent = s.custom;
-    document.getElementById(`stat-${pref}-quests`).textContent = s.quests;
+    const g = document.getElementById(`stat-${pref}-gained`);
+    if (g) {
+        g.textContent = '+' + s.gained;
+        document.getElementById(`stat-${pref}-lost`).textContent = '-' + s.lost;
+        document.getElementById(`stat-${pref}-habits`).textContent = s.habits;
+        document.getElementById(`stat-${pref}-custom`).textContent = s.custom;
+        document.getElementById(`stat-${pref}-quests`).textContent = s.quests;
+    }
   };
   updateStats('a', statsA); updateStats('b', statsB);
 } 
 
-// --- FUNKCE PRO HTML (Chráněné zámkem isSyncing) ---
+// --- FUNKCE PRO HTML ---
 window.switchUser = function(id) { 
   currentUser = id; 
   localStorage.setItem('activeUser', id); 
@@ -377,9 +392,14 @@ window.toggleHabit = function(id) {
 window.completeQuest = function() {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   checkTime();
+  
+  // POJISTKA: Inicializace logu, pokud neexistuje
+  if (!state[currentUser].log) state[currentUser].log = [];
+
   if (state[currentUser].questDone) {
     state[currentUser].questDone = false; state[currentUser].weeklyPoints -= 15;
-    let idx = state[currentUser].log.findIndex(l => l.icon === '⚡' && l.ts >= new Date().setHours(0,0,0,0));
+    let today = new Date().setHours(0,0,0,0);
+    let idx = state[currentUser].log.findIndex(l => l.icon === '⚡' && l.ts >= today);
     if (idx !== -1) state[currentUser].log.splice(idx, 1);
   } else {
     state[currentUser].questDone = true; state[currentUser].weeklyPoints += 15;
@@ -390,6 +410,10 @@ window.completeQuest = function() {
 
 window.addPenalty = function(label, delta, icon) {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
+  
+  // POJISTKA: Inicializace logu
+  if (!state[currentUser].log) state[currentUser].log = [];
+
   state[currentUser].weeklyPoints += delta;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
   save();
@@ -399,6 +423,10 @@ window.addCustom = function() {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   const val = document.getElementById('custom-input').value.trim();
   if (!val) return;
+
+  // POJISTKA: Inicializace logu
+  if (!state[currentUser].log) state[currentUser].log = [];
+
   state[currentUser].weeklyPoints += 10;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:val, d:10, icon:'🏋️', ts:Date.now() });
   document.getElementById('custom-input').value = '';
@@ -423,20 +451,27 @@ window.showDailyReset = function() {
 window.hideDailyReset = function() { document.getElementById('modal-daily').classList.remove('show'); };
 window.showHistory = function() {
   const allLogs = [...(state.userA.log || []), ...(state.userB.log || [])].sort((a,b) => b.ts - a.ts);
-  document.getElementById('history-content').innerHTML = allLogs.length === 0 ? '<div class="log-empty">Historie je prázdná</div>' : allLogs.map(l => {
-    const d = new Date(l.ts);
-    return `<div class="log-item"><div class="log-dot ${l.u === 'Lůca' ? 'luca' : 'kaja'}"></div><div class="log-text" style="font-size:12px;"><span style="opacity:0.5; font-size:10px;">[${d.getDate()}.${d.getMonth()+1}.]</span> ${l.icon} <strong>${l.u}</strong>: ${l.a}</div><div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div></div>`;
-  }).join('');
+  const content = document.getElementById('history-content');
+  if (content) {
+      content.innerHTML = allLogs.length === 0 ? '<div class="log-empty">Historie je prázdná</div>' : allLogs.map(l => {
+        const d = new Date(l.ts);
+        return `<div class="log-item"><div class="log-dot ${l.u === 'Lůca' ? 'luca' : 'kaja'}"></div><div class="log-text" style="font-size:12px;"><span style="opacity:0.5; font-size:10px;">[${d.getDate()}.${d.getMonth()+1}.]</span> ${l.icon} <strong>${l.u}</strong>: ${l.a}</div><div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div></div>`;
+      }).join('');
+  }
   document.getElementById('modal-history').classList.add('show');
 };
 window.hideHistory = function() { document.getElementById('modal-history').classList.remove('show'); };
 
-document.getElementById('modal-daily').onclick = e => { if(e.target === e.currentTarget) window.hideDailyReset(); };
-document.getElementById('modal-history').onclick = e => { if(e.target === e.currentTarget) window.hideHistory(); };
+const modDaily = document.getElementById('modal-daily');
+if (modDaily) modDaily.onclick = e => { if(e.target === e.currentTarget) window.hideDailyReset(); };
+const modHist = document.getElementById('modal-history');
+if (modHist) modHist.onclick = e => { if(e.target === e.currentTarget) window.hideHistory(); };
 
 let toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  if (t) {
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
 }
