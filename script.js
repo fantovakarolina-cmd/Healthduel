@@ -58,7 +58,7 @@ if (loginBtn) {
     loginBtn.addEventListener('click', () => {
         signInWithPopup(auth, provider).catch((error) => {
             console.error("Chyba při přihlašování:", error);
-            alert("Nepodařilo se otevřít okno pro přihlášení.");
+            alert("Nepodařilo se otevřít okno pro přihlášení. Zkontroluj blokování vyskakovacích oken.");
         });
     });
 }
@@ -340,7 +340,7 @@ window.switchUser = function(id) {
 };
 
 window.toggleHabit = function(id) {
-  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
+  if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   checkTime();
   const h = HABITS.find(x => x.id === id);
   if(!state[currentUser].checkedHabits) state[currentUser].checkedHabits = {};
@@ -375,7 +375,7 @@ window.toggleHabit = function(id) {
 };
 
 window.completeQuest = function() {
-  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
+  if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   checkTime();
   if (state[currentUser].questDone) {
     state[currentUser].questDone = false; state[currentUser].weeklyPoints -= 15;
@@ -389,14 +389,14 @@ window.completeQuest = function() {
 };
 
 window.addPenalty = function(label, delta, icon) {
-  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
+  if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   state[currentUser].weeklyPoints += delta;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
   save();
 };
 
 window.addCustom = function() {
-  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
+  if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   const val = document.getElementById('custom-input').value.trim();
   if (!val) return;
   state[currentUser].weeklyPoints += 10;
@@ -406,7 +406,7 @@ window.addCustom = function() {
 };
 
 window.confirmDailyReset = function() {
-  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
+  if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   const today = new Date().setHours(0,0,0,0);
   let pts = 0;
   (state[currentUser].log || []).forEach(l => { if(l.ts >= today) pts += l.d; });
