@@ -25,6 +25,7 @@ const appScreen = document.querySelector('.app');
 const loadingScreen = document.getElementById('loading-screen'); 
 
 let isAppStarted = false; 
+let isSyncing = true; // ZÁMEK: Dokud nemáme potvrzená data z cloudu, nepovolíme zápis
 
 // 3. HLÍDAČ STAVU (Jsme přihlášení?)
 onAuthStateChanged(auth, (user) => {
@@ -62,18 +63,21 @@ if (loginBtn) {
     });
 }
 
-// FUNKCE PRO START APLIKACE (načtení dat)
+// FUNKCE PRO START APLIKACE (načtení dat z Firebase)
 function startApp() {
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
+        
+        // MÁME ČERSTVÁ DATA! Odemkneme zámek pro ukládání
+        isSyncing = false; 
         
         if (loadingScreen) loadingScreen.style.display = 'none';
 
         if (data) {
             state = data;
-            // Pokaždé když Firebase pošle data, uložíme si je i lokálně do mobilu
+            // Aktualizujeme lokální paměť čerstvými daty
             localStorage.setItem('healthDuelCache', JSON.stringify(state));
-            checkTime(); 
+            checkTime(); // Tady už může ukládat, jsme synchronizovaní
             render();
         } else {
             save(); 
@@ -128,7 +132,6 @@ const EZO_QUOTES = [
 ];
 
 let currentUser = localStorage.getItem('activeUser') || 'userA';
-let isSaving = false;
 
 function getMonday(d) {
   const date = new Date(d);
@@ -137,7 +140,6 @@ function getMonday(d) {
   return new Date(date.setDate(diff)).toDateString();
 }
 
-// 5. VÝCHOZÍ STAV (Předtím než tam vložíme rychlou paměť)
 let state = {
   userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
   userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
@@ -145,29 +147,29 @@ let state = {
   currentWeek: getMonday(new Date())
 };
 
-// --- BLESKOVÉ NAČTENÍ Z PAMĚTI TELEFONU (Cache) ---
+// --- BLESKOVÉ NAČTENÍ Z LOKÁLNÍ PAMĚTI ---
 const lokalniData = localStorage.getItem('healthDuelCache');
 if (lokalniData) {
     state = JSON.parse(lokalniData);
     if (loadingScreen) loadingScreen.style.display = 'none';
     if (appScreen) appScreen.style.display = '';
-    
-    // ZMĚNA TADY: True znamená "zkontroluj čas, ale ZAKAŽ odeslání do Firebase"
+    // Zakážeme ukládání do Firebase (true), díváme se jen na cache
     checkTime(true); 
-    
     render();
 }
 
 // 6. ULOŽENÍ DO FIREBASE A DO CACHE
 async function save() {
+  // Pojistka: Nikdy neukládat, pokud zrovna probíhá synchronizace
+  if (isSyncing) return;
+
   state.lastUpdated = Date.now();
-  // Rovnou to střelíme i do lokální paměti pro největší rychlost
   localStorage.setItem('healthDuelCache', JSON.stringify(state)); 
   render(); 
   try {
     await set(dbRef, state); 
   } catch(e) { 
-    console.error('Chyba při ukládání do Firebase:', e); 
+    console.error('Chyba při ukládání:', e); 
     showToast('❌ Chyba připojení');
   }
 }
@@ -178,7 +180,7 @@ function renderDate() {
   document.getElementById('date-display').textContent = `${dny[d.getDay()]}, ${d.getDate()}. ${d.getMonth()+1}.`;
 }
 
-function checkTime() {
+function checkTime(skipSave = false) {
   const today = new Date().toDateString();
   const thisMonday = getMonday(new Date());
   let needsSave = false;
@@ -214,15 +216,13 @@ function checkTime() {
     needsSave = true;
   }
 
-  if (needsSave) save();
+  if (needsSave && !skipSave) save();
 }
 
 function calculateStats(userLog) {
   let gained = 0, lost = 0, quests = 0, habits = 0, custom = 0;
   const penaltyIcons = ['🍷', '😴', '🍩', '🍔']; 
-  
   if (!userLog) return { gained:0, lost:0, quests:0, habits:0, custom:0 };
-
   userLog.forEach(l => {
     if (l.d > 0) {
       gained += l.d;
@@ -230,22 +230,16 @@ function calculateStats(userLog) {
       else if (l.icon === '🏋️') custom += l.d; 
       else habits += l.d; 
     } else if (l.d < 0) {
-      if (penaltyIcons.includes(l.icon)) {
-        lost += Math.abs(l.d); 
-      }
+      if (penaltyIcons.includes(l.icon)) lost += Math.abs(l.d); 
     }
   });
   return { gained, lost, quests, habits, custom };
 }
 
 function applyTheme() {
-  if (currentUser === 'userA') {
-    document.body.classList.remove('theme-kaja');
-    document.body.classList.add('theme-luca');
-  } else {
-    document.body.classList.remove('theme-luca');
-    document.body.classList.add('theme-kaja');
-  }
+  const theme = currentUser === 'userA' ? 'theme-luca' : 'theme-kaja';
+  document.body.classList.remove('theme-luca', 'theme-kaja');
+  document.body.classList.add(theme);
 }
 
 function render() {
@@ -261,24 +255,15 @@ function render() {
   const sA = state.userA.weeklyPoints || 0;
   const sB = state.userB.weeklyPoints || 0;
 
-  const elA = document.getElementById('score-userA');
-  const elB = document.getElementById('score-userB');
-  elA.textContent = sA;
-  elB.textContent = sB;
-  elA.classList.toggle('negative', sA < 0);
-  elB.classList.toggle('negative', sB < 0);
+  document.getElementById('score-userA').textContent = sA;
+  document.getElementById('score-userB').textContent = sB;
 
   const pA = sA >= 0 ? Math.min((sA / GOAL) * 100, 100) : 0;
   const pB = sB >= 0 ? Math.min((sB / GOAL) * 100, 100) : 0;
   document.getElementById('bar-a').style.width = pA + '%';
   document.getElementById('bar-b').style.width = pB + '%';
-
-  const valA = document.getElementById('bar-a-val');
-  const valB = document.getElementById('bar-b-val');
-  valA.textContent = sA;
-  valB.textContent = sB;
-  valA.classList.toggle('negative', sA < 0);
-  valB.classList.toggle('negative', sB < 0);
+  document.getElementById('bar-a-val').textContent = sA;
+  document.getElementById('bar-b-val').textContent = sB;
 
   const wb = document.getElementById('winner-bar');
   if (state.lastWinner) {
@@ -289,10 +274,7 @@ function render() {
   const list = document.getElementById('habit-list');
   list.innerHTML = '';
   HABITS.forEach(h => {
-    let count = state[currentUser].checkedHabits ? state[currentUser].checkedHabits[h.id] : 0;
-    if (typeof count === 'boolean') count = count ? 1 : 0;
-    else count = Number(count) || 0;
-
+    let count = state[currentUser].checkedHabits ? (state[currentUser].checkedHabits[h.id] || 0) : 0;
     const isFullyChecked = count === h.max;
     const div = document.createElement('div');
     div.className = 'habit-item' + (isFullyChecked ? ' checked' : '');
@@ -303,85 +285,54 @@ function render() {
       checkVisual = `<div class="habit-check">${count > 0 ? '✓' : ''}</div>`;
     } else {
       checkVisual = `<div class="habit-dots">`;
-      for(let i=1; i<=h.max; i++) {
-        checkVisual += `<div class="h-dot ${count >= i ? 'filled' : ''}"></div>`;
-      }
+      for(let i=1; i<=h.max; i++) checkVisual += `<div class="h-dot ${count >= i ? 'filled' : ''}"></div>`;
       checkVisual += `</div>`;
     }
 
-    div.innerHTML = `
-      ${checkVisual}
-      <span class="habit-icon">${h.icon}</span>
-      <span class="habit-name">${h.label}</span>
-      <span class="habit-pts">+${h.points}</span>
-    `;
+    div.innerHTML = `${checkVisual}<span class="habit-icon">${h.icon}</span><span class="habit-name">${h.label}</span><span class="habit-pts">+${h.points}</span>`;
     list.appendChild(div);
   });
 
   const daySeed = Math.floor(new Date().getTime() / 86400000);
-  const randomQuestIndex = (daySeed * 7) % SIDE_QUESTS.length; 
-  document.getElementById('today-quest').textContent = SIDE_QUESTS[randomQuestIndex];
-  
-  const dayIndex = (new Date().getDay() + 6) % 7;
-  document.getElementById('ezo-quote').textContent = `„${EZO_QUOTES[dayIndex % EZO_QUOTES.length]}"`;
+  document.getElementById('today-quest').textContent = SIDE_QUESTS[(daySeed * 7) % SIDE_QUESTS.length];
+  document.getElementById('ezo-quote').textContent = `„${EZO_QUOTES[(new Date().getDay() + 6) % 7 % EZO_QUOTES.length]}"`;
 
   const qBtn = document.getElementById('quest-btn');
-  if (state[currentUser].questDone) {
-    qBtn.classList.add('done');
-    qBtn.textContent = '✓ Splněno (zrušit)';
-  } else {
-    qBtn.classList.remove('done');
-    qBtn.textContent = 'Splnit výzvu';
-  }
+  qBtn.className = 'quest-button' + (state[currentUser].questDone ? ' done' : '');
+  qBtn.textContent = state[currentUser].questDone ? '✓ Splněno (zrušit)' : 'Splnit výzvu';
 
   const logDiv = document.getElementById('log-list');
-  const startOfToday = new Date();
-  startOfToday.setHours(0,0,0,0);
-  const todayMs = startOfToday.getTime();
-
-  const userALog = state.userA.log || [];
-  const userBLog = state.userB.log || [];
-  const allLogs = [...userALog, ...userBLog]
-    .filter(l => l.ts >= todayMs)
+  const startOfToday = new Date().setHours(0,0,0,0);
+  const allLogs = [...(state.userA.log || []), ...(state.userB.log || [])]
+    .filter(l => l.ts >= startOfToday)
     .sort((a,b) => b.ts - a.ts);
 
   if (allLogs.length === 0) {
-    logDiv.innerHTML = '<div class="log-empty">Zatím žádné akce dnešní den…</div>';
+    logDiv.innerHTML = '<div class="log-empty">Zatím žádné akce dnes…</div>';
   } else {
-    logDiv.innerHTML = allLogs.map(l => {
-      const who = l.u === 'Lůca' ? 'luca' : 'kaja';
-      return `<div class="log-item">
-        <div class="log-dot ${who}"></div>
+    logDiv.innerHTML = allLogs.map(l => `
+      <div class="log-item">
+        <div class="log-dot ${l.u === 'Lůca' ? 'luca' : 'kaja'}"></div>
         <div class="log-text">${l.icon} <strong>${l.u}</strong>: ${l.a}</div>
         <div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div>
-      </div>`;
-    }).join('');
+      </div>`).join('');
   }
 
-  const thisMondayDate = new Date(getMonday(new Date()));
-  thisMondayDate.setHours(0,0,0,0);
-  const thisMondayMs = thisMondayDate.getTime();
+  const thisMondayMs = new Date(getMonday(new Date())).setHours(0,0,0,0);
+  const statsA = calculateStats((state.userA.log || []).filter(l => l.ts >= thisMondayMs));
+  const statsB = calculateStats((state.userB.log || []).filter(l => l.ts >= thisMondayMs));
 
-  const weeklyLogA = (state.userA.log || []).filter(l => l.ts >= thisMondayMs);
-  const weeklyLogB = (state.userB.log || []).filter(l => l.ts >= thisMondayMs);
-
-  const statsA = calculateStats(weeklyLogA);
-  const statsB = calculateStats(weeklyLogB);
-
-  document.getElementById('stat-a-gained').textContent = '+' + statsA.gained;
-  document.getElementById('stat-a-lost').textContent = '-' + statsA.lost;
-  document.getElementById('stat-a-habits').textContent = statsA.habits;
-  document.getElementById('stat-a-custom').textContent = statsA.custom;
-  document.getElementById('stat-a-quests').textContent = statsA.quests;
-
-  document.getElementById('stat-b-gained').textContent = '+' + statsB.gained;
-  document.getElementById('stat-b-lost').textContent = '-' + statsB.lost;
-  document.getElementById('stat-b-habits').textContent = statsB.habits;
-  document.getElementById('stat-b-custom').textContent = statsB.custom;
-  document.getElementById('stat-b-quests').textContent = statsB.quests;
+  const updateStats = (pref, s) => {
+    document.getElementById(`stat-${pref}-gained`).textContent = '+' + s.gained;
+    document.getElementById(`stat-${pref}-lost`).textContent = '-' + s.lost;
+    document.getElementById(`stat-${pref}-habits`).textContent = s.habits;
+    document.getElementById(`stat-${pref}-custom`).textContent = s.custom;
+    document.getElementById(`stat-${pref}-quests`).textContent = s.quests;
+  };
+  updateStats('a', statsA); updateStats('b', statsB);
 } 
 
-// --- FUNKCE PRO HTML ---
+// --- FUNKCE PRO HTML (Chráněné zámkem isSyncing) ---
 window.switchUser = function(id) { 
   currentUser = id; 
   localStorage.setItem('activeUser', id); 
@@ -389,26 +340,18 @@ window.switchUser = function(id) {
 };
 
 window.toggleHabit = function(id) {
+  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
   checkTime();
   const h = HABITS.find(x => x.id === id);
   if(!state[currentUser].checkedHabits) state[currentUser].checkedHabits = {};
   if(!state[currentUser].log) state[currentUser].log = [];
   
-  let count = state[currentUser].checkedHabits[id];
-  if (typeof count === 'boolean') count = count ? 1 : 0;
-  else count = Number(count) || 0;
-
-  let delta = 0;
-  let newCount = count;
+  let count = Number(state[currentUser].checkedHabits[id]) || 0;
+  let delta = 0, newCount = 0;
 
   if (h.max > 1) {
-    if (count < h.max) {
-      newCount = count + 1;
-      delta = h.points;
-    } else {
-      newCount = 0; 
-      delta = -(h.points * h.max);
-    }
+    if (count < h.max) { newCount = count + 1; delta = h.points; }
+    else { newCount = 0; delta = -(h.points * h.max); }
   } else {
     newCount = count === 0 ? 1 : 0;
     delta = newCount === 1 ? h.points : -h.points;
@@ -417,136 +360,83 @@ window.toggleHabit = function(id) {
   state[currentUser].checkedHabits[id] = newCount;
   state[currentUser].weeklyPoints += delta;
   
-  let actionText = h.label;
-  if (h.max > 1 && newCount > 0) actionText += ` (${newCount}/${h.max})`;
-
   if (delta < 0) {
-    let pointsToRemove = Math.abs(delta);
-    let todayStart = new Date().setHours(0,0,0,0);
-    let i = 0;
-    while (i < state[currentUser].log.length && pointsToRemove > 0) {
+    let ptsRem = Math.abs(delta), today = new Date().setHours(0,0,0,0), i = 0;
+    while (i < state[currentUser].log.length && ptsRem > 0) {
       let l = state[currentUser].log[i];
-      if (l.icon === h.icon && l.d > 0 && l.ts >= todayStart) {
-        pointsToRemove -= l.d;
-        state[currentUser].log.splice(i, 1);
-      } else { i++; }
+      if (l.icon === h.icon && l.d > 0 && l.ts >= today) { ptsRem -= l.d; state[currentUser].log.splice(i, 1); }
+      else i++;
     }
   } else {
-    state[currentUser].log.unshift({ 
-      u: currentUser==='userA'?'Lůca':'Kája', 
-      a: actionText, d: delta, icon: h.icon, ts: Date.now() 
-    });
+    state[currentUser].log.unshift({ u: currentUser==='userA'?'Lůca':'Kája', a: h.max > 1 ? `${h.label} (${newCount}/${h.max})` : h.label, d: delta, icon: h.icon, ts: Date.now() });
   }
-
-  showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}: ${delta > 0 ? '+' : ''}${delta} bodů`);
+  showToast(`${delta > 0 ? '✅' : '↩️'} ${h.label}`);
   save();
 };
 
 window.completeQuest = function() {
+  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
   checkTime();
-  if(!state[currentUser].log) state[currentUser].log = [];
-  const currentQuestText = document.getElementById('today-quest').textContent;
-
   if (state[currentUser].questDone) {
-    state[currentUser].questDone = false;
-    state[currentUser].weeklyPoints -= 15;
-    let todayStart = new Date().setHours(0,0,0,0);
-    let logIndex = state[currentUser].log.findIndex(l => l.icon === '⚡' && l.ts >= todayStart);
-    if (logIndex !== -1) { state[currentUser].log.splice(logIndex, 1); }
-    showToast('↩️ Side Quest zrušen');
+    state[currentUser].questDone = false; state[currentUser].weeklyPoints -= 15;
+    let idx = state[currentUser].log.findIndex(l => l.icon === '⚡' && l.ts >= new Date().setHours(0,0,0,0));
+    if (idx !== -1) state[currentUser].log.splice(idx, 1);
   } else {
-    state[currentUser].questDone = true;
-    state[currentUser].weeklyPoints += 15;
-    state[currentUser].log.unshift({ 
-      u: currentUser==='userA'?'Lůca':'Kája', 
-      a: `Side Quest: ${currentQuestText}`, d: 15, icon: '⚡', ts: Date.now() 
-    });
-    showToast('⚡ +15 bodů za Side Quest!');
+    state[currentUser].questDone = true; state[currentUser].weeklyPoints += 15;
+    state[currentUser].log.unshift({ u: currentUser==='userA'?'Lůca':'Kája', a: `Side Quest: ${document.getElementById('today-quest').textContent}`, d: 15, icon: '⚡', ts: Date.now() });
   }
   save();
 };
 
 window.addPenalty = function(label, delta, icon) {
-  if(!state[currentUser].log) state[currentUser].log = [];
+  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
   state[currentUser].weeklyPoints += delta;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
-  showToast(`${icon} ${label}: ${delta} bodů`);
   save();
 };
 
 window.addCustom = function() {
+  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
   const val = document.getElementById('custom-input').value.trim();
   if (!val) return;
-  if(!state[currentUser].log) state[currentUser].log = [];
   state[currentUser].weeklyPoints += 10;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:val, d:10, icon:'🏋️', ts:Date.now() });
   document.getElementById('custom-input').value = '';
-  showToast(`🏋️ +10 bodů: ${val}`);
   save();
+};
+
+window.confirmDailyReset = function() {
+  if (isSyncing) { showToast('⏳ Synchronizuji...'); return; }
+  const today = new Date().setHours(0,0,0,0);
+  let pts = 0;
+  (state[currentUser].log || []).forEach(l => { if(l.ts >= today) pts += l.d; });
+  state[currentUser].weeklyPoints -= pts;
+  state[currentUser].log = (state[currentUser].log || []).filter(l => l.ts < today);
+  state[currentUser].checkedHabits = {}; state[currentUser].questDone = false;
+  window.hideDailyReset(); save();
 };
 
 window.showDailyReset = function() { 
-  const name = currentUser === 'userA' ? 'Lůca' : 'Kája';
-  document.getElementById('daily-reset-name').textContent = name;
+  document.getElementById('daily-reset-name').textContent = currentUser === 'userA' ? 'Lůca' : 'Kája';
   document.getElementById('modal-daily').classList.add('show'); 
 };
 window.hideDailyReset = function() { document.getElementById('modal-daily').classList.remove('show'); };
-window.confirmDailyReset = function() {
-  const startOfToday = new Date().setHours(0,0,0,0);
-  let pointsToDeduct = 0;
-  if(!state[currentUser].log) state[currentUser].log = [];
-  
-  for (let i = 0; i < state[currentUser].log.length; i++) {
-    if (state[currentUser].log[i].ts >= startOfToday) {
-      pointsToDeduct += state[currentUser].log[i].d;
-    }
-  }
-
-  state[currentUser].weeklyPoints -= pointsToDeduct;
-  state[currentUser].log = state[currentUser].log.filter(l => l.ts < startOfToday);
-  state[currentUser].checkedHabits = {};
-  state[currentUser].questDone = false;
-
-  hideDailyReset();
-  showToast(`🧹 Dnešní akce smazány.`);
-  save();
-};
-
 window.showHistory = function() {
-  const content = document.getElementById('history-content');
-  const userALog = state.userA.log || [];
-  const userBLog = state.userB.log || [];
-  const allLogs = [...userALog, ...userBLog].sort((a,b) => b.ts - a.ts);
-  
-  if(allLogs.length === 0) {
-    content.innerHTML = '<div class="log-empty">Zatím žádné akce za posledních 30 dní…</div>';
-  } else {
-    content.innerHTML = allLogs.map(l => {
-      const who = l.u === 'Lůca' ? 'luca' : 'kaja';
-      const d = new Date(l.ts);
-      const time = `${d.getDate()}.${d.getMonth()+1}. ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
-      return `<div class="log-item">
-        <div class="log-dot ${who}"></div>
-        <div class="log-text" style="font-size:12px;">
-          <span style="opacity:0.5; font-size:10px; margin-right:4px;">[${time}]</span> 
-          ${l.icon} <strong>${l.u}</strong>: ${l.a}
-        </div>
-        <div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div>
-      </div>`;
-    }).join('');
-  }
+  const allLogs = [...(state.userA.log || []), ...(state.userB.log || [])].sort((a,b) => b.ts - a.ts);
+  document.getElementById('history-content').innerHTML = allLogs.length === 0 ? '<div class="log-empty">Historie je prázdná</div>' : allLogs.map(l => {
+    const d = new Date(l.ts);
+    return `<div class="log-item"><div class="log-dot ${l.u === 'Lůca' ? 'luca' : 'kaja'}"></div><div class="log-text" style="font-size:12px;"><span style="opacity:0.5; font-size:10px;">[${d.getDate()}.${d.getMonth()+1}.]</span> ${l.icon} <strong>${l.u}</strong>: ${l.a}</div><div class="log-pts ${l.d > 0 ? 'pos' : 'neg'}">${l.d > 0 ? '+' : ''}${l.d}</div></div>`;
+  }).join('');
   document.getElementById('modal-history').classList.add('show');
 };
 window.hideHistory = function() { document.getElementById('modal-history').classList.remove('show'); };
 
-document.getElementById('modal-daily').addEventListener('click', e => { if (e.target === e.currentTarget) window.hideDailyReset(); });
-document.getElementById('modal-history').addEventListener('click', e => { if (e.target === e.currentTarget) window.hideHistory(); });
+document.getElementById('modal-daily').onclick = e => { if(e.target === e.currentTarget) window.hideDailyReset(); };
+document.getElementById('modal-history').onclick = e => { if(e.target === e.currentTarget) window.hideHistory(); };
 
 let toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
