@@ -93,7 +93,8 @@ const HABITS = [
   { id:"fruit",    label:"Ovoce",        points:1, icon:"🍎", max:1 },
   { id:"nosugar",  label:"Bez sladkého", points:3, icon:"🍬", max:1 },
   { id:"walk",     label:"Venčení",      points:1, icon:"🐕", max:3 },
-  { id:"dishes",   label:"Nádobí",       points:1, icon:"🍽️", max:3 }
+  { id:"dishes",   label:"Nádobí",       points:1, icon:"🍽️", max:3 },
+  { id:"cooking",   label:"Příprava jídla",       points:1, icon:"🍲", max:5 }
 ];
 
 const SIDE_QUESTS = [
@@ -114,7 +115,15 @@ const SIDE_QUESTS = [
   "Celý den absolutně bez alkoholu 🥂🚫",
   "Jít do lesa s 🐕 alespoň na 1 hodinu",
   "Vyžehlit alespoň 10ks prádla 🧺",
-  "Večer bez televize 📺"
+  "Večer bez televize 📺",
+  "Dnešek bez IG 📵",
+  "Ranní ptáče (První hodina po probuzení bez mobilu) 🌅📵",
+  "Pán schodů (Vyhýbat se dnes všem výtahům a eskalátorům) 🧗‍♀️",
+  "Krok za krokem (Překonat dnes hranici 15 000 kroků) 👟🔥",
+  "Hydratační rituál (Vypít velkou sklenici vody hned po probuzení) 🚰",
+  "Pružná jako proutek (15 minut poctivý strečink) 🤸‍♀️",
+  "Společenský motýl (Zavolat někomu, s kým jsi dlouho nemluvila) 📞",
+  "Cukrový detox (Opravdu ani gram přidaného cukru za celý den) 🚫🧁"
 ];
 
 const EZO_QUOTES = [
@@ -125,6 +134,16 @@ const EZO_QUOTES = [
   "Tvá energie proudí tam, kam zaměřuješ pozornost. ✨",
   "V tichu mezi nádechy najdeš sílu udělat další angličák. 🌬️",
   "Buď jako voda – měkká navenek, ale schopná prorazit skálu. 🌊",
+  "Tvá vnitřní bohyně se neživí výmluvami, ale činy a zeleným čajem. 🍵✨",
+  "Nepočítej dny, ať dny počítají s tebou. Tvůj dnešní plank harmonizuje čakry. 🧘‍♀️",
+  "Karma je zdarma, ale za pevný zadek a čistou mysl se platí dřepem. 🍑🔮",
+  "Odhoď toxické myšlenky tak, jako odhazuješ deku při ranním vstávání. S křikem, ale hrdostí. 🌅",
+  "Vibruj na vyšší frekvenci. Každý krok navíc tě přibližuje k tvému astrálnímu já. 🌌👣",
+  "Krystal nezáří, dokud ho nevyleštíš. Tvoje aura nezáří, dokud si nedáš ten salát. 🥗✨",
+  "Zastav se. Nadechni se. Uvědom si, že jsi tvůrcem své reality i dnešního skóre. 🧘‍♂️",
+  "Měsíc v úplňku tahá oceány, ty přece dokážeš zvednout sama sebe z gauče. 🌊🌙",
+  "Když se ti nechce, cvičíš pro tělo. Když to překonáš, cvičíš pro svou duši. 🕊️",
+  "Tvůj metabolismus je jako posvátný oheň – přikládej do něj s láskou a respektem. 🔥"
 ];
 
 let currentUser = localStorage.getItem('activeUser') || 'userA';
