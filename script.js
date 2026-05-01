@@ -500,14 +500,15 @@ window.forceRefresh = function() {
     }, 500);
 };
 
-// Bezpečné odhlášení
 window.logoutUser = function() {
     if (confirm("Opravdu se chceš odhlásit?")) {
         signOut(auth).then(() => {
-            // Smažeme lokální cache, ať se dalšímu uživateli neukazují stará data
             localStorage.removeItem('healthDuelCache'); 
             localStorage.removeItem('activeUser');
-            window.location.reload();
+            
+            // OPRAVA: Očistíme URL od zbytků přihlašovacích dat a přejdeme na čistou stránku
+            window.location.href = window.location.origin + window.location.pathname;
+            
         }).catch((error) => {
             console.error("Chyba při odhlášení:", error);
             showToast('❌ Chyba při odhlášení');
