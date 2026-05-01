@@ -6,7 +6,8 @@ import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onA
 // 2. TVOJE FIREBASE KONFIGURACE
 const firebaseConfig = {
   apiKey: "AIzaSyBL7E5EBcbZD-PSmCcQ7WzxQWG_JlBQqt8",
-  authDomain: "health-duel-6ef13.firebaseapp.com",
+  // OPRAVA TADY: Místo firebaseapp.com napíšeme tvoji Vercel doménu
+  authDomain: "healthduel.vercel.app", 
   databaseURL: "https://health-duel-6ef13-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "health-duel-6ef13",
   storageBucket: "health-duel-6ef13.firebasestorage.app",
