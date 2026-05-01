@@ -40,6 +40,10 @@
     <div class="logo">Health Duel</div>
     <div id="date-display" class="logo-date">---</div>
   </div>
+  <div class="system-actions" style="display: flex; gap: 10px; position: absolute; top: 15px; right: 15px;">
+    <button onclick="forceRefresh()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; cursor: pointer; color: white;">🔄</button>
+    <button onclick="logoutUser()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; cursor: pointer; color: white;">🚪</button>
+  </div>
 
   <div id="winner-bar" class="winner-bar" style="display:none">
     🏆 Poslední vítězka: <strong id="last-winner-name"></strong>
