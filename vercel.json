@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/__/auth/:path*",
+      "destination": "https://health-duel-6ef13.firebaseapp.com/__/auth/:path*"
+    }
+  ]
+}
