@@ -1,7 +1,7 @@
 // 1. IMPORTY FIREBASE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 // 2. TVOJE FIREBASE KONFIGURACE
 const firebaseConfig = {
@@ -489,6 +489,31 @@ window.showHistory = function() {
   document.getElementById('modal-history').classList.add('show');
 };
 window.hideHistory = function() { document.getElementById('modal-history').classList.remove('show'); };
+
+// --- SYSTÉMOVÉ FUNKCE (Refresh a Odhlášení) ---
+
+// Vynucený refresh (tvrdý restart appky)
+window.forceRefresh = function() {
+    showToast('🔄 Obnovuji připojení...');
+    setTimeout(() => {
+        window.location.reload(); // Prohlížeč natvrdo znovu načte celou stránku
+    }, 500);
+};
+
+// Bezpečné odhlášení
+window.logoutUser = function() {
+    if (confirm("Opravdu se chceš odhlásit?")) {
+        signOut(auth).then(() => {
+            // Smažeme lokální cache, ať se dalšímu uživateli neukazují stará data
+            localStorage.removeItem('healthDuelCache'); 
+            localStorage.removeItem('activeUser');
+            window.location.reload();
+        }).catch((error) => {
+            console.error("Chyba při odhlášení:", error);
+            showToast('❌ Chyba při odhlášení');
+        });
+    }
+};
 
 const modDaily = document.getElementById('modal-daily');
 if (modDaily) modDaily.onclick = e => { if(e.target === e.currentTarget) window.hideDailyReset(); };
