@@ -1,7 +1,7 @@
 // 1. IMPORTY FIREBASE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 // 2. TVOJE FIREBASE KONFIGURACE
 const firebaseConfig = {
@@ -56,12 +56,16 @@ onAuthStateChanged(auth, (user) => {
 const loginBtn = document.getElementById('login-btn');
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
-        signInWithPopup(auth, provider).catch((error) => {
-            console.error("Chyba při přihlašování:", error);
-            alert("Nepodařilo se otevřít okno pro přihlášení. Zkontroluj blokování vyskakovacích oken.");
-        });
+        // Místo vyskakovacího okna stránku přesměrujeme
+        signInWithRedirect(auth, provider);
     });
 }
+
+// Zpracování chyb po návratu z přesměrování
+getRedirectResult(auth).catch((error) => {
+    console.error("Chyba při návratu z přihlášení:", error);
+    alert("Něco se pokazilo při přihlašování. Zkus to prosím znovu.");
+});
 
 // FUNKCE PRO START APLIKACE (načtení dat z Firebase)
 function startApp() {
