@@ -312,7 +312,7 @@ function render() {
       
       // Přepíšeme nadpis na dynamický Streak
       if (trackTitle) trackTitle.innerHTML = `🔥 STREAK: <span style="color:#F97316">${myStreak} DNÍ</span>`;
-      if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${currentGoal} b.`;
+      if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${currentGoal} b`;
       
       // Vytvoříme obal pro dny v týdnu, pokud tam ještě není
       if (!tracker) {
