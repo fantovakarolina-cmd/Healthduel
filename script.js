@@ -267,13 +267,13 @@ function render() {
   if (bA) bA.classList.toggle('active', currentUser === 'userA');
   if (bB) bB.classList.toggle('active', currentUser === 'userB');
 
-  // ÚPRAVA PRO SOLO - Zobrazení Streaku místo Korunky
   const lA = document.getElementById('label-userA');
   const lB = document.getElementById('label-userB');
+  
+  // 1. Očištění horní karty v Solo módu
   if (lA) {
       if (isSolo) {
-          const myStreak = calculateStreak(state.userA.log);
-          lA.innerHTML = `Lůca <div class="streak-display">🔥 Streak: ${myStreak} dní</div>`;
+          lA.innerHTML = `Lůca`;
       } else {
           lA.innerHTML = `Lůca <span class="win-crown" style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
       }
@@ -288,22 +288,55 @@ function render() {
   if (scA) scA.textContent = sA;
   if (scB) scB.textContent = sB;
 
-  // ÚPRAVA CÍLE PRO SOLO
   const currentGoal = isSolo ? SOLO_GOAL : GOAL;
   const pA = sA >= 0 ? Math.min((sA / currentGoal) * 100, 100) : 0;
   const pB = sB >= 0 ? Math.min((sB / currentGoal) * 100, 100) : 0;
   
   const barA = document.getElementById('bar-a');
   const barB = document.getElementById('bar-b');
-  if (barA) { barA.style.width = pA + '%'; document.getElementById('bar-a-val').textContent = sA; }
+  // Přidáno hezčí zobrazení čísel (např. 25 / 70)
+  if (barA) { barA.style.width = pA + '%'; document.getElementById('bar-a-val').textContent = isSolo ? `${sA} / ${currentGoal}` : sA; }
   if (barB) { barB.style.width = pB + '%'; document.getElementById('bar-b-val').textContent = sB; }
 
-  // Úprava textů trati (Track to victory -> Týdenní výzva)
+  // 2. NOVÝ SOLO TRACKER PRO TÝDEN (7 DNÍ)
   const trackTitle = document.querySelector('.track-title');
   const trackGoal = document.querySelector('.track-goal');
-  if (trackTitle && trackGoal) {
-      trackTitle.textContent = isSolo ? '🔥 Týdenní výzva' : 'Trať k vítězství';
-      trackGoal.textContent = isSolo ? `🎯 Cíl: ${SOLO_GOAL} bodů` : `🎯 Cíl: ${GOAL} bodů`;
+  const trackCard = document.querySelector('.track-card');
+  
+  let tracker = document.getElementById('solo-week-tracker');
+  if (isSolo && trackCard) {
+      const myStreak = calculateStreak(state.userA.log);
+      
+      // Přepíšeme nadpis na dynamický Streak
+      if (trackTitle) trackTitle.innerHTML = `🔥 STREAK: <span style="color:#F97316">${myStreak} DNÍ</span>`;
+      if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${currentGoal} b.`;
+      
+      // Vytvoříme obal pro dny v týdnu, pokud tam ještě není
+      if (!tracker) {
+          tracker = document.createElement('div');
+          tracker.id = 'solo-week-tracker';
+          trackCard.insertBefore(tracker, document.querySelector('.track-row.luca'));
+      }
+      
+      // Logika pro generování 7 koleček (Po - Ne)
+      const todayIdx = (new Date().getDay() + 6) % 7; 
+      const logs = state.userA.log || [];
+      const thisMondayMs = new Date(getMonday(new Date())).setHours(0,0,0,0);
+      
+      let daysHtml = '';
+      const dayNames = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+      for(let i=0; i<7; i++) {
+          const dayMs = thisMondayMs + (i * 86400000);
+          const hasPoints = logs.some(l => l.d > 0 && l.ts >= dayMs && l.ts < dayMs + 86400000);
+          let sClass = hasPoints ? 'active' : (i === todayIdx ? 'today' : (i > todayIdx ? 'future' : 'missed'));
+          daysHtml += `<div class="day-circle ${sClass}">${dayNames[i]}</div>`;
+      }
+      tracker.innerHTML = daysHtml;
+      tracker.style.display = 'flex';
+  } else {
+      if (trackTitle) trackTitle.textContent = 'Trať k vítězství';
+      if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${GOAL} bodů`;
+      if (tracker) tracker.style.display = 'none';
   }
 
   const wb = document.getElementById('winner-bar');
@@ -385,7 +418,7 @@ function render() {
     }
   };
   updateStats('a', statsA); updateStats('b', statsB);
-} 
+}
 
 // --- FUNKCE PRO HTML ---
 window.switchUser = function(id) { 
