@@ -298,14 +298,17 @@ function render() {
   if (barA) { barA.style.width = pA + '%'; document.getElementById('bar-a-val').textContent = isSolo ? `${sA} / ${currentGoal}` : sA; }
   if (barB) { barB.style.width = pB + '%'; document.getElementById('bar-b-val').textContent = sB; }
 
-  // 2. NOVÝ SOLO TRACKER PRO TÝDEN (7 DNÍ)
+ // 2. NOVÝ SOLO TRACKER PRO TÝDEN (7 DNÍ) A MĚSÍČNÍ STREAK
   const trackTitle = document.querySelector('.track-title');
   const trackGoal = document.querySelector('.track-goal');
   const trackCard = document.querySelector('.track-card');
   
   let tracker = document.getElementById('solo-week-tracker');
+  let streakBarContainer = document.getElementById('streak-bar-container');
+
   if (isSolo && trackCard) {
       const myStreak = calculateStreak(state.userA.log);
+      const STREAK_GOAL = 30; // Cíl měsíční výzvy
       
       // Přepíšeme nadpis na dynamický Streak
       if (trackTitle) trackTitle.innerHTML = `🔥 STREAK: <span style="color:#F97316">${myStreak} DNÍ</span>`;
@@ -317,6 +320,58 @@ function render() {
           tracker.id = 'solo-week-tracker';
           trackCard.insertBefore(tracker, document.querySelector('.track-row.luca'));
       }
+
+      // Vytvoříme druhou lištu pro Měsíční Streak výzvu pod dny
+      if (!streakBarContainer) {
+          streakBarContainer = document.createElement('div');
+          streakBarContainer.id = 'streak-bar-container';
+          streakBarContainer.innerHTML = `
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-weight: 800; margin-bottom: 8px; text-transform: uppercase; margin-top: 10px;">
+                  <span>Měsíční výzva přežití</span>
+                  <span id="streak-bar-text" style="color: #F97316;">0 / 30 🔥</span>
+              </div>
+              <div class="track-bg" style="width: 100%; height: 12px; border-radius: 8px; margin: 0;">
+                  <div id="streak-bar-fill" class="track-fill" style="width: 0%; background: linear-gradient(90deg, #F97316, #FB923C); border-radius: 8px; transition: width 0.5s ease;"></div>
+              </div>
+          `;
+          // Vložíme to hned pod dny v týdnu
+          tracker.after(streakBarContainer);
+      }
+      
+      // Logika pro generování 7 koleček (Po - Ne) s OHNÍČKY
+      const todayIdx = (new Date().getDay() + 6) % 7; 
+      const logs = state.userA.log || [];
+      const thisMondayMs = new Date(getMonday(new Date())).setHours(0,0,0,0);
+      
+      let daysHtml = '';
+      const dayNames = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+      for(let i=0; i<7; i++) {
+          const dayMs = thisMondayMs + (i * 86400000);
+          const hasPoints = logs.some(l => l.d > 0 && l.ts >= dayMs && l.ts < dayMs + 86400000);
+          let sClass = hasPoints ? 'active' : (i === todayIdx ? 'today' : (i > todayIdx ? 'future' : 'missed'));
+          
+          // Pokud je splněno, zobraz ohníček. Jinak název dne.
+          let content = hasPoints ? '🔥' : dayNames[i];
+          daysHtml += `<div class="day-circle ${sClass}">${content}</div>`;
+      }
+      tracker.innerHTML = daysHtml;
+      tracker.style.display = 'flex';
+
+      // Aktualizace nové Streak lišty
+      if (streakBarContainer) {
+          streakBarContainer.style.display = 'block';
+          const streakPct = Math.min((myStreak / STREAK_GOAL) * 100, 100);
+          document.getElementById('streak-bar-fill').style.width = streakPct + '%';
+          document.getElementById('streak-bar-text').textContent = `${myStreak} / ${STREAK_GOAL} 🔥`;
+      }
+
+  } else {
+      // Návrat do Duel módu - schováme Solo prvky
+      if (trackTitle) trackTitle.textContent = 'Trať k vítězství';
+      if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${GOAL} bodů`;
+      if (tracker) tracker.style.display = 'none';
+      if (streakBarContainer) streakBarContainer.style.display = 'none';
+  }
       
       // Logika pro generování 7 koleček (Po - Ne)
       const todayIdx = (new Date().getDay() + 6) % 7; 
