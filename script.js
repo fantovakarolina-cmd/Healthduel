@@ -372,28 +372,6 @@ function render() {
       if (tracker) tracker.style.display = 'none';
       if (streakBarContainer) streakBarContainer.style.display = 'none';
   }
-      
-      // Logika pro generování 7 koleček (Po - Ne)
-      const todayIdx = (new Date().getDay() + 6) % 7; 
-      const logs = state.userA.log || [];
-      const thisMondayMs = new Date(getMonday(new Date())).setHours(0,0,0,0);
-      
-      let daysHtml = '';
-      const dayNames = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
-      for(let i=0; i<7; i++) {
-          const dayMs = thisMondayMs + (i * 86400000);
-          const hasPoints = logs.some(l => l.d > 0 && l.ts >= dayMs && l.ts < dayMs + 86400000);
-          let sClass = hasPoints ? 'active' : (i === todayIdx ? 'today' : (i > todayIdx ? 'future' : 'missed'));
-          daysHtml += `<div class="day-circle ${sClass}">${dayNames[i]}</div>`;
-      }
-      tracker.innerHTML = daysHtml;
-      tracker.style.display = 'flex';
-  } else {
-      if (trackTitle) trackTitle.textContent = 'Trať k vítězství';
-      if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${GOAL} bodů`;
-      if (tracker) tracker.style.display = 'none';
-  }
-
   const wb = document.getElementById('winner-bar');
   if (wb) {
     if (state.lastWinner && !isSolo) {
