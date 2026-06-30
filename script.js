@@ -571,17 +571,3 @@ function showToast(msg) {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
   }
 }
-
-const modDaily = document.getElementById('modal-daily');
-if (modDaily) modDaily.onclick = e => { if(e.target === e.currentTarget) window.hideDailyReset(); };
-const modHist = document.getElementById('modal-history');
-if (modHist) modHist.onclick = e => { if(e.target === e.currentTarget) window.hideHistory(); };
-
-let toastTimer;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  if (t) {
-    t.textContent = msg; t.classList.add('show');
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
-  }
-}
