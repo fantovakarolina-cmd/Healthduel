@@ -451,18 +451,38 @@ body.solo-active .user-switch {
     display: none !important;
 }
 
-/* Roztáhneme Lůcinu kartu se skóre na celou šířku */
+/* 1. Barva hlavní karty - klidná, elegantní temně modrá (noční obloha) */
 body.solo-active .score-card.luca {
     width: 100% !important;
-    max-width: 100% !important;
-    background: linear-gradient(135deg, #8a2be2, #4b0082); /* Změníme barvu na "solo" fialovou */
+    max-width: 350px !important;
+    margin: 0 auto !important;
+    text-align: center !important;
+    border-radius: 16px !important;
+    border: none !important;
+    overflow: hidden !important; 
+    background: linear-gradient(135deg, #141E30, #243B55) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Roztáhneme i statistiky */
-body.solo-active .stat-card.luca {
+body.solo-active .score-card.luca::before,
+body.solo-active .score-card.luca::after {
+    display: none !important;
+}
+
+/* 2. Statistika přes celou šířku a vycentrovaná */
+body.solo-active .stats-grid {
+    display: flex !important;
+    justify-content: center !important;
     width: 100% !important;
 }
-/* --- NOVÉ OPRAVY PRO SOLO MÓD --- */
+body.solo-active .stat-card.luca {
+    width: 100% !important;
+    max-width: 350px !important;
+}
+
+/* 3. Schování korunky a pevných čísel u trati v Solo módu */
+body.solo-active .win-crown { display: none !important; }
+body.solo-active .track-marks { display: none !important; }
 
 /* Schování banneru "Poslední vítězka" */
 body.solo-active #winner-bar {
