@@ -76,7 +76,7 @@ function startApp() {
 
 // 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
-const SOLO_GOAL = 150; // Cíl pro týdenní výzvu
+const SOLO_GOAL = 100; // Cíl pro týdenní výzvu
 
 const HABITS = [
   { id:"water",    label:"2L vody",      points:2, icon:"💧", max:1 },
