@@ -214,26 +214,45 @@ function checkTime(skipSave = false) {
   if (needsSave && !skipSave) save();
 }
 
-// VÝPOČET STREAKU (Počet dní v kuse, kdy jsi získala alespoň 1 bod)
+// VÝPOČET STREAKU (Počet dní v kuse s alespoň 10 body nebo zachráněným dnem)
 function calculateStreak(logs) {
     if (!logs || logs.length === 0) return 0;
-    const daysWithPoints = new Set();
-    logs.forEach(l => { if (l.d > 0) daysWithPoints.add(new Date(l.ts).toDateString()); });
-    
-    const sortedDays = Array.from(daysWithPoints).sort((a,b) => new Date(b) - new Date(a));
+
+    const dailyPoints = {};
+    const repairedDays = new Set();
+
+    // Sečteme body pro každý den a zjistíme, zda byl den zachráněn
+    logs.forEach(l => {
+        const dateKey = new Date(l.ts).toDateString();
+        if (!dailyPoints[dateKey]) dailyPoints[dateKey] = 0;
+        if (l.d > 0) dailyPoints[dateKey] += l.d; 
+        if (l.icon === '🩹') repairedDays.add(dateKey); 
+    });
+
     let streak = 0;
     let checkDate = new Date();
     checkDate.setHours(0,0,0,0);
 
-    // Pokud dnes ještě nemáš body, zkontrolujeme včerejšek
-    if (!sortedDays.includes(checkDate.toDateString())) {
+    let todayKey = checkDate.toDateString();
+    
+    // Pokud dnes ještě nemáš 10 bodů, zkontrolujeme včerejšek
+    if ((dailyPoints[todayKey] || 0) < 10 && !repairedDays.has(todayKey)) {
         checkDate.setDate(checkDate.getDate() - 1);
-        if (!sortedDays.includes(checkDate.toDateString())) return 0; 
+        let yesterdayKey = checkDate.toDateString();
+        if ((dailyPoints[yesterdayKey] || 0) < 10 && !repairedDays.has(yesterdayKey)) {
+            return 0; // Ani včera nebylo splněno
+        }
     }
 
-    while (sortedDays.includes(checkDate.toDateString())) {
-        streak++;
-        checkDate.setDate(checkDate.getDate() - 1);
+    // Počítáme dozadu
+    while (true) {
+        let dateStr = checkDate.toDateString();
+        if ((dailyPoints[dateStr] || 0) >= 10 || repairedDays.has(dateStr)) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+            break; 
+        }
     }
     return streak;
 }
