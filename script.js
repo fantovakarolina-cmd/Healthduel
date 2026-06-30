@@ -6,7 +6,6 @@ import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onA
 // 2. TVOJE FIREBASE KONFIGURACE
 const firebaseConfig = {
   apiKey: "AIzaSyBL7E5EBcbZD-PSmCcQ7WzxQWG_JlBQqt8",
-  // OPRAVA TADY: Místo firebaseapp.com napíšeme tvoji Vercel doménu
   authDomain: "healthduel.vercel.app", 
   databaseURL: "https://health-duel-6ef13-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "health-duel-6ef13",
@@ -26,7 +25,7 @@ const appScreen = document.querySelector('.app');
 const loadingScreen = document.getElementById('loading-screen'); 
 
 let isAppStarted = false; 
-let isSyncing = true; // ZÁMEK: Dokud nemáme potvrzená data z cloudu, nepovolíme zápis
+let isSyncing = true; 
 
 // 3. HLÍDAČ STAVU (Jsme přihlášení?)
 onAuthStateChanged(auth, (user) => {
@@ -43,7 +42,7 @@ onAuthStateChanged(auth, (user) => {
                 isAppStarted = true;
             }
         } else {
-            alert("Pozor! Google se snaží přihlásit s e-mailem: " + user.email + " - tento e-mail není na seznamu hostů.");
+            alert("Pozor! Neznámý e-mail: " + user.email);
             auth.signOut();
         }
     } else {
@@ -53,22 +52,13 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// --- KLIKNUTÍ NA PŘIHLAŠOVACÍ TLAČÍTKO ---
 const loginBtn = document.getElementById('login-btn');
 if (loginBtn) {
-    loginBtn.addEventListener('click', () => {
-        // Místo vyskakovacího okna stránku přesměrujeme
-        signInWithRedirect(auth, provider);
-    });
+    loginBtn.addEventListener('click', () => signInWithRedirect(auth, provider));
 }
 
-// Zpracování chyb po návratu z přesměrování
-getRedirectResult(auth).catch((error) => {
-    console.error("Chyba při návratu z přihlášení:", error);
-    alert("Něco se pokazilo při přihlašování. Zkus to prosím znovu.");
-});
+getRedirectResult(auth).catch((error) => console.error("Chyba při přihlášení:", error));
 
-// FUNKCE PRO START APLIKACE (načtení dat z Firebase)
 function startApp() {
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
@@ -80,14 +70,13 @@ function startApp() {
             localStorage.setItem('healthDuelCache', JSON.stringify(state));
             checkTime(); 
             render();
-        } else {
-            save(); 
-        }
+        } else { save(); }
     });
 }
 
 // 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
+const SOLO_GOAL = 70; // Cíl pro týdenní výzvu
 
 const HABITS = [
   { id:"water",    label:"2L vody",      points:2, icon:"💧", max:1 },
@@ -99,7 +88,7 @@ const HABITS = [
   { id:"nosugar",  label:"Bez sladkého", points:3, icon:"🍬", max:1 },
   { id:"walk",     label:"Venčení",      points:1, icon:"🐕", max:3 },
   { id:"dishes",   label:"Nádobí",       points:1, icon:"🍽️", max:3 },
-  { id:"cooking",   label:"Příprava jídla",       points:1, icon:"🍲", max:5 }
+  { id:"cooking",  label:"Příprava jídla",points:1, icon:"🍲", max:5 }
 ];
 
 const SIDE_QUESTS = [
@@ -123,12 +112,12 @@ const SIDE_QUESTS = [
   "Večer bez televize 📺",
   "Dnešek bez IG 📵",
   "Ranní ptáče (První hodina po probuzení bez mobilu) 🌅📵",
-  "Pán schodů (Vyhýbat se dnes všem výtahům a eskalátorům) 🧗‍♀️",
-  "Krok za krokem (Překonat dnes hranici 15 000 kroků) 👟🔥",
-  "Hydratační rituál (Vypít velkou sklenici vody hned po probuzení) 🚰",
-  "Pružná jako proutek (15 minut poctivý strečink) 🤸‍♀️",
-  "Společenský motýl (Zavolat někomu, s kým jsi dlouho nemluvila) 📞",
-  "Cukrový detox (Opravdu ani gram přidaného cukru za celý den) 🚫🧁"
+  "Pán schodů (Vyhýbat se dnes všem výtahům) 🧗‍♀️",
+  "Krok za krokem (Překonat 15 000 kroků) 👟🔥",
+  "Hydratační rituál (Voda hned po probuzení) 🚰",
+  "Pružná jako proutek (15 min strečink) 🤸‍♀️",
+  "Společenský motýl (Zavolat někomu) 📞",
+  "Cukrový detox (Ani gram přidaného cukru) 🚫🧁"
 ];
 
 const EZO_QUOTES = [
@@ -140,15 +129,15 @@ const EZO_QUOTES = [
   "V tichu mezi nádechy najdeš sílu udělat další angličák. 🌬️",
   "Buď jako voda – měkká navenek, ale schopná prorazit skálu. 🌊",
   "Tvá vnitřní bohyně se neživí výmluvami, ale činy a zeleným čajem. 🍵✨",
-  "Nepočítej dny, ať dny počítají s tebou. Tvůj dnešní plank harmonizuje čakry. 🧘‍♀️",
+  "Nepočítej dny, ať dny počítají s tebou. 🧘‍♀️",
   "Karma je zdarma, ale za pevný zadek a čistou mysl se platí dřepem. 🍑🔮",
-  "Odhoď toxické myšlenky tak, jako odhazuješ deku při ranním vstávání. S křikem, ale hrdostí. 🌅",
-  "Vibruj na vyšší frekvenci. Každý krok navíc tě přibližuje k tvému astrálnímu já. 🌌👣",
+  "Odhoď toxické myšlenky tak, jako odhazuješ deku při ranním vstávání. 🌅",
+  "Vibruj na vyšší frekvenci. 🌌👣",
   "Krystal nezáří, dokud ho nevyleštíš. Tvoje aura nezáří, dokud si nedáš ten salát. 🥗✨",
-  "Zastav se. Nadechni se. Uvědom si, že jsi tvůrcem své reality i dnešního skóre. 🧘‍♂️",
+  "Zastav se. Nadechni se. Uvědom si, že jsi tvůrcem své reality. 🧘‍♂️",
   "Měsíc v úplňku tahá oceány, ty přece dokážeš zvednout sama sebe z gauče. 🌊🌙",
   "Když se ti nechce, cvičíš pro tělo. Když to překonáš, cvičíš pro svou duši. 🕊️",
-  "Tvůj metabolismus je jako posvátný oheň – přikládej do něj s láskou a respektem. 🔥"
+  "Tvůj metabolismus je jako posvátný oheň – přikládej do něj s láskou. 🔥"
 ];
 
 let currentUser = localStorage.getItem('activeUser') || 'userA';
@@ -167,7 +156,6 @@ let state = {
   currentWeek: getMonday(new Date())
 };
 
-// --- BLESKOVÉ NAČTENÍ Z LOKÁLNÍ PAMĚTI ---
 const lokalniData = localStorage.getItem('healthDuelCache');
 if (lokalniData) {
     state = JSON.parse(lokalniData);
@@ -177,18 +165,13 @@ if (lokalniData) {
     render();
 }
 
-// 6. ULOŽENÍ DO FIREBASE A DO CACHE
 async function save() {
   if (isSyncing) return;
   state.lastUpdated = Date.now();
   localStorage.setItem('healthDuelCache', JSON.stringify(state)); 
   render(); 
-  try {
-    await set(dbRef, state); 
-  } catch(e) { 
-    console.error('Chyba při ukládání:', e); 
-    showToast('❌ Chyba připojení');
-  }
+  try { await set(dbRef, state); } 
+  catch(e) { console.error('Chyba při ukládání:', e); showToast('❌ Chyba připojení'); }
 }
 
 function renderDate() {
@@ -209,13 +192,8 @@ function checkTime(skipSave = false) {
 
   if (state.currentWeek !== thisMonday) {
     let winner = 'Remíza!';
-    if (state.userA.weeklyPoints > state.userB.weeklyPoints) {
-      winner = 'Lůca 🔥';
-      state.userA.totalWins++;
-    } else if (state.userB.weeklyPoints > state.userA.weeklyPoints) {
-      winner = 'Kája 🔥';
-      state.userB.totalWins++;
-    }
+    if (state.userA.weeklyPoints > state.userB.weeklyPoints) { winner = 'Lůca 🔥'; state.userA.totalWins++; } 
+    else if (state.userB.weeklyPoints > state.userA.weeklyPoints) { winner = 'Kája 🔥'; state.userB.totalWins++; }
 
     state.lastWinner = winner;
     state.userA.weeklyPoints = 0; state.userA.checkedHabits = {}; state.userA.questDone = false;
@@ -233,8 +211,31 @@ function checkTime(skipSave = false) {
     state.currentDay = today;
     needsSave = true;
   }
-
   if (needsSave && !skipSave) save();
+}
+
+// VÝPOČET STREAKU (Počet dní v kuse, kdy jsi získala alespoň 1 bod)
+function calculateStreak(logs) {
+    if (!logs || logs.length === 0) return 0;
+    const daysWithPoints = new Set();
+    logs.forEach(l => { if (l.d > 0) daysWithPoints.add(new Date(l.ts).toDateString()); });
+    
+    const sortedDays = Array.from(daysWithPoints).sort((a,b) => new Date(b) - new Date(a));
+    let streak = 0;
+    let checkDate = new Date();
+    checkDate.setHours(0,0,0,0);
+
+    // Pokud dnes ještě nemáš body, zkontrolujeme včerejšek
+    if (!sortedDays.includes(checkDate.toDateString())) {
+        checkDate.setDate(checkDate.getDate() - 1);
+        if (!sortedDays.includes(checkDate.toDateString())) return 0; 
+    }
+
+    while (sortedDays.includes(checkDate.toDateString())) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+    }
+    return streak;
 }
 
 function calculateStats(userLog) {
@@ -254,25 +255,30 @@ function calculateStats(userLog) {
   return { gained, lost, quests, habits, custom };
 }
 
-function applyTheme() {
+function render() {
+  renderDate();
+  const isSolo = document.body.classList.contains('solo-active');
   const theme = currentUser === 'userA' ? 'theme-luca' : 'theme-kaja';
   document.body.classList.remove('theme-luca', 'theme-kaja');
   document.body.classList.add(theme);
-}
-
-function render() {
-  renderDate();
-  applyTheme();
 
   const bA = document.getElementById('btn-userA');
   const bB = document.getElementById('btn-userB');
   if (bA) bA.classList.toggle('active', currentUser === 'userA');
   if (bB) bB.classList.toggle('active', currentUser === 'userB');
 
+  // ÚPRAVA PRO SOLO - Zobrazení Streaku místo Korunky
   const lA = document.getElementById('label-userA');
   const lB = document.getElementById('label-userB');
-  if (lA) lA.innerHTML = `Lůca <span class="win-crown" style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
-  if (lB) lB.innerHTML = `Kája <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userB.totalWins || 0}</span>`;
+  if (lA) {
+      if (isSolo) {
+          const myStreak = calculateStreak(state.userA.log);
+          lA.innerHTML = `Lůca <div class="streak-display">🔥 Streak: ${myStreak} dní</div>`;
+      } else {
+          lA.innerHTML = `Lůca <span class="win-crown" style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
+      }
+  }
+  if (lB) lB.innerHTML = `Kája <span class="win-crown" style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userB.totalWins || 0}</span>`;
 
   const sA = state.userA.weeklyPoints || 0;
   const sB = state.userB.weeklyPoints || 0;
@@ -282,17 +288,27 @@ function render() {
   if (scA) scA.textContent = sA;
   if (scB) scB.textContent = sB;
 
-  const pA = sA >= 0 ? Math.min((sA / GOAL) * 100, 100) : 0;
-  const pB = sB >= 0 ? Math.min((sB / GOAL) * 100, 100) : 0;
+  // ÚPRAVA CÍLE PRO SOLO
+  const currentGoal = isSolo ? SOLO_GOAL : GOAL;
+  const pA = sA >= 0 ? Math.min((sA / currentGoal) * 100, 100) : 0;
+  const pB = sB >= 0 ? Math.min((sB / currentGoal) * 100, 100) : 0;
   
   const barA = document.getElementById('bar-a');
   const barB = document.getElementById('bar-b');
   if (barA) { barA.style.width = pA + '%'; document.getElementById('bar-a-val').textContent = sA; }
   if (barB) { barB.style.width = pB + '%'; document.getElementById('bar-b-val').textContent = sB; }
 
+  // Úprava textů trati (Track to victory -> Týdenní výzva)
+  const trackTitle = document.querySelector('.track-title');
+  const trackGoal = document.querySelector('.track-goal');
+  if (trackTitle && trackGoal) {
+      trackTitle.textContent = isSolo ? '🔥 Týdenní výzva' : 'Trať k vítězství';
+      trackGoal.textContent = isSolo ? `🎯 Cíl: ${SOLO_GOAL} bodů` : `🎯 Cíl: ${GOAL} bodů`;
+  }
+
   const wb = document.getElementById('winner-bar');
   if (wb) {
-    if (state.lastWinner) {
+    if (state.lastWinner && !isSolo) {
       wb.style.display = 'flex';
       document.getElementById('last-winner-name').textContent = state.lastWinner;
     } else { wb.style.display = 'none'; }
@@ -316,7 +332,6 @@ function render() {
           for(let i=1; i<=h.max; i++) checkVisual += `<div class="h-dot ${count >= i ? 'filled' : ''}"></div>`;
           checkVisual += `</div>`;
         }
-
         div.innerHTML = `${checkVisual}<span class="habit-icon">${h.icon}</span><span class="habit-name">${h.label}</span><span class="habit-pts">+${h.points}</span>`;
         list.appendChild(div);
       });
@@ -331,12 +346,8 @@ function render() {
 
   const qBtn = document.getElementById('quest-btn');
   if (qBtn) {
-    // OPRAVA TLAČÍTKA: Místo přepisu všech tříd (className) jen přidáváme/odebíráme třídu 'done'
-    if (state[currentUser].questDone) {
-        qBtn.classList.add('done');
-    } else {
-        qBtn.classList.remove('done');
-    }
+    if (state[currentUser].questDone) qBtn.classList.add('done');
+    else qBtn.classList.remove('done');
     qBtn.textContent = state[currentUser].questDone ? '✓ Splněno (zrušit)' : 'Splnit výzvu';
   }
 
@@ -421,8 +432,6 @@ window.toggleHabit = function(id) {
 window.completeQuest = function() {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   checkTime();
-  
-  // POJISTKA: Inicializace logu, pokud neexistuje
   if (!state[currentUser].log) state[currentUser].log = [];
 
   if (state[currentUser].questDone) {
@@ -439,10 +448,7 @@ window.completeQuest = function() {
 
 window.addPenalty = function(label, delta, icon) {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
-  
-  // POJISTKA: Inicializace logu
   if (!state[currentUser].log) state[currentUser].log = [];
-
   state[currentUser].weeklyPoints += delta;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:label, d:delta, icon:icon, ts:Date.now() });
   save();
@@ -452,10 +458,7 @@ window.addCustom = function() {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   const val = document.getElementById('custom-input').value.trim();
   if (!val) return;
-
-  // POJISTKA: Inicializace logu
   if (!state[currentUser].log) state[currentUser].log = [];
-
   state[currentUser].weeklyPoints += 10;
   state[currentUser].log.unshift({ u:currentUser==='userA'?'Lůca':'Kája', a:val, d:10, icon:'🏋️', ts:Date.now() });
   document.getElementById('custom-input').value = '';
@@ -491,14 +494,10 @@ window.showHistory = function() {
 };
 window.hideHistory = function() { document.getElementById('modal-history').classList.remove('show'); };
 
-// --- SYSTÉMOVÉ FUNKCE (Refresh a Odhlášení) ---
-
-// Vynucený refresh (tvrdý restart appky)
+// --- SYSTÉMOVÉ FUNKCE ---
 window.forceRefresh = function() {
     showToast('🔄 Obnovuji připojení...');
-    setTimeout(() => {
-        window.location.reload(); // Prohlížeč natvrdo znovu načte celou stránku
-    }, 500);
+    setTimeout(() => { window.location.reload(); }, 500);
 };
 
 window.logoutUser = function() {
@@ -506,66 +505,40 @@ window.logoutUser = function() {
         signOut(auth).then(() => {
             localStorage.removeItem('healthDuelCache'); 
             localStorage.removeItem('activeUser');
-            
-            // OPRAVA: Očistíme URL od zbytků přihlašovacích dat a přejdeme na čistou stránku
             window.location.href = window.location.origin + window.location.pathname;
-            
         }).catch((error) => {
             console.error("Chyba při odhlášení:", error);
             showToast('❌ Chyba při odhlášení');
         });
     }
 };
-// --- SOLO MÓD LOGIKA ---
 
-// Funkce na přepínání
 window.toggleSoloMode = function() {
     const body = document.body;
     body.classList.toggle('solo-active');
     const isSolo = body.classList.contains('solo-active');
-    
     localStorage.setItem('healthDuel_isSolo', isSolo);
     
-    // Změna tlačítka
     const btn = document.getElementById('solo-toggle-btn');
     if (btn) {
         btn.innerHTML = isSolo ? '⚔️ Zpět na Duel' : '🧘‍♀️ Zapnout Solo';
         btn.style.background = isSolo ? 'rgba(255, 255, 255, 0.15)' : 'rgba(138, 43, 226, 0.9)';
         btn.style.border = isSolo ? '1px solid rgba(255, 255, 255, 0.3)' : 'none';
     }
-
-    // Změna textů u trati (Track to victory -> Týdenní výzva)
-    const trackTitle = document.querySelector('.track-title');
-    const trackGoal = document.querySelector('.track-goal');
-    if (trackTitle && trackGoal) {
-        trackTitle.textContent = isSolo ? '🔥 Týdenní výzva' : 'Trať k vítězství';
-        trackGoal.textContent = isSolo ? '🎯 Cíl: 70 bodů' : '🎯 Cíl: 200 bodů';
-    }
-
+    
+    render(); // Překreslení grafiky pro aktivaci Solo módu
     showToast(isSolo ? 'Vítej v Solo módu! 🧘‍♀️' : 'Zpět v Duelu! ⚔️');
 };
 
-// Po načtení stránky zkontrolujeme, jestli jsi náhodou nenechala Solo mód zapnutý už včera
-// Po načtení stránky zkontrolujeme, jestli jsi náhodou nenechala Solo mód zapnutý už včera
 document.addEventListener('DOMContentLoaded', () => {
     const isSolo = localStorage.getItem('healthDuel_isSolo') === 'true';
     if (isSolo) {
         document.body.classList.add('solo-active');
-        
-        // 1. Změna barvy a textu tlačítka po načtení stránky
         const btn = document.getElementById('solo-toggle-btn');
         if (btn) {
             btn.innerHTML = '⚔️ Zpět na Duel';
             btn.style.background = 'rgba(255, 255, 255, 0.15)';
             btn.style.border = '1px solid rgba(255, 255, 255, 0.3)';
-        }
-
-        // 2. PŘIDÁNO: Změna textů u trati po načtení stránky
-        const trackTitle = document.querySelector('.track-title');
-        const trackGoal = document.querySelector('.track-goal');
-        if (trackTitle && trackGoal) {
-            trackTitle.textContent = '🔥 Týdenní výzva';
-            trackGoal.textContent = '🎯 Cíl: 70 bodů';
         }
     }
 });
