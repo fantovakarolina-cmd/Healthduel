@@ -535,10 +535,11 @@ body.solo-active .score-label {
     transition: all 0.3s ease;
 }
 .day-circle.active {
-    background: #F97316; /* Ohnivá barva streaku */
+    background: rgba(249, 115, 22, 0.15); /* Jemné podbarvení, ohníček dělá zbytek práce */
     color: white;
     border-color: #F97316;
-    box-shadow: 0 0 12px rgba(249,115,22,0.5);
+    box-shadow: 0 0 12px rgba(249,115,22,0.3);
+    font-size: 18px !important; /* Zvětšení pro emoji ohníčku */
 }
 .day-circle.today {
     border-color: #38BDF8;
