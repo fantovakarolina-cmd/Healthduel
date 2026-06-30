@@ -505,3 +505,65 @@ body.solo-active .score-val {
     font-weight: 800;
     letter-spacing: 0.5px;
 }
+/* --- NOVÝ DESIGN PRO STREAK A TÝDENNÍ VÝZVU --- */
+
+/* Vyčištění horní karty (zrušení mezery) */
+body.solo-active .score-label {
+    margin-bottom: 5px !important;
+}
+
+/* Design pro 7 dní v týdnu */
+#solo-week-tracker {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0 25px 0;
+    padding: 0 10px;
+}
+.day-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+.day-circle.active {
+    background: #F97316; /* Ohnivá barva streaku */
+    color: white;
+    border-color: #F97316;
+    box-shadow: 0 0 12px rgba(249,115,22,0.5);
+}
+.day-circle.today {
+    border-color: #38BDF8;
+    color: #38BDF8;
+}
+
+/* Vylepšení progres baru pod dny */
+body.solo-active .track-row.luca .track-name { 
+    display: none !important; 
+}
+body.solo-active .track-row.luca { 
+    display: flex !important; 
+    flex-direction: column !important; 
+    align-items: center !important; 
+    gap: 12px !important; 
+}
+body.solo-active .track-bg { 
+    width: 100% !important; 
+    margin: 0 !important; 
+    height: 16px !important; 
+    border-radius: 10px !important; 
+}
+body.solo-active .track-num.luca { 
+    margin: 0 !important; 
+    font-size: 15px !important; 
+    font-weight: 800 !important;
+    color: #38BDF8 !important; 
+    letter-spacing: 1px !important;
+}
