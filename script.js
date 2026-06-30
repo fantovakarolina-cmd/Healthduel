@@ -537,7 +537,15 @@ window.toggleSoloMode = function() {
         btn.innerHTML = isSolo ? '⚔️ Zpět na Duel' : '🧘‍♀️ Zapnout Solo';
         btn.style.background = isSolo ? 'rgba(220, 20, 60, 0.8)' : 'rgba(138, 43, 226, 0.8)';
     }
-    
+        // Změníme text a barvu na tlačítku
+    const btn = document.getElementById('solo-toggle-btn');
+    if (btn) {
+        btn.innerHTML = isSolo ? '⚔️ Zpět na Duel' : '🧘‍♀️ Zapnout Solo';
+        // Elegantní poloprůhledná barva místo křiklavě červené
+        btn.style.background = isSolo ? 'rgba(255, 255, 255, 0.15)' : 'rgba(138, 43, 226, 0.9)';
+        btn.style.border = isSolo ? '1px solid rgba(255, 255, 255, 0.3)' : 'none';
+    }
+
     showToast(isSolo ? 'Vítej v Solo módu! 🧘‍♀️' : 'Zpět v Duelu! ⚔️');
 };
 
@@ -549,7 +557,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('solo-toggle-btn');
         if (btn) {
             btn.innerHTML = '⚔️ Zpět na Duel';
-            btn.style.background = 'rgba(220, 20, 60, 0.8)';
+            // Nová barva po načtení stránky:
+            btn.style.background = 'rgba(255, 255, 255, 0.15)';
+            btn.style.border = '1px solid rgba(255, 255, 255, 0.3)';
         }
     }
 });
