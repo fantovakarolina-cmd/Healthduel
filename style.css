@@ -437,3 +437,28 @@ body.theme-kaja::after {
   from { left:-60px; } 
   to { left:110%; } 
 }
+/* =========================================
+   🧘‍♀️ SOLO MÓD STYLY
+   ========================================= */
+
+/* Když je aktivní Solo mód, schováme vše, co patří Káje */
+body.solo-active .kaja {
+    display: none !important;
+}
+
+/* Schováme i tlačítka na přepínání uživatelů (Lůca/Kája) */
+body.solo-active .user-switch {
+    display: none !important;
+}
+
+/* Roztáhneme Lůcinu kartu se skóre na celou šířku */
+body.solo-active .score-card.luca {
+    width: 100% !important;
+    max-width: 100% !important;
+    background: linear-gradient(135deg, #8a2be2, #4b0082); /* Změníme barvu na "solo" fialovou */
+}
+
+/* Roztáhneme i statistiky */
+body.solo-active .stat-card.luca {
+    width: 100% !important;
+}
