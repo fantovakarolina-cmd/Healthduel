@@ -271,7 +271,7 @@ function render() {
 
   const lA = document.getElementById('label-userA');
   const lB = document.getElementById('label-userB');
-  if (lA) lA.innerHTML = `Lůca <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
+  if (lA) lA.innerHTML = `Lůca <span class="win-crown" style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userA.totalWins || 0}</span>`;
   if (lB) lB.innerHTML = `Kája <span style="color:var(--gold); margin-left:4px; font-size:11px;">👑 ${state.userB.totalWins || 0}</span>`;
 
   const sA = state.userA.weeklyPoints || 0;
@@ -521,39 +521,51 @@ window.logoutUser = function() {
 // Funkce na přepínání
 window.toggleSoloMode = function() {
     const body = document.body;
-    
-    // Zapne/vypne třídu 'solo-active' na celém webu
     body.classList.toggle('solo-active');
-    
-    // Zjistíme, jestli je mód aktuálně zapnutý
     const isSolo = body.classList.contains('solo-active');
     
-    // Uložíme si to do paměti telefonu, aby to po obnovení stránky nezmizelo!
     localStorage.setItem('healthDuel_isSolo', isSolo);
     
-    // Změníme text a barvu na tlačítku
+    // Změna tlačítka
     const btn = document.getElementById('solo-toggle-btn');
     if (btn) {
         btn.innerHTML = isSolo ? '⚔️ Zpět na Duel' : '🧘‍♀️ Zapnout Solo';
-        // Elegantní poloprůhledná barva místo křiklavě červené
         btn.style.background = isSolo ? 'rgba(255, 255, 255, 0.15)' : 'rgba(138, 43, 226, 0.9)';
         btn.style.border = isSolo ? '1px solid rgba(255, 255, 255, 0.3)' : 'none';
+    }
+
+    // Změna textů u trati (Track to victory -> Týdenní výzva)
+    const trackTitle = document.querySelector('.track-title');
+    const trackGoal = document.querySelector('.track-goal');
+    if (trackTitle && trackGoal) {
+        trackTitle.textContent = isSolo ? '🔥 Týdenní výzva' : 'Trať k vítězství';
+        trackGoal.textContent = isSolo ? '🎯 Cíl: 70 bodů' : '🎯 Cíl: 200 bodů';
     }
 
     showToast(isSolo ? 'Vítej v Solo módu! 🧘‍♀️' : 'Zpět v Duelu! ⚔️');
 };
 
 // Po načtení stránky zkontrolujeme, jestli jsi náhodou nenechala Solo mód zapnutý už včera
+// Po načtení stránky zkontrolujeme, jestli jsi náhodou nenechala Solo mód zapnutý už včera
 document.addEventListener('DOMContentLoaded', () => {
     const isSolo = localStorage.getItem('healthDuel_isSolo') === 'true';
     if (isSolo) {
         document.body.classList.add('solo-active');
+        
+        // 1. Změna barvy a textu tlačítka po načtení stránky
         const btn = document.getElementById('solo-toggle-btn');
         if (btn) {
             btn.innerHTML = '⚔️ Zpět na Duel';
-            // Nová barva po načtení stránky:
             btn.style.background = 'rgba(255, 255, 255, 0.15)';
             btn.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+        }
+
+        // 2. PŘIDÁNO: Změna textů u trati po načtení stránky
+        const trackTitle = document.querySelector('.track-title');
+        const trackGoal = document.querySelector('.track-goal');
+        if (trackTitle && trackGoal) {
+            trackTitle.textContent = '🔥 Týdenní výzva';
+            trackGoal.textContent = '🎯 Cíl: 70 bodů';
         }
     }
 });
