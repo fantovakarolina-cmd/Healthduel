@@ -516,6 +516,43 @@ window.logoutUser = function() {
         });
     }
 };
+// --- SOLO MÓD LOGIKA ---
+
+// Funkce na přepínání
+window.toggleSoloMode = function() {
+    const body = document.body;
+    
+    // Zapne/vypne třídu 'solo-active' na celém webu
+    body.classList.toggle('solo-active');
+    
+    // Zjistíme, jestli je mód aktuálně zapnutý
+    const isSolo = body.classList.contains('solo-active');
+    
+    // Uložíme si to do paměti telefonu, aby to po obnovení stránky nezmizelo!
+    localStorage.setItem('healthDuel_isSolo', isSolo);
+    
+    // Změníme text na tlačítku
+    const btn = document.getElementById('solo-toggle-btn');
+    if (btn) {
+        btn.innerHTML = isSolo ? '⚔️ Zpět na Duel' : '🧘‍♀️ Zapnout Solo';
+        btn.style.background = isSolo ? 'rgba(220, 20, 60, 0.8)' : 'rgba(138, 43, 226, 0.8)';
+    }
+    
+    showToast(isSolo ? 'Vítej v Solo módu! 🧘‍♀️' : 'Zpět v Duelu! ⚔️');
+};
+
+// Po načtení stránky zkontrolujeme, jestli jsi náhodou nenechala Solo mód zapnutý už včera
+document.addEventListener('DOMContentLoaded', () => {
+    const isSolo = localStorage.getItem('healthDuel_isSolo') === 'true';
+    if (isSolo) {
+        document.body.classList.add('solo-active');
+        const btn = document.getElementById('solo-toggle-btn');
+        if (btn) {
+            btn.innerHTML = '⚔️ Zpět na Duel';
+            btn.style.background = 'rgba(220, 20, 60, 0.8)';
+        }
+    }
+});
 
 const modDaily = document.getElementById('modal-daily');
 if (modDaily) modDaily.onclick = e => { if(e.target === e.currentTarget) window.hideDailyReset(); };
