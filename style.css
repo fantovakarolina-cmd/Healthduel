@@ -473,17 +473,18 @@ body.solo-active .stats-grid {
     width: 100% !important;
 }
 
-/* 3. Tvoje hlavní karta - elegantní temně modrý gradient */
+/* 3. Tvoje hlavní karta - na celou šířku a se zářivým stínem */
 body.solo-active .score-card.luca,
 body.solo-active .stat-card.luca {
     width: 100% !important;
-    max-width: 350px !important; /* Karta nebude roztažená do ošklivé nudle */
+    max-width: 100% !important; /* Opraveno z 350px, aby lícovalo s ostatními kartami */
     margin: 0 auto !important;
     text-align: center !important;
     border-radius: 16px !important;
     border: 1px solid rgba(255, 255, 255, 0.05) !important;
     background: linear-gradient(135deg, #1A1F31, #121624) !important;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
+    /* Nový zářivý stín inspirovaný duelem (jemná tyrkysová záře) */
+    box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15), 0 0 15px rgba(56, 189, 248, 0.1) !important;
     color: #E2E8F0 !important;
 }
 
@@ -562,8 +563,9 @@ body.solo-active .track-bg {
 }
 body.solo-active .track-num.luca { 
     margin: 0 !important; 
-    font-size: 15px !important; 
-    font-weight: 800 !important;
+    font-size: 13px !important; /* Výrazně zmenšené písmo */
+    font-weight: 700 !important;
     color: #38BDF8 !important; 
-    letter-spacing: 1px !important;
+    letter-spacing: 0.5px !important;
+    white-space: nowrap !important; /* Zabrání zalomení na dva řádky */
 }
