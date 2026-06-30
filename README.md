@@ -1,40 +1,40 @@
 # Health Duel ⚔️
 
-Motivační webová aplikace navržená pro přátelský lifestylový souboj mezi dvěma uživatelkami (Lůca a Kája). Cílem je sbírat body za zdravé návyky, plnit denní výzvy a vyhýbat se penalizacím. Vše se synchronizuje v reálném čase!
+A motivational web application designed for a friendly lifestyle duel between two users (Lůca and Kája). The goal is to collect points for healthy habits, complete daily challenges, and avoid penalties. Everything synchronizes in real-time!
 
-## 🌟 Hlavní funkce
+## 🌟 Core Features
 
-* **Trať k vítězství:** Vizuální ukazatel skóre s cílem XY bodů na týden.
-* **Denní návyky:** Odškrtávání pravidelných aktivit (pitný režim, spánek, kroky, strava) s různým bodovým ohodnocením.
-* **Side Quest dne:** Generovaná denní výzva pro extra přísun bodů (např. studená sprcha, jóga, čtení).
-* **Penalizace:** Možnost odečíst body za prohřešky (alkohol, cukr, junk food).
-* **Vlastní aktivity:** Přidávání specifických tréninků nebo aktivit za +10 bodů.
-* **Chytrá historie a statistiky:** Záznam všech akcí (log) a automatické výpočty získaných/ztracených bodů za aktuální týden.
-* **Real-time synchronizace:** Okamžitý přepis skóre mezi zařízeními bez nutnosti obnovovat stránku.
+* **Road to Victory:** A visual score indicator with a target of XY points per week.
+* **Daily Habits:** A checklist for regular activities (hydration, sleep, steps, diet) with varying point values.
+* **Daily Side Quest:** A generated daily challenge for an extra point boost (e.g., cold shower, yoga, reading).
+* **Penalties:** The option to deduct points for slip-ups (alcohol, sugar, junk food).
+* **Custom Activities:** Add specific workouts or activities for +10 points.
+* **Smart History & Statistics:** A log of all actions and automatic calculation of gained/lost points for the current week.
+* **Real-time Synchronization:** Instant score updates across devices without needing a page refresh.
 
-## 🛠️ Technologie a struktura
+## 🛠️ Technology & Structure
 
-Projekt je postaven na čistých webových technologiích bez použití těžkých frameworků (tzv. Vanilla stack), díky čemuž je bleskově rychlý.
+The project is built on pure web technologies without heavy frameworks (the Vanilla stack), making it lightning-fast.
 
-* **Frontend:** HTML5, CSS3 (vlastní moderní Glassmorphism UI s animacemi), Vanilla JavaScript (ES6 Modules).
-* **Backend / Databáze:** Google Firebase (Realtime Database) pro bleskovou synchronizaci dat a ukládání stavu aplikace.
-* **Hosting:** Vercel pro rychlé nasazení a automatické updaty z GitHubu.
+* **Frontend:** HTML5, CSS3 (custom modern Glassmorphism UI with animations), Vanilla JavaScript (ES6 Modules).
+* **Backend / Database:** Google Firebase (Realtime Database) for instant data synchronization and state management.
+* **Hosting:** Vercel for fast deployment and automatic updates from GitHub.
 
-**Struktura repozitáře:**
-* `index.html` - Kostra aplikace a rozložení prvků.
-* `style.css` - Veškerý vizuál, barvy a CSS animace.
-* `script.js` - Logika aplikace, výpočty a napojení na Firebase API.
-* `icon.png` - Ikonka aplikace pro domovskou obrazovku na mobilech.
+**Repository Structure:**
+* `index.html` - Application skeleton and layout.
+* `style.css` - All visuals, colors, and CSS animations.
+* `script.js` - Application logic, calculations, and Firebase API integration.
+* `icon.png` - App icon for mobile home screens.
 
-## 🚀 Instalace a spuštění
+## 🚀 Installation & Setup
 
-Aplikace funguje čistě v prohlížeči, stačí ji otevřít přes hostovanou URL. 
+The app runs entirely in the browser; just open the hosted URL. 
 
-**Pro vývojáře (lokální spuštění):**
-1. Naklonujte si tento repozitář: `git clone <url-repozitare>`
-2. Nastavte si vlastní projekt v Google Firebase a vytvořte Realtime Database v testovacím režimu.
-3. V souboru `script.js` nahraďte objekt `firebaseConfig` vašimi vlastními API klíči z Firebase administrace.
-4. Otevřete `index.html` v prohlížeči přes lokální server (např. pomocí rozšíření Live Server ve VS Code, aby správně fungovaly ES6 moduly).
+**For Developers (Local Setup):**
+1. Clone this repository: `git clone <repository-url>`
+2. Set up your own project in Google Firebase and create a Realtime Database in test mode.
+3. In the `script.js` file, replace the `firebaseConfig` object with your own API keys from the Firebase console.
+4. Open `index.html` in the browser via a local server (e.g., using the Live Server extension in VS Code to ensure ES6 modules work properly).
 
 ---
-*Vyrobeno s ☕ a 💻 pro lepší a zdravější já!*
+*Made with ☕ and 💻 for a better and healthier self!*
