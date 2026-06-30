@@ -531,13 +531,7 @@ window.toggleSoloMode = function() {
     // Uložíme si to do paměti telefonu, aby to po obnovení stránky nezmizelo!
     localStorage.setItem('healthDuel_isSolo', isSolo);
     
-    // Změníme text na tlačítku
-    const btn = document.getElementById('solo-toggle-btn');
-    if (btn) {
-        btn.innerHTML = isSolo ? '⚔️ Zpět na Duel' : '🧘‍♀️ Zapnout Solo';
-        btn.style.background = isSolo ? 'rgba(220, 20, 60, 0.8)' : 'rgba(138, 43, 226, 0.8)';
-    }
-        // Změníme text a barvu na tlačítku
+    // Změníme text a barvu na tlačítku
     const btn = document.getElementById('solo-toggle-btn');
     if (btn) {
         btn.innerHTML = isSolo ? '⚔️ Zpět na Duel' : '🧘‍♀️ Zapnout Solo';
@@ -563,6 +557,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+const modDaily = document.getElementById('modal-daily');
+if (modDaily) modDaily.onclick = e => { if(e.target === e.currentTarget) window.hideDailyReset(); };
+const modHist = document.getElementById('modal-history');
+if (modHist) modHist.onclick = e => { if(e.target === e.currentTarget) window.hideHistory(); };
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (t) {
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+}
 
 const modDaily = document.getElementById('modal-daily');
 if (modDaily) modDaily.onclick = e => { if(e.target === e.currentTarget) window.hideDailyReset(); };
