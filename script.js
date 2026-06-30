@@ -76,7 +76,7 @@ function startApp() {
 
 // 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
-const SOLO_GOAL = 70; // Cíl pro týdenní výzvu
+const SOLO_GOAL = 150; // Cíl pro týdenní výzvu
 
 const HABITS = [
   { id:"water",    label:"2L vody",      points:2, icon:"💧", max:1 },
@@ -121,23 +121,23 @@ const SIDE_QUESTS = [
 ];
 
 const EZO_QUOTES = [
-  "Tvé tělo je chrám tvé duše, vymeť z něj prach disciplínou. ✨",
-  "Vesmír ti nenadělí výzvu, kterou bys nedokázala zdolat. 🌌",
-  "Dnešní pot je slzami tvého starého já, které odchází. 🌸",
-  "Kdo ovládne své ráno, ovládne svou manifestaci. ☀️",
-  "Tvá energie proudí tam, kam zaměřuješ pozornost. ✨",
-  "V tichu mezi nádechy najdeš sílu udělat další angličák. 🌬️",
-  "Buď jako voda – měkká navenek, ale schopná prorazit skálu. 🌊",
-  "Tvá vnitřní bohyně se neživí výmluvami, ale činy a zeleným čajem. 🍵✨",
-  "Nepočítej dny, ať dny počítají s tebou. 🧘‍♀️",
-  "Karma je zdarma, ale za pevný zadek a čistou mysl se platí dřepem. 🍑🔮",
-  "Odhoď toxické myšlenky tak, jako odhazuješ deku při ranním vstávání. 🌅",
-  "Vibruj na vyšší frekvenci. 🌌👣",
-  "Krystal nezáří, dokud ho nevyleštíš. Tvoje aura nezáří, dokud si nedáš ten salát. 🥗✨",
-  "Zastav se. Nadechni se. Uvědom si, že jsi tvůrcem své reality. 🧘‍♂️",
-  "Měsíc v úplňku tahá oceány, ty přece dokážeš zvednout sama sebe z gauče. 🌊🌙",
-  "Když se ti nechce, cvičíš pro tělo. Když to překonáš, cvičíš pro svou duši. 🕊️",
-  "Tvůj metabolismus je jako posvátný oheň – přikládej do něj s láskou. 🔥"
+  "Tvé tělo je chrám tvé duše, vymeť z něj prach disciplínou.",
+  "Vesmír ti nenadělí výzvu, kterou bys nedokázala zdolat.",
+  "Dnešní pot je slzami tvého starého já, které odchází.",
+  "Kdo ovládne své ráno, ovládne svou manifestaci.",
+  "Tvá energie proudí tam, kam zaměřuješ pozornost.",
+  "V tichu mezi nádechy najdeš sílu udělat další angličák.",
+  "Buď jako voda – měkká navenek, ale schopná prorazit skálu.",
+  "Tvá vnitřní bohyně se neživí výmluvami, ale činy a zeleným čajem.",
+  "Nepočítej dny, ať dny počítají s tebou.",
+  "Karma je zdarma, ale za pevný zadek a čistou mysl se platí dřepem.",
+  "Odhoď toxické myšlenky tak, jako odhazuješ deku při ranním vstávání.",
+  "Vibruj na vyšší frekvenci.",
+  "Krystal nezáří, dokud ho nevyleštíš. Tvoje aura nezáří, dokud si nedáš ten salát.",
+  "Zastav se. Nadechni se. Uvědom si, že jsi tvůrcem své reality.",
+  "Měsíc v úplňku tahá oceány, ty přece dokážeš zvednout sama sebe z gauče.",
+  "Když se ti nechce, cvičíš pro tělo. Když to překonáš, cvičíš pro svou duši.",
+  "Tvůj metabolismus je jako posvátný oheň – přikládej do něj s láskou."
 ];
 
 let currentUser = localStorage.getItem('activeUser') || 'userA';
