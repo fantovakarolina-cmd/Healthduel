@@ -40,15 +40,17 @@
     <div class="logo">Health Duel</div>
     <div id="date-display" class="logo-date">---</div>
   </div>
-  <div class="system-actions" style="display: flex; gap: 10px; position: absolute; top: 15px; right: 15px;">
-    <button id="solo-toggle-btn" onclick="toggleSoloMode()" style="background: rgba(138, 43, 226, 0.8); border: none; border-radius: 20px; padding: 5px 15px; font-weight: bold; font-size: 14px; cursor: pointer; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+<div class="system-actions" style="display: flex; gap: 8px; position: absolute; top: 15px; right: 15px; z-index: 100;">
+    <button id="solo-toggle-btn" onclick="toggleSoloMode()" style="background: rgba(138, 43, 226, 0.9); border: none; border-radius: 12px; padding: 8px 16px; font-weight: bold; font-size: 14px; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
         🧘‍♀️ Zapnout Solo
     </button>
-    
-    <button onclick="forceRefresh()" style="...">🔄</button>
-    <button onclick="logoutUser()" style="...">🚪</button>
+    <button onclick="forceRefresh()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 12px; font-size: 14px; cursor: pointer; color: white;">
+        🔄
+    </button>
+    <button onclick="logoutUser()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 12px; font-size: 14px; cursor: pointer; color: white;">
+        🚪
+    </button>
 </div>
-
 
   <div id="winner-bar" class="winner-bar" style="display:none">
     🏆 Poslední vítězka: <strong id="last-winner-name"></strong>
