@@ -474,15 +474,30 @@ body.solo-active .track-row:has(.kaja) {
     display: none !important;
 }
 
-/* Oprava tvé bodové karty - vynucení zaoblení a oříznutí přečuhujícího zeleného okraje */
-body.solo-active .score-card.luca {
-    border-radius: 16px !important;
-    border: none !important;
-    overflow: hidden !important; /* Tohle ořízne ty podivné rohy */
-    background: linear-gradient(135deg, #8a2be2, #4b0082) !important;
-    box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3) !important; /* Hezký fialový stín místo původního */
+/* Vycentrování celého obalu pro skóre */
+body.solo-active .scores {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
 }
 
+/* Oprava a vycentrování tvé bodové karty */
+body.solo-active .score-card.luca {
+    width: 100% !important;
+    max-width: 350px !important; /* Zabrání roztáhnutí do ošklivé nudle */
+    margin: 0 auto !important; /* Zarovná kartu na absolutní střed */
+    text-align: center !important; /* Vycentruje texty a korunku uvnitř */
+    border-radius: 16px !important;
+    border: none !important;
+    overflow: hidden !important; 
+    background: linear-gradient(135deg, #8a2be2, #4b0082) !important;
+    box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3) !important;
+}
+
+body.solo-active .score-card.luca::before,
+body.solo-active .score-card.luca::after {
+    display: none !important;
+}
 /* Pro jistotu vypneme případné staré stíny nebo pseudo-elementy, co dělaly tu zelenou šmouhu */
 body.solo-active .score-card.luca::before,
 body.solo-active .score-card.luca::after {
