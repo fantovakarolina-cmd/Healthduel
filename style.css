@@ -438,88 +438,70 @@ body.theme-kaja::after {
   to { left:110%; } 
 }
 /* =========================================
-   🧘‍♀️ SOLO MÓD STYLY
+   🧘‍♀️ SOLO MÓD STYLY (ELEGANTNÍ NOČNÍ VERZE)
    ========================================= */
 
-/* Když je aktivní Solo mód, schováme vše, co patří Káje */
-body.solo-active .kaja {
-    display: none !important;
+/* Temné pozadí celé appky v Solo módu */
+body.solo-active {
+    background-color: #0F121E !important;
 }
 
-/* Schováme i tlačítka na přepínání uživatelů (Lůca/Kája) */
-body.solo-active .user-switch {
-    display: none !important;
-}
+/* Schování prvků z Duelu */
+body.solo-active .kaja { display: none !important; }
+body.solo-active .user-switch { display: none !important; }
+body.solo-active #winner-bar { display: none !important; }
+body.solo-active .win-crown { display: none !important; }
+body.solo-active .track-row:has(.kaja) { display: none !important; }
+body.solo-active .track-marks { display: none !important; }
 
-/* 1. Barva hlavní karty - klidná, elegantní temně modrá (noční obloha) */
-body.solo-active .score-card.luca {
+/* 1. Centrování ovládacího panelu (Tlačítka) */
+body.solo-active .system-actions {
+    position: relative !important;
+    top: 0 !important; 
+    right: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
     width: 100% !important;
-    max-width: 350px !important;
-    margin: 0 auto !important;
-    text-align: center !important;
-    border-radius: 16px !important;
-    border: none !important;
-    overflow: hidden !important; 
-    background: linear-gradient(135deg, #141E30, #243B55) !important;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+    margin: 15px 0 25px 0 !important;
 }
 
-body.solo-active .score-card.luca::before,
-body.solo-active .score-card.luca::after {
-    display: none !important;
-}
-
-/* 2. Statistika přes celou šířku a vycentrovaná */
+/* 2. Vycentrování obalů pro skóre a statistiky */
+body.solo-active .scores,
 body.solo-active .stats-grid {
     display: flex !important;
     justify-content: center !important;
     width: 100% !important;
 }
+
+/* 3. Tvoje hlavní karta - elegantní temně modrý gradient */
+body.solo-active .score-card.luca,
 body.solo-active .stat-card.luca {
     width: 100% !important;
-    max-width: 350px !important;
-}
-
-/* 3. Schování korunky a pevných čísel u trati v Solo módu */
-body.solo-active .win-crown { display: none !important; }
-body.solo-active .track-marks { display: none !important; }
-
-/* Schování banneru "Poslední vítězka" */
-body.solo-active #winner-bar {
-    display: none !important;
-}
-
-/* Úplné schování řádku s tratí, který patří Káje (hledá řádek obsahující třídu .kaja) */
-body.solo-active .track-row:has(.kaja) {
-    display: none !important;
-}
-
-/* Vycentrování celého obalu pro skóre */
-body.solo-active .scores {
-    display: flex !important;
-    justify-content: center !important;
-    width: 100% !important;
-}
-
-/* Oprava a vycentrování tvé bodové karty */
-body.solo-active .score-card.luca {
-    width: 100% !important;
-    max-width: 350px !important; /* Zabrání roztáhnutí do ošklivé nudle */
-    margin: 0 auto !important; /* Zarovná kartu na absolutní střed */
-    text-align: center !important; /* Vycentruje texty a korunku uvnitř */
+    max-width: 350px !important; /* Karta nebude roztažená do ošklivé nudle */
+    margin: 0 auto !important;
+    text-align: center !important;
     border-radius: 16px !important;
-    border: none !important;
-    overflow: hidden !important; 
-    background: linear-gradient(135deg, #8a2be2, #4b0082) !important;
-    box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: linear-gradient(135deg, #1A1F31, #121624) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
+    color: #E2E8F0 !important;
 }
 
 body.solo-active .score-card.luca::before,
 body.solo-active .score-card.luca::after {
     display: none !important;
 }
-/* Pro jistotu vypneme případné staré stíny nebo pseudo-elementy, co dělaly tu zelenou šmouhu */
-body.solo-active .score-card.luca::before,
-body.solo-active .score-card.luca::after {
-    display: none !important;
+
+/* 4. Barva bodů a nový design pro Streak */
+body.solo-active .score-val {
+    color: #38BDF8 !important; /* Tyrkysová pro body */
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.3) !important;
+}
+
+.streak-display {
+    font-size: 15px;
+    color: #F97316; /* Ohnivá oranžová pro streak */
+    margin-top: 5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
 }
