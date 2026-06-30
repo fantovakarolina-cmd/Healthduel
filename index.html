@@ -41,9 +41,14 @@
     <div id="date-display" class="logo-date">---</div>
   </div>
   <div class="system-actions" style="display: flex; gap: 10px; position: absolute; top: 15px; right: 15px;">
-    <button onclick="forceRefresh()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; cursor: pointer; color: white;">🔄</button>
-    <button onclick="logoutUser()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; cursor: pointer; color: white;">🚪</button>
-  </div>
+    <button id="solo-toggle-btn" onclick="toggleSoloMode()" style="background: rgba(138, 43, 226, 0.8); border: none; border-radius: 20px; padding: 5px 15px; font-weight: bold; font-size: 14px; cursor: pointer; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+        🧘‍♀️ Zapnout Solo
+    </button>
+    
+    <button onclick="forceRefresh()" style="...">🔄</button>
+    <button onclick="logoutUser()" style="...">🚪</button>
+</div>
+
 
   <div id="winner-bar" class="winner-bar" style="display:none">
     🏆 Poslední vítězka: <strong id="last-winner-name"></strong>
