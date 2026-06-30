@@ -1,88 +1,211 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Health Duel 🧘‍♀️ Solo</title>
-    
-    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Health Duel</title>
+  
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://health-duel-6ef13-default-rtdb.europe-west1.firebasedatabase.app" crossorigin>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  
 </head>
-<body class="solo-active"> <div class="app">
-    
-    <div class="header">
-        <div class="logo">Health Duel</div>
-        <div id="date-display" class="logo-date">---</div>
-    </div>
+<body class="theme-luca">
+  
+  <div id="loading-screen" style="display: flex; height: 100vh; align-items: center; justify-content: center; background-color: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 1.2rem; font-weight: bold;">
+    Načítám duel... ⚔️
+  </div>
 
-    <div class="system-actions">
-        <button id="solo-toggle-btn" onclick="toggleSoloMode()" class="btn-solo">
-            ⚔️ Zpět na Duel
-        </button>
-        <div class="actions-group">
-            <button onclick="forceRefresh()" class="btn-icon">🔄</button>
-            <button onclick="logoutUser()" class="btn-icon">🚪</button>
-        </div>
-    </div>
+  <div id="login-screen" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif;">
+    <h1 style="font-family: 'Bebas Neue', cursive; font-size: 3rem; margin-bottom: 2rem;">Health Duel</h1>
+    <p style="margin-bottom: 2rem; opacity: 0.8;">Vstup pouze pro hráče</p>
+    <button id="login-btn" style="background-color: white; color: #444; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+        Přihlásit se přes Google
+    </button>
+  </div>
 
-    <div class="solo-card">
-        <div class="card-left">
-            <div id="streak-counter" class="streak-count">---</div>
-            <div id="streak-label" class="streak-label">---</div>
-        </div>
-        <div class="card-right">
-            <div class="card-pts">
-                <span id="score-userA">0</span>
-                <span class="pts-label">bodů</span>
-            </div>
-            <div class="user-identity">
-                <span id="label-userA">Lůca</span>
-            </div>
-        </div>
-    </div>
+  <div class="app" style="display: none;">
+      <div class="header">
+    <div class="logo">Health Duel</div>
+    <div id="date-display" class="logo-date">---</div>
+  </div>
 
-    <div class="quest-card weekly-challenge">
-        <div class="quest-top">
-            <div id="weekly-title" class="quest-label">---</div>
-            <div id="weekly-goal-val" class="quest-pts">---</div>
-        </div>
-        <div class="track-bg solo-bar">
-            <div id="bar-a" class="track-fill bar-fill-solo" style="width:0%"></div>
-        </div>
-        <div class="bar-legend">
-            <span>Po</span>
-            <span style="opacity:0.6">Čt</span>
-            <span>Ne</span>
-        </div>
-    </div>
+  <div class="system-actions" style="display: flex; justify-content: center; gap: 8px; width: 100%; margin-top: 10px; margin-bottom: 25px;">
+    <button id="solo-toggle-btn" onclick="toggleSoloMode()" style="background: rgba(138, 43, 226, 0.9); border: none; border-radius: 12px; padding: 8px 16px; font-weight: bold; font-size: 14px; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        🧘‍♀️ Zapnout Solo
+    </button>
+    <button onclick="forceRefresh()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 12px; font-size: 14px; cursor: pointer; color: white;">🔄</button>
+    <button onclick="logoutUser()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 12px; font-size: 14px; cursor: pointer; color: white;">🚪</button>
+  </div>
 
-    <div class="section-title">✅ Dnešní návyky</div>
-    <div id="habit-list" class="habit-list">
-        </div>
+  <div id="winner-bar" class="winner-bar" style="display:none">
+    🏆 Poslední vítězka: <strong id="last-winner-name"></strong>
+  </div>
 
-    <div class="quest-card side-quest">
-        <div class="quest-top">
-            <div class="quest-label">⚡ Side Quest dne</div>
-            <div class="quest-pts">+15</div>
-        </div>
-        <div id="today-quest" class="quest-text">Načítám...</div>
-        <button id="quest-btn" class="quest-btn" onclick="completeQuest()">Splnit výzvu</button>
-    </div>
+  <div class="user-switch">
+    <button id="btn-userA" class="switch-btn" onclick="switchUser('userA')">👱‍♀️ Lůca</button>
+    <button id="btn-userB" class="switch-btn" onclick="switchUser('userB')">👩🏽 Kája</button>
+  </div>
 
-    <div class="section-title">📋 Dnešní akce</div>
-    <div class="log-card" style="margin-bottom: 40px;">
-        <div id="log-list"><div class="log-empty">Zatím žádné akce dnes…</div></div>
+  <div class="scores">
+    <div class="score-card luca">
+      <div id="label-userA" class="score-label">Lůca</div>
+      <div id="score-userA" class="score-val">0</div>
     </div>
+    <div class="score-card kaja">
+      <div id="label-userB" class="score-label">Kája</div>
+      <div id="score-userB" class="score-val">0</div>
+    </div>
+  </div>
+
+  <div class="track-card">
+    <div class="track-header">
+      <div class="track-title">Trať k vítězství</div>
+      <div class="track-goal">🎯 Cíl: 200 bodů</div>
+    </div>
+    <div class="track-row">
+      <div class="track-name luca">LŮCA</div>
+      <div class="track-bg"><div id="bar-a" class="track-fill luca" style="width:0%"></div></div>
+      <div id="bar-a-val" class="track-num luca">0</div>
+    </div>
+    <div class="track-row">
+      <div class="track-name kaja">KÁJA</div>
+      <div class="track-bg"><div id="bar-b" class="track-fill kaja" style="width:0%"></div></div>
+      <div id="bar-b-val" class="track-num kaja">0</div>
+    </div>
+    <div class="track-marks">
+      <span class="track-mark">50</span>
+      <span class="track-mark">100</span>
+      <span class="track-mark">150</span>
+      <span class="track-mark">200</span>
+    </div>
+  </div>
+
+  <div class="section-title">✅ Dnešní návyky</div>
+  <div id="habit-list" class="habit-list"></div>
+
+  <div class="quest-card">
+    <div class="quest-top">
+      <div class="quest-label">⚡ Side Quest dne</div>
+      <div class="quest-pts">+15 bodů</div>
+    </div>
+    <div id="today-quest" class="quest-text">---</div>
+    <button id="quest-btn" class="quest-btn" onclick="completeQuest()">Splnit výzvu</button>
+  </div>
+
+  <div class="custom-card">
+    <input id="custom-input" class="custom-input" type="text" placeholder="Fitko, běh, jiná aktivita...">
+    <button class="custom-btn" onclick="addCustom()">+ Přidat</button>
+  </div>
+
+  <div class="section-title">💀 Penalizace</div>
+  <div class="penalty-grid">
+    <div class="penalty-btn" onclick="addPenalty('Alkohol',-10,'🍷')">
+      <div class="penalty-emoji">🍷</div>
+      <span class="penalty-name">Alkohol</span>
+      <div class="penalty-val">-10</div>
+    </div>
+    <div class="penalty-btn" onclick="addPenalty('Pozdě',-5,'😴')">
+      <div class="penalty-emoji">😴</div>
+      <span class="penalty-name">Po 8:00</span>
+      <div class="penalty-val">-5</div>
+    </div>
+    <div class="penalty-btn" onclick="addPenalty('Cukr',-5,'🍩')">
+      <div class="penalty-emoji">🍩</div>
+      <span class="penalty-name">Cukr</span>
+      <div class="penalty-val">-5</div>
+    </div>
+    <div class="penalty-btn" onclick="addPenalty('Junk Food',-10,'🍔')">
+      <div class="penalty-emoji">🍔</div>
+      <span class="penalty-name">Junk Food</span>
+      <div class="penalty-val">-10</div>
+    </div>
+  </div>
+
+  <div class="section-title">📋 Dnešní akce</div>
+  <div class="log-card" style="margin-bottom: 30px;">
+    <div id="log-list"><div class="log-empty">Zatím žádné akce dnešní den…</div></div>
+  </div>
+
+  <div class="section-title">📊 Statistiky týdne</div>
+  <div class="stats-grid">
+    <div class="stat-card luca">
+      <div class="stat-name">LŮCA</div>
+      <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-a-gained" class="pos">+0</strong></div>
+      <div class="stat-row"><span>💀 Ztraceno:</span> <strong id="stat-a-lost" class="neg">-0</strong></div>
+      <div class="stat-row"><span>✅ Návyky:</span> <strong id="stat-a-habits" class="pos">0</strong></div>
+      <div class="stat-row"><span>🏋️ Aktivity:</span> <strong id="stat-a-custom" class="pos">0</strong></div>
+      <div class="stat-row"><span>⚡ Questy:</span> <strong id="stat-a-quests" class="neu">0</strong></div>
+    </div>
+    <div class="stat-card kaja">
+      <div class="stat-name">KÁJA</div>
+      <div class="stat-row"><span>📈 Získáno:</span> <strong id="stat-b-gained" class="pos">+0</strong></div>
+      <div class="stat-row"><span>💀 Ztraceno:</span> <strong id="stat-b-lost" class="neg">-0</strong></div>
+      <div class="stat-row"><span>✅ Návyky:</span> <strong id="stat-b-habits" class="pos">0</strong></div>
+      <div class="stat-row"><span>🏋️ Aktivity:</span> <strong id="stat-b-custom" class="pos">0</strong></div>
+      <div class="stat-row"><span>⚡ Questy:</span> <strong id="stat-b-quests" class="neu">0</strong></div>
+    </div>
+  </div>
+
+  <div class="energy-card">
+    <div class="energy-icon">✨</div>
+    <div id="ezo-quote" class="energy-quote"></div>
+  </div>
+
+  <div class="mgmt-card">
+    <div class="mgmt-title">⚙️ Správa souboje</div>
+    <button class="mgmt-btn info" onclick="showHistory()">📅 Historie posledních 30 dní</button>
+    <button class="mgmt-btn warning" onclick="showDailyReset()">🧹 Vymazat dnešní akce</button>
+  </div>
 
 </div>
 
-<script type="module" src="script.js"></script>
+<div id="modal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-icon">💣</div>
+    <div class="modal-title">Opravdu reset?</div>
+    <div class="modal-desc">Smažeš <strong>všechna data</strong> souboje. Akce je <strong>nevratná</strong>!</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="hideReset()">Zpět</button>
+      <button class="modal-confirm" onclick="confirmReset()">Smazat vše</button>
+    </div>
+  </div>
+</div>
 
+<div id="modal-daily" class="modal-bg">
+  <div class="modal">
+    <div class="modal-icon">🧹</div>
+    <div class="modal-title" style="color: var(--kaja);">Reset dne?</div>
+    <div class="modal-desc">Smažeš <strong>dnešní akce a body</strong> pro (<span id="daily-reset-name"></span>). Historie předchozích dnů zůstane.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="hideDailyReset()">Zpět</button>
+      <button class="modal-confirm warning" onclick="confirmDailyReset()">Smazat dnešek</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-history" class="modal-bg">
+  <div class="modal history-modal">
+    <div class="modal-icon">📅</div>
+    <div class="modal-title" style="color: var(--text); text-align: center; width: 100%;">Historie posledních<br>30 dní</br></div>
+    <div id="history-content" class="history-content"></div>
+    <button class="modal-cancel" style="width: 100%;" onclick="hideHistory()">Zavřít archiv</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script type="module" src="script.js"></script>
 </body>
 </html>
