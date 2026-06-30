@@ -550,6 +550,27 @@ window.addCustom = function() {
   save();
 };
 
+window.recoverStreak = function() {
+  if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
+  if (!state[currentUser].log) state[currentUser].log = [];
+  
+  // Vytvoříme záznam s datem včerejška, abychom opravili včerejší díru
+  let yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setHours(12, 0, 0, 0); // Nastavíme čas na poledne včerejška
+  
+  state[currentUser].log.unshift({ 
+      u: currentUser === 'userA' ? 'Lůca' : 'Kája', 
+      a: 'Záchrana streaku (Sidequest splněn)! 🦸‍♀️', 
+      d: 0, // Záchrana nedává body do celkového skóre, jen lepí streak
+      icon: '🩹', 
+      ts: yesterday.getTime() 
+  });
+  
+  showToast('🩹 Streak úspěšně zachráněn!');
+  save();
+};
+
 window.confirmDailyReset = function() {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   const today = new Date().setHours(0,0,0,0);
