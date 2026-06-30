@@ -462,3 +462,29 @@ body.solo-active .score-card.luca {
 body.solo-active .stat-card.luca {
     width: 100% !important;
 }
+/* --- NOVÉ OPRAVY PRO SOLO MÓD --- */
+
+/* Schování banneru "Poslední vítězka" */
+body.solo-active #winner-bar {
+    display: none !important;
+}
+
+/* Úplné schování řádku s tratí, který patří Káje (hledá řádek obsahující třídu .kaja) */
+body.solo-active .track-row:has(.kaja) {
+    display: none !important;
+}
+
+/* Oprava tvé bodové karty - vynucení zaoblení a oříznutí přečuhujícího zeleného okraje */
+body.solo-active .score-card.luca {
+    border-radius: 16px !important;
+    border: none !important;
+    overflow: hidden !important; /* Tohle ořízne ty podivné rohy */
+    background: linear-gradient(135deg, #8a2be2, #4b0082) !important;
+    box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3) !important; /* Hezký fialový stín místo původního */
+}
+
+/* Pro jistotu vypneme případné staré stíny nebo pseudo-elementy, co dělaly tu zelenou šmouhu */
+body.solo-active .score-card.luca::before,
+body.solo-active .score-card.luca::after {
+    display: none !important;
+}
