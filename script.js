@@ -720,10 +720,17 @@ function showToast(msg) {
   }
 }
 // TEMPORARY CLEANUP FUNCTION
-window.clearGhosts = function() {
-    state.userA.log = (state.userA.log || []).filter(l => l.icon !== '🩹');
-    state.userB.log = (state.userB.log || []).filter(l => l.icon !== '🩹');
+window.hardReset = function() {
+    // Smaže úplně všechno u obou hráček
+    state.userA.weeklyPoints = 0;
+    state.userA.log = [];
+    state.userA.checkedHabits = {};
+    
+    state.userB.weeklyPoints = 0;
+    state.userB.log = [];
+    state.userB.checkedHabits = {};
+    
     save();
-    alert('Hotovo! Testovací záchrany jsou smazány. 👻');
+    alert('Všechna data vymazána. Začínáme s čistým štítem! 🧹');
     window.location.reload();
 };
