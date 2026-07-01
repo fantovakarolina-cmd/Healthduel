@@ -595,23 +595,27 @@ window.addCustom = function() {
 
 window.recoverStreak = function() {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
+  checkTime();
+
+  // Zobrazíme vyskakovací okno s výzvou
+  const quest = "🔥 TRESTNÁ VÝZVA 🔥\n\nPro záchranu streaku musíš udělat 50 dřepů nebo 2 minuty v planku.\n\nKlikni na OK, teprve až to budeš mít za sebou!";
+  if (!confirm(quest)) {
+      showToast('❌ Trest nesplněn, streak zůstává přerušen.');
+      return; // Pokud uživatel klikne na Zrušit, nic se nestane
+  }
+
   if (!state[currentUser].log) state[currentUser].log = [];
-  
-  // Vytvoříme záznam s datem včerejška, abychom opravili včerejší díru
-  let yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  yesterday.setHours(12, 0, 0, 0); // Nastavíme čas na poledne včerejška
   
   state[currentUser].log.unshift({ 
       u: currentUser === 'userA' ? 'Lůca' : 'Kája', 
-      a: 'Záchrana streaku (Sidequest splněn)! 🦸‍♀️', 
-      d: 0, // Záchrana nedává body do celkového skóre, jen lepí streak
+      a: 'Záchrana streaku (Trest splněn)! 🦸‍♀️', 
+      d: 0, 
       icon: '🩹', 
-      ts: yesterday.getTime() 
+      ts: Date.now() // Zaznamenáno DNES, aby to šlo smazat dnešním resetem
   });
   
-  showToast('🩹 Streak úspěšně zachráněn!');
-  save();
+  showToast('🩹 Streak zachráněn!');
+  save(); 
 };
 
 window.confirmDailyReset = function() {
