@@ -76,7 +76,7 @@ function startApp() {
 
 // 4. HERNÍ LOGIKA A DATA
 const GOAL = 200;
-const SOLO_GOAL = 100; // Cíl pro týdenní výzvu
+const SOLO_GOAL = 100; // Cíl pro týdenní výzvu zmenšen na 100
 
 const HABITS = [
   { id:"water",    label:"2L vody",      points:2, icon:"💧", max:1 },
@@ -226,7 +226,7 @@ function calculateStreak(logs) {
         if (!dailyPoints[dateKey]) dailyPoints[dateKey] = 0;
         if (l.d > 0) dailyPoints[dateKey] += l.d; 
         
-        // Nová logika: Pokud je to záchrana, opravuje to den PŘED jejím splněním
+        // Pokud je to záchrana, opravuje to den PŘED jejím splněním
         if (l.icon === '🩹') {
             let targetDate = new Date(l.ts);
             targetDate.setDate(targetDate.getDate() - 1);
@@ -293,7 +293,6 @@ function render() {
   const lA = document.getElementById('label-userA');
   const lB = document.getElementById('label-userB');
   
-  // 1. Očištění horní karty v Solo módu
   if (lA) {
       if (isSolo) {
           lA.innerHTML = `Lůca`;
@@ -317,11 +316,9 @@ function render() {
   
   const barA = document.getElementById('bar-a');
   const barB = document.getElementById('bar-b');
-  // Přidáno hezčí zobrazení čísel (např. 25 / 70)
   if (barA) { barA.style.width = pA + '%'; document.getElementById('bar-a-val').textContent = isSolo ? `${sA} / ${currentGoal}` : sA; }
   if (barB) { barB.style.width = pB + '%'; document.getElementById('bar-b-val').textContent = sB; }
 
- // 2. NOVÝ SOLO TRACKER PRO TÝDEN (7 DNÍ) A MĚSÍČNÍ STREAK
   const trackTitle = document.querySelector('.track-title');
   const trackGoal = document.querySelector('.track-goal');
   const trackCard = document.querySelector('.track-card');
@@ -330,12 +327,14 @@ function render() {
   let streakBarContainer = document.getElementById('streak-bar-container');
 
   if (isSolo && trackCard) {
-      const myStreak = calculateStreak(state.userA.log);
+      // Zajišťuje, že se načítají data pro aktuálně zvolenou uživatelku
+      const logs = state[currentUser].log || [];
+      const myStreak = calculateStreak(logs);
       const STREAK_GOAL = 30; // Cíl měsíční výzvy
       
       // Přepíšeme nadpis na dynamický Streak
       if (trackTitle) trackTitle.innerHTML = `🔥 STREAK: <span style="color:#F97316">${myStreak} DNÍ</span>`;
-      if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${currentGoal} bodů`;
+      if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${currentGoal} bodů`; // Odebrána tečka
       
       // Vytvoříme obal pro dny v týdnu, pokud tam ještě není
       if (!tracker) {
@@ -357,11 +356,10 @@ function render() {
                   <div id="streak-bar-fill" class="track-fill" style="width: 0%; background: linear-gradient(90deg, #F97316, #FB923C); border-radius: 8px; transition: width 0.5s ease;"></div>
               </div>
           `;
-          // Vložíme to hned pod dny v týdnu
           tracker.after(streakBarContainer);
       }
       
-     // Předpočítáme si zachráněné dny pro UI
+      // Předpočítáme si zachráněné dny pro UI
       const uiRepairedDays = new Set();
       logs.forEach(l => {
           if (l.icon === '🩹') {
@@ -371,24 +369,25 @@ function render() {
           }
       });
 
-      // Logika pro generování 7 koleček (Po - Ne)
+      // Bezpečná logika pro generování 7 koleček (Po - Ne) - bez milisekundových chyb
       const todayIdx = (new Date().getDay() + 6) % 7; 
-      const thisMondayMs = new Date(getMonday(new Date())).setHours(0,0,0,0);
+      const thisMonday = new Date(getMonday(new Date()));
       
       let daysHtml = '';
       const dayNames = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
       
       for(let i=0; i<7; i++) {
-          const dayMs = thisMondayMs + (i * 86400000);
+          let loopDate = new Date(thisMonday);
+          loopDate.setDate(loopDate.getDate() + i);
+          let dayString = loopDate.toDateString();
           
           let dayPts = 0;
           logs.forEach(l => {
-              if (l.ts >= dayMs && l.ts < dayMs + 86400000 && l.d > 0) {
+              if (new Date(l.ts).toDateString() === dayString && l.d > 0) {
                   dayPts += l.d;
               }
           });
           
-          let dayString = new Date(dayMs).toDateString();
           const isSuccess = dayPts >= 10 || uiRepairedDays.has(dayString);
           let sClass = isSuccess ? 'active' : (i === todayIdx ? 'today' : (i > todayIdx ? 'future' : 'missed'));
           
@@ -398,6 +397,14 @@ function render() {
       tracker.innerHTML = daysHtml;
       tracker.style.display = 'flex';
 
+      // Aktualizace nové Streak lišty
+      if (streakBarContainer) {
+          streakBarContainer.style.display = 'block';
+          const streakPct = Math.min((myStreak / STREAK_GOAL) * 100, 100);
+          document.getElementById('streak-bar-fill').style.width = streakPct + '%';
+          document.getElementById('streak-bar-text').textContent = `${myStreak} / ${STREAK_GOAL} 🔥`;
+      }
+
       // --- LOGIKA PRO TLAČÍTKO ZÁCHRANY STREAKU ---
       let repairBtnContainer = document.getElementById('repair-streak-container');
       if (!repairBtnContainer) {
@@ -405,23 +412,21 @@ function render() {
           repairBtnContainer.id = 'repair-streak-container';
           repairBtnContainer.style.textAlign = 'center'; 
           repairBtnContainer.style.width = '100%';
-          // ZMENŠENÉ TLAČÍTKO (menší padding a font)
           repairBtnContainer.innerHTML = `<button onclick="recoverStreak()" style="background: linear-gradient(135deg, #F97316, #ea580c); color: white; border: none; border-radius: 50px; padding: 6px 14px; font-weight: 800; font-family: 'Nunito', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 10px rgba(249,115,22,0.3); margin-top: 10px; margin-bottom: 10px; transition: transform 0.2s;">🩹 Zachránit včerejšek</button>`;
           streakBarContainer.after(repairBtnContainer);
       }
 
-      let yesterdayMs = new Date();
-      yesterdayMs.setDate(yesterdayMs.getDate() - 1);
-      yesterdayMs.setHours(0,0,0,0);
+      let yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      let yesterdayStr = yesterday.toDateString();
       
       let yesterdayPts = 0;
       logs.forEach(l => {
-          if (l.ts >= yesterdayMs.getTime() && l.ts < yesterdayMs.getTime() + 86400000 && l.d > 0) {
+          if (new Date(l.ts).toDateString() === yesterdayStr && l.d > 0) {
               yesterdayPts += l.d;
           }
       });
 
-      let yesterdayStr = yesterdayMs.toDateString();
       if (yesterdayPts < 10 && !uiRepairedDays.has(yesterdayStr)) {
           repairBtnContainer.style.display = 'inline-block';
       } else {
@@ -435,10 +440,10 @@ function render() {
       if (tracker) tracker.style.display = 'none';
       if (streakBarContainer) streakBarContainer.style.display = 'none';
       
-      // SCHOVÁ TLAČÍTKO V DUEL MÓDU
       let repairBtnContainer = document.getElementById('repair-streak-container');
       if (repairBtnContainer) repairBtnContainer.style.display = 'none';
   }
+
   const wb = document.getElementById('winner-bar');
   if (wb) {
     if (state.lastWinner && !isSolo) {
