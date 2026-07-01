@@ -221,12 +221,17 @@ function calculateStreak(logs) {
     const dailyPoints = {};
     const repairedDays = new Set();
 
-    // Sečteme body pro každý den a zjistíme, zda byl den zachráněn
     logs.forEach(l => {
         const dateKey = new Date(l.ts).toDateString();
         if (!dailyPoints[dateKey]) dailyPoints[dateKey] = 0;
         if (l.d > 0) dailyPoints[dateKey] += l.d; 
-        if (l.icon === '🩹') repairedDays.add(dateKey); 
+        
+        // Nová logika: Pokud je to záchrana, opravuje to den PŘED jejím splněním
+        if (l.icon === '🩹') {
+            let targetDate = new Date(l.ts);
+            targetDate.setDate(targetDate.getDate() - 1);
+            repairedDays.add(targetDate.toDateString());
+        }
     });
 
     let streak = 0;
@@ -240,11 +245,10 @@ function calculateStreak(logs) {
         checkDate.setDate(checkDate.getDate() - 1);
         let yesterdayKey = checkDate.toDateString();
         if ((dailyPoints[yesterdayKey] || 0) < 10 && !repairedDays.has(yesterdayKey)) {
-            return 0; // Ani včera nebylo splněno
+            return 0; // Ani včera nebylo splněno a opraveno
         }
     }
 
-    // Počítáme dozadu
     while (true) {
         let dateStr = checkDate.toDateString();
         if ((dailyPoints[dateStr] || 0) >= 10 || repairedDays.has(dateStr)) {
@@ -357,9 +361,18 @@ function render() {
           tracker.after(streakBarContainer);
       }
       
-            // Logika pro generování 7 koleček (Po - Ne) s OHNÍČKY a 10 body
+     // Předpočítáme si zachráněné dny pro UI
+      const uiRepairedDays = new Set();
+      logs.forEach(l => {
+          if (l.icon === '🩹') {
+              let d = new Date(l.ts);
+              d.setDate(d.getDate() - 1);
+              uiRepairedDays.add(d.toDateString());
+          }
+      });
+
+      // Logika pro generování 7 koleček (Po - Ne)
       const todayIdx = (new Date().getDay() + 6) % 7; 
-      const logs = state.userA.log || [];
       const thisMondayMs = new Date(getMonday(new Date())).setHours(0,0,0,0);
       
       let daysHtml = '';
@@ -368,20 +381,17 @@ function render() {
       for(let i=0; i<7; i++) {
           const dayMs = thisMondayMs + (i * 86400000);
           
-          // Sečteme body za konkrétní den
           let dayPts = 0;
-          let isRepaired = false;
           logs.forEach(l => {
-              if (l.ts >= dayMs && l.ts < dayMs + 86400000) {
-                  if (l.d > 0) dayPts += l.d;
-                  if (l.icon === '🩹') isRepaired = true;
+              if (l.ts >= dayMs && l.ts < dayMs + 86400000 && l.d > 0) {
+                  dayPts += l.d;
               }
           });
           
-          const isSuccess = dayPts >= 10 || isRepaired;
+          let dayString = new Date(dayMs).toDateString();
+          const isSuccess = dayPts >= 10 || uiRepairedDays.has(dayString);
           let sClass = isSuccess ? 'active' : (i === todayIdx ? 'today' : (i > todayIdx ? 'future' : 'missed'));
           
-          // Pokud je splněno (nebo opraveno), zobraz ohníček. Jinak název dne.
           let content = isSuccess ? '🔥' : dayNames[i];
           daysHtml += `<div class="day-circle ${sClass}">${content}</div>`;
       }
@@ -393,38 +403,29 @@ function render() {
       if (!repairBtnContainer) {
           repairBtnContainer = document.createElement('div');
           repairBtnContainer.id = 'repair-streak-container';
-          // Generujeme tlačítko rovnou přes JavaScript
-          repairBtnContainer.innerHTML = `<button onclick="recoverStreak()" class="quest-btn" style="background: linear-gradient(135deg, #F97316, #ea580c); margin-top: 20px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(249,115,22,0.4);">🩹 ZACHRÁNIT VČEREJŠÍ STREAK</button>`;
+          repairBtnContainer.style.textAlign = 'center'; 
+          repairBtnContainer.style.width = '100%';
+          // ZMENŠENÉ TLAČÍTKO (menší padding a font)
+          repairBtnContainer.innerHTML = `<button onclick="recoverStreak()" style="background: linear-gradient(135deg, #F97316, #ea580c); color: white; border: none; border-radius: 50px; padding: 6px 14px; font-weight: 800; font-family: 'Nunito', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 10px rgba(249,115,22,0.3); margin-top: 10px; margin-bottom: 10px; transition: transform 0.2s;">🩹 Zachránit včerejšek</button>`;
           streakBarContainer.after(repairBtnContainer);
       }
 
-      // Zkontrolujeme, jestli včerejšek selhal (méně než 10 bodů a není opraven)
       let yesterdayMs = new Date();
       yesterdayMs.setDate(yesterdayMs.getDate() - 1);
       yesterdayMs.setHours(0,0,0,0);
       
       let yesterdayPts = 0;
-      let yesterdayRepaired = false;
       logs.forEach(l => {
-          if (l.ts >= yesterdayMs.getTime() && l.ts < yesterdayMs.getTime() + 86400000) {
-              if (l.d > 0) yesterdayPts += l.d;
-              if (l.icon === '🩹') yesterdayRepaired = true;
+          if (l.ts >= yesterdayMs.getTime() && l.ts < yesterdayMs.getTime() + 86400000 && l.d > 0) {
+              yesterdayPts += l.d;
           }
       });
 
-      // Tlačítko se zobrazí POUZE pokud včerejšek nebyl splněn
-      if (yesterdayPts < 10 && !yesterdayRepaired) {
-          repairBtnContainer.style.display = 'block';
+      let yesterdayStr = yesterdayMs.toDateString();
+      if (yesterdayPts < 10 && !uiRepairedDays.has(yesterdayStr)) {
+          repairBtnContainer.style.display = 'inline-block';
       } else {
           repairBtnContainer.style.display = 'none';
-      }
-
-      // Aktualizace nové Streak lišty
-      if (streakBarContainer) {
-          streakBarContainer.style.display = 'block';
-          const streakPct = Math.min((myStreak / STREAK_GOAL) * 100, 100);
-          document.getElementById('streak-bar-fill').style.width = streakPct + '%';
-          document.getElementById('streak-bar-text').textContent = `${myStreak} / ${STREAK_GOAL} 🔥`;
       }
 
   } else {
@@ -433,6 +434,10 @@ function render() {
       if (trackGoal) trackGoal.textContent = `🎯 Cíl: ${GOAL} bodů`;
       if (tracker) tracker.style.display = 'none';
       if (streakBarContainer) streakBarContainer.style.display = 'none';
+      
+      // SCHOVÁ TLAČÍTKO V DUEL MÓDU
+      let repairBtnContainer = document.getElementById('repair-streak-container');
+      if (repairBtnContainer) repairBtnContainer.style.display = 'none';
   }
   const wb = document.getElementById('winner-bar');
   if (wb) {
