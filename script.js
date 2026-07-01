@@ -719,3 +719,11 @@ function showToast(msg) {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
   }
 }
+// TEMPORARY CLEANUP FUNCTION
+window.clearGhosts = function() {
+    state.userA.log = (state.userA.log || []).filter(l => l.icon !== '🩹');
+    state.userB.log = (state.userB.log || []).filter(l => l.icon !== '🩹');
+    save();
+    alert('Hotovo! Testovací záchrany jsou smazány. 👻');
+    window.location.reload();
+};
