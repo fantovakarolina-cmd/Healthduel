@@ -720,17 +720,19 @@ function showToast(msg) {
   }
 }
 // TEMPORARY CLEANUP FUNCTION
-window.hardReset = function() {
+window.hardReset = async function() {
     // Smaže úplně všechno u obou hráček
     state.userA.weeklyPoints = 0;
     state.userA.log = [];
     state.userA.checkedHabits = {};
+    state.userA.questDone = false;
     
     state.userB.weeklyPoints = 0;
     state.userB.log = [];
     state.userB.checkedHabits = {};
+    state.userB.questDone = false;
     
-    save();
+    await save(); // Nyní POČKÁME, až to Firebase v cloudu skutečně uloží
     alert('Všechna data vymazána. Začínáme s čistým štítem! 🧹');
     window.location.reload();
 };
