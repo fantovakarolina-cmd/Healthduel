@@ -101,11 +101,11 @@ body.theme-kaja::after {
   border-radius:24px; padding:18px 16px; text-align:center; position:relative; overflow:hidden;
 }
 .score-card::before {
-  content:''; position:absolute; width:80px; height:80px; border-radius:50%;
-  top:-20px; filter:blur(24px); opacity:0.6;
+  content:''; position:absolute; width:120px; height:120px; border-radius:50%;
+  top:-30px; opacity:0.55;
 }
-.score-card.luca::before { background:var(--luca); right:-20px; }
-.score-card.kaja::before { background:var(--kaja); left:-20px; }
+.score-card.luca::before { background:radial-gradient(circle, var(--luca), transparent 70%); right:-30px; }
+.score-card.kaja::before { background:radial-gradient(circle, var(--kaja), transparent 70%); left:-30px; }
 .score-label { font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase; opacity:0.8; margin-bottom:4px; display:flex; align-items:center; justify-content:center; gap:4px; }
 .score-val { font-family:'Bebas Neue',sans-serif; font-size:50px; line-height:1; }
 .score-card.luca .score-val { color:var(--luca); text-shadow:0 0 20px var(--luca-glow); }
@@ -554,4 +554,64 @@ body.solo-active .track-num.luca {
     color: #38BDF8 !important; 
     letter-spacing: 0.5px !important;
     white-space: nowrap !important; /* Zabrání zalomení na dva řádky */
+}
+
+/* =========================================
+   🧘‍♀️ SOLO – VLASTNÍ VIZUALIZACE (jiná než Duel)
+   ========================================= */
+
+/* --- CÍLOVÁ LIŠTA (týdenní body) – klidný modrý vzhled bez duelového pohyblivého lesku --- */
+body.solo-active .track-row.luca .track-bg {
+    height: 18px !important;
+    border-radius: 10px !important;
+    /* jemné dělící čárky po čtvrtinách (25/50/75 %) */
+    background-image:
+        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px);
+    background-position: 25% 0, 50% 0, 75% 0;
+    background-size: 1px 100%, 1px 100%, 1px 100%;
+    background-repeat: no-repeat;
+}
+body.solo-active .track-fill.luca {
+    background: linear-gradient(90deg, #0EA5E9, #38BDF8, #7DD3FC) !important;
+    box-shadow: 0 0 14px rgba(56,189,248,0.45) !important;
+    border-radius: 10px !important;
+}
+/* vypnout duelový běžící lesk + koncový proužek v Solo módu */
+body.solo-active .track-fill::before,
+body.solo-active .track-fill::after {
+    display: none !important;
+}
+
+/* --- STREAK: 30 denních segmentů místo lišty --- */
+.streak-segments {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+.streak-seg {
+    flex: 1;
+    height: 16px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.09);
+    transition: all 0.3s ease;
+}
+.streak-seg.filled {
+    background: linear-gradient(180deg, #FB923C, #F97316);
+    border-color: transparent;
+    box-shadow: 0 0 6px rgba(249,115,22,0.5);
+}
+.streak-seg.current {
+    box-shadow: 0 0 10px rgba(249,115,22,0.95);
+    animation: pulseStreak 1.5s ease-in-out infinite;
+}
+.streak-seg.milestone {
+    border-top: 2px solid rgba(255,255,255,0.35);
+}
+@keyframes pulseStreak {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
 }
