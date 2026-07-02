@@ -549,6 +549,7 @@ body.solo-active .track-bg {
 }
 body.solo-active .track-num.luca { 
     margin: 0 !important; 
+    width: auto !important;        /* dřív pevných 34px -> delší čísla přetékala */
     font-size: 13px !important; /* Výrazně zmenšené písmo */
     font-weight: 700 !important;
     color: #38BDF8 !important; 
@@ -561,18 +562,6 @@ body.solo-active .track-num.luca {
    ========================================= */
 
 /* --- CÍLOVÁ LIŠTA (týdenní body) – klidný modrý vzhled bez duelového pohyblivého lesku --- */
-body.solo-active .track-row.luca .track-bg {
-    height: 18px !important;
-    border-radius: 10px !important;
-    /* jemné dělící čárky po čtvrtinách (25/50/75 %) */
-    background-image:
-        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px);
-    background-position: 25% 0, 50% 0, 75% 0;
-    background-size: 1px 100%, 1px 100%, 1px 100%;
-    background-repeat: no-repeat;
-}
 body.solo-active .track-fill.luca {
     background: linear-gradient(90deg, #0EA5E9, #38BDF8, #7DD3FC) !important;
     box-shadow: 0 0 14px rgba(56,189,248,0.45) !important;
@@ -607,9 +596,6 @@ body.solo-active .track-fill::after {
 .streak-seg.current {
     box-shadow: 0 0 10px rgba(249,115,22,0.95);
     animation: pulseStreak 1.5s ease-in-out infinite;
-}
-.streak-seg.milestone {
-    border-top: 2px solid rgba(255,255,255,0.35);
 }
 @keyframes pulseStreak {
     0%, 100% { opacity: 1; }
