@@ -456,13 +456,11 @@ function render() {
           streakBarContainer = document.createElement('div');
           streakBarContainer.id = 'streak-bar-container';
           streakBarContainer.innerHTML = `
-              <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-weight: 800; margin-bottom: 8px; text-transform: uppercase; margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items:center; font-size: 11px; color: var(--muted); font-weight: 800; margin-bottom: 8px; text-transform: uppercase; letter-spacing:1px; margin-top: 14px;">
                   <span>Měsíční výzva přežití</span>
                   <span id="streak-bar-text" style="color: #F97316;">0 / 30 🔥</span>
               </div>
-              <div class="track-bg" style="width: 100%; height: 12px; border-radius: 8px; margin: 0;">
-                  <div id="streak-bar-fill" class="track-fill" style="width: 0%; background: linear-gradient(90deg, #F97316, #FB923C); border-radius: 8px; transition: width 0.5s ease;"></div>
-              </div>
+              <div id="streak-segments" class="streak-segments"></div>
           `;
           tracker.after(streakBarContainer);
       }
@@ -505,11 +503,21 @@ function render() {
       tracker.innerHTML = daysHtml;
       tracker.style.display = 'flex';
 
-      // Aktualizace nové Streak lišty
+      // Aktualizace segmentové Streak lišty (30 dní)
       if (streakBarContainer) {
           streakBarContainer.style.display = 'block';
-          const streakPct = Math.min((myStreak / STREAK_GOAL) * 100, 100);
-          document.getElementById('streak-bar-fill').style.width = streakPct + '%';
+          const segEl = document.getElementById('streak-segments');
+          if (segEl) {
+              let segHtml = '';
+              for (let d = 1; d <= STREAK_GOAL; d++) {
+                  let segCls = 'streak-seg';
+                  if (d <= myStreak) segCls += ' filled';
+                  if (d === myStreak) segCls += ' current';
+                  if (d % 7 === 0) segCls += ' milestone'; // konec týdne
+                  segHtml += `<div class="${segCls}"></div>`;
+              }
+              segEl.innerHTML = segHtml;
+          }
           document.getElementById('streak-bar-text').textContent = `${myStreak} / ${STREAK_GOAL} 🔥`;
       }
 
@@ -572,6 +580,7 @@ function render() {
         const div = document.createElement('div');
         div.className = 'habit-item' + (isFullyChecked ? ' checked' : '');
         div.onclick = () => window.toggleHabit(h.id);
+        if (h.tip) div.title = h.tip; // tooltip při najetí myší (desktop)
 
         let checkVisual = '';
         if (h.max === 1) {
