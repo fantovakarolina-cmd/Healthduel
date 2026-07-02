@@ -78,7 +78,7 @@ function startApp() {
 const GOAL = 200;
 const SOLO_GOAL = 100; // Cíl pro týdenní výzvu zmenšen na 100
 
-const HABITS = [
+const CORE_HABITS = [
   { id:"water",    label:"2L vody",      points:2, icon:"💧", max:1 },
   { id:"sleep",    label:"8h spánek",    points:2, icon:"🌙", max:1 },
   { id:"steps",    label:"10 000 kroků", points:3, icon:"👟", max:1 },
@@ -91,6 +91,84 @@ const HABITS = [
   { id:"cooking",  label:"Příprava jídla",points:1, icon:"🍲", max:5 }
 ];
 
+const HABIT_POOL = {
+    wellness: [
+        { id:"meditation", label:"Meditace", points:2, icon:"🧘", max:1 },
+        { id:"gratitude", label:"Vděčnost", points:2, icon:"🙏", max:1 },
+        { id:"offline", label:"Offline ráno", points:3, icon:"📵", max:1 }
+    ],
+
+    health: [
+        { id:"tea", label:"Čaj", points:1, icon:"🍵", max:2 },
+        { id:"vitamins", label:"Vitamíny", points:1, icon:"💊", max:1 },
+        { id:"protein", label:"Protein", points:2, icon:"🍗", max:1 },
+        { id:"healthyBreakfast", label:"Zdravá snídaně", points:2, icon:"🥣", max:1 }
+    ],
+
+    home: [
+        { id:"bed", label:"Ustlat postel", points:1, icon:"🛏️", max:1 },
+        { id:"declutter", label:"Úklid 10 minut", points:2, icon:"🧹", max:1 },
+        { id:"plants", label:"Zalít kytky", points:1, icon:"🪴", max:1 }
+    ],
+
+    outside: [
+        { id:"sunlight", label:"Ranní slunce", points:2, icon:"☀️", max:1 },
+        { id:"nature", label:"Příroda", points:2, icon:"🌳", max:1 },
+        { id:"stretch", label:"Strečink", points:2, icon:"🤸", max:1 }
+    ]
+};
+function shuffle(array, seed) {
+
+    const arr = [...array];
+
+    for (let i = arr.length - 1; i > 0; i--) {
+
+        const j = (seed + i * 17) % (i + 1);
+
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+
+    return arr;
+}
+
+function getTodayHabits() {
+
+    const isSolo = document.body.classList.contains("solo-active");
+
+    if (!isSolo) {
+        return CORE_HABITS;
+    }
+
+    const today = new Date().toDateString();
+
+    if (todayHabits && habitsDay === today) {
+        return todayHabits;
+    }
+
+    const daySeed = Math.floor(new Date(today).getTime() / 86400000);
+
+if (state.dailySoloHabits.length === 0) {
+
+    state.dailySoloHabits = [
+
+        ...shuffle(HABIT_POOL.wellness, daySeed).slice(0,2),
+
+        ...shuffle(HABIT_POOL.health, daySeed+1).slice(0,2),
+
+        ...shuffle(HABIT_POOL.home, daySeed+2).slice(0,2),
+
+        ...shuffle(HABIT_POOL.outside, daySeed+3).slice(0,2)
+
+    ];
+
+}
+
+    habitsDay = today;
+
+    return [
+    ...CORE_HABITS,
+    ...state.dailySoloHabits
+];
 const SIDE_QUESTS = [
   "Ledoborec (30s studená sprcha) 🧊",
   "Zen master (10 min jóga) 🧘‍♀️",
@@ -152,8 +230,10 @@ function getMonday(d) {
 let state = {
   userA: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
   userB: { weeklyPoints:0, checkedHabits:{}, questDone:false, log:[], totalWins:0 },
-  lastWinner: null, lastUpdated:0, currentDay: new Date().toDateString(),
-  currentWeek: getMonday(new Date())
+  lastWinner: null, lastUpdated:0, 
+  currentDay: new Date().toDateString(),
+  currentWeek: getMonday(new Date()),
+  dailySoloHabits: []
 };
 
 const lokalniData = localStorage.getItem('healthDuelCache');
@@ -209,6 +289,8 @@ function checkTime(skipSave = false) {
     state.userA.checkedHabits = {}; state.userA.questDone = false;
     state.userB.checkedHabits = {}; state.userB.questDone = false;
     state.currentDay = today;
+    state.dailySoloHabits = [];
+    todayHabits = null;
     needsSave = true;
   }
   if (needsSave && !skipSave) save();
@@ -452,10 +534,14 @@ function render() {
     } else { wb.style.display = 'none'; }
   }
 
+  let todayHabits = null;
+  let habitsDay = null;
+  
   const list = document.getElementById('habit-list');
   if (list) {
       list.innerHTML = '';
-      HABITS.forEach(h => {
+      const habits = getTodayHabits();
+      habits.forEach(h => {
         let count = state[currentUser].checkedHabits ? (state[currentUser].checkedHabits[h.id] || 0) : 0;
         const isFullyChecked = count === h.max;
         const div = document.createElement('div');
@@ -535,7 +621,7 @@ window.switchUser = function(id) {
 window.toggleHabit = function(id) {
   if (isSyncing) { showToast('⏳ Synchronizuji data, vteřinku...'); return; }
   checkTime();
-  const h = HABITS.find(x => x.id === id);
+  const h = getTodayHabits().find(x => x.id === id);
   if(!state[currentUser].checkedHabits) state[currentUser].checkedHabits = {};
   if(!state[currentUser].log) state[currentUser].log = [];
   
