@@ -513,7 +513,6 @@ function render() {
                   let segCls = 'streak-seg';
                   if (d <= myStreak) segCls += ' filled';
                   if (d === myStreak) segCls += ' current';
-                  if (d % 7 === 0) segCls += ' milestone'; // konec týdne
                   segHtml += `<div class="${segCls}"></div>`;
               }
               segEl.innerHTML = segHtml;
