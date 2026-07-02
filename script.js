@@ -719,9 +719,8 @@ function showToast(msg) {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
   }
 }
-// TEMPORARY CLEANUP FUNCTION
-window.hardReset = async function() {
-    // Smaže úplně všechno u obou hráček
+window.nukeDatabase = async function() {
+    // 1. Smaže data obou hráček
     state.userA.weeklyPoints = 0;
     state.userA.log = [];
     state.userA.checkedHabits = {};
@@ -732,7 +731,12 @@ window.hardReset = async function() {
     state.userB.checkedHabits = {};
     state.userB.questDone = false;
     
-    await save(); // Nyní POČKÁME, až to Firebase v cloudu skutečně uloží
-    alert('Všechna data vymazána. Začínáme s čistým štítem! 🧹');
+    // 2. Vymaže místní mezipaměť prohlížeče
+    localStorage.removeItem('healthDuelCache');
+    
+    // 3. Počká na potvrzení od Firebase, že je cloud čistý
+    await save();
+    
+    alert('BUM! 💥 Všechna data byla trvale smazána ze serveru.');
     window.location.reload();
 };
